@@ -112,10 +112,10 @@ class RepositoriesAPI(View):
             if not password:
                 return JsonResponse({'status': False, 'error': "Password missing in POST data."})
 
-            login = login.encode("utf-8")
-            password = password.encode("utf-8")
-            email = request_data.get('email', "").encode('utf-8')
-            phone = request_data.get('phone', "").encode('utf-8')
+            login = login
+            password = password
+            email = request_data.get('email', "")
+            phone = request_data.get('phone', "")
 
             kwargs = {}
             if isinstance(repo, LDAPRepository):
@@ -124,7 +124,7 @@ class RepositoriesAPI(View):
                 if not group:
                     return JsonResponse({'status': False, 'error': "Group is missing for adding user into LDAP repository."})
                 else:
-                    group = group.encode('utf-8')
+                    group = group
                 kwargs['group'] = group
                 kwargs['update_group'] = update_group
 
@@ -164,7 +164,7 @@ class RepositoriesAPI(View):
             # Check if fields are correctly filled-in
             request_data = request.POST or request.JSON
 
-            login = login.encode("utf-8")
+            login = login
             email = request_data.get('email')
             phone = request_data.get('phone')
             password = request_data.get('password')
@@ -172,14 +172,14 @@ class RepositoriesAPI(View):
                 return JsonResponse({'status': False, 'error': "Password, Email and Phone missing in POST data. "
                                                                "Nothing to do."})
             if email:
-                email = email.encode('utf-8')
+                email = email
             if phone:
-                phone = phone.encode('utf-8')
+                phone = phone
             if email or phone:
                 backend.update_user(login, email=email, phone=phone)
 
             if password:
-                password = password.encode('utf-8')
+                password = password
                 backend.change_password(login, "", password)
 
             return JsonResponse({
