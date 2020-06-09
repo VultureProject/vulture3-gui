@@ -130,7 +130,7 @@ def dict_to_multipart (fields):
         L.append('Content-Disposition: form-data; name="%s"' % key)
         L.append('')
         """ Convert list to string """
-        if isinstance(value,basestring):
+        if isinstance(value,str):
             L.append(value)
         else:
             L.append(",".join(map(str, value)))
