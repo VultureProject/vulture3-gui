@@ -120,7 +120,7 @@ class SSOProfilesAPI(View):
             # And verify if all fields are provided
             request_data = request.POST or request.JSON
             new_sso_profiles = {}
-            unknown_fields = request_data.keys()
+            unknown_fields = list(request_data.keys())
             for sso_profile_app in sso_profiles_app:
                 if sso_profile_app['type'] in ("learn", "learn_secret"):
                     field_name = sso_profile_app['name'].split(';vlt;')[0]
@@ -140,7 +140,7 @@ class SSOProfilesAPI(View):
                 if len(unknown_fields) == 1:
                     unknown_fields = unknown_fields.pop()
                 else:
-                    unknown_fields = ",".join(list(unknown_fields))
+                    unknown_fields = ",".join(unknown_fields)
                 raise Exception("Field(s) '{}' not found in Application learning fields.".format(unknown_fields))
 
             app.set_sso_profiles(login, new_sso_profiles)
@@ -187,7 +187,7 @@ class SSOProfilesAPI(View):
             # Retrieve the list of application sso_profiles
             sso_profiles_app = json_loads(app.sso_profile)
             # And verify if all fields are provided
-            unknown_fields = request_data.keys()
+            unknown_fields = list(request_data.keys())
             new_sso_profiles = {}
             for sso_profile_app in sso_profiles_app:
                 if sso_profile_app['type'] in ("learn", "learn_secret"):
