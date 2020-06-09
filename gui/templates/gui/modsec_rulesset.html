@@ -1,0 +1,135 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3>
+        {% if type_modsec == 'virtualpatching' %}
+            <i class="fa fa-cloud"></i>&nbsp;{% trans "Virtual Patching" %}
+        {% elif type_modsec == 'wlbl' %}
+            <i class="fa fa-cloud"></i>&nbsp;{% trans "WL/BL" %}
+        {% else %}
+            <i class="fa fa-cog"></i>&nbsp;{% trans "Rules Set" %}
+        {% endif %}
+    </h3></li>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <p>{{ import_msg|safe }}</p>
+        <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="rule_list">
+            <thead>
+                <tr>
+                    <th>{% trans "ID" %}</th>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Rules Set Type" %}</th>
+                    <th>{% trans "Action" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for rulesset in rulesset_list %}
+                <tr id="{{ rulesset.id }}">
+                    <td>{{rulesset.id}}</td>
+                    <td>{{rulesset.name}}</td>
+                    <td>{{rulesset.type_rule}}</td>                    
+                    <td class="action"></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="add-group">
+            {% if type_modsec == 'crs/trustwave' or type_modsec == 'vulture' %}
+                 <a class="addlink addplus" href="/firewall/modsec_rules/edit/">{% trans "Add an Entry" %} </a>
+                 <a class="addlink addplus" href="/firewall/modsec_rules/import_crs/">{% trans "Import OWASP Rules" %} </a>
+                {% if trustwave_enable %} 
+                    <a class="addlink addplus" href="/firewall/modsec_rules/import_crs/trustwave">{% trans "Import Trustwave Rules" %} </a>
+                {% endif %}
+            {% elif type_modsec == 'virtualpatching' %}
+                <a class="addlink addplus" href="/firewall/modsec_rules/import_scan/">{% trans "Virtual Patching" %} </a>
+            {% endif %}
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+    $('#rule_list').DataTable({
+        dom: "<p<'searchbox'f><t>>",
+        autoWidth: false,
+        language: {
+            search: "",
+            lengthMenu: '_MENU_',
+            pagingType: "bootstrap",
+            paginate: {
+                next: '<img src="{% static 'img/right.png' %}"/>',
+                previous: '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+
+        columnDefs: [
+            {data: 'id', name: 'id', defaultContent: "", visible: false, targets: [0], width: "1%", sortable: false},
+            {data: 'name', name: 'name', defaultContent: "", visible: true, targets: [1], width: "33%", sortable: true, render: function(data, type, row){
+                return data;
+            }},
+            {data: 'type', name: 'type', defaultContent: "", visible: true, targets: [2], width: "33%", sortable: true, render: function(data, type, row){
+                var dict = {
+                    vulture        : 'VULTURE RULES',
+                    trustwave      : 'TRUSTWAVE RULES',
+                    virtualpatching: 'Virtual Patching',
+                    wlbl           : 'WL/BL',
+                }
+
+                var x = dict[data];
+                if (x === undefined)
+                    return "Custom"
+
+                return x;
+            }},
+            {data: 'action', name: 'action', defaultContent: "", visible: true, targets: [3], width: "33%", sortable: true, render: function(data, type, row){
+                if (row.type !== 'wlbl')
+                    return ' <a class="action_button" href="/firewall/modsec_rules/clone/'+ row.id +'"><span><i class="fa fa-copy"></i></span></a><a class="action_button" href="/firewall/modsec_rules/delete/'+ row.id +'"><span><i class="fa fa-trash-o"></i></span></a>'
+
+            }},
+        ],
+        fnCreatedRow: function(nRow, aData){
+            $(nRow).on('click', function(){
+                var id = $(nRow).attr('id');
+                if (id)
+                    location.href = "/firewall/modsec_rules/edit/"+id;
+            })
+        }
+    });
+    console.log(window.location.hash);
+    if( window.location.hash === "#downloading" ) {
+        new PNotify({
+            title: 'Success',
+            text: 'Downloading rules ...',
+            type: 'success',
+            styling: 'bootstrap3',
+            buttons: {
+                closer: true,
+                sticker: false
+            }
+        });
+    }
+
+{% endblock %}

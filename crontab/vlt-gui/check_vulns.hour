@@ -1,0 +1,87 @@
+#!/usr/bin/env /home/vlt-gui/env/bin/python
+"""This file is part of Vulture 3.
+
+Vulture 3 is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vulture 3 is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vulture 3.  If not, see http://www.gnu.org/licenses/.
+"""
+__author__ = "Kevin Guillemot"
+__credits__ = []
+__license__ = "GPLv3"
+__version__ = "3.0.0"
+__maintainer__ = "Vulture Project"
+__email__ = "contact@vultureproject.org"
+__doc__ =  ''
+
+import os
+import sys
+
+# Django setup part
+sys.path.append("/home/vlt-gui/vulture/")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", 'vulture.settings')
+
+import django
+django.setup()
+import logging
+logger = logging.getLogger('cluster')
+
+#from vulture_toolkit.update_api.update_utils import UpdateUtils
+from gui.models.system_settings import Cluster, Vulnerabilities
+
+try:
+    logger.info("Starting check vulns process")
+    cluster = Cluster.objects.get()
+    node = cluster.get_current_node()
+    node.vulns = Vulnerabilities()
+
+    vulns = node.vulns.get_global_vulns()
+    if vulns:
+        logger.info("New global vulnerabilities : {}".format(vulns))
+        node.vulns.need_update = True
+        node.vulns.global_vulns = vulns
+        verbose_vuln = node.vulns.get_global_vulns(verbose=True) or ""
+        try:
+            verbose_vuln = "<br>".join([x for x in verbose_vuln.split('\n') if x != ""])
+        except:
+            pass
+        node.vulns.global_vulns_verbose = verbose_vuln
+
+    vulns = node.vulns.get_distrib_vulns()
+    if vulns:
+        logger.info("New FreeBSD vulnerabilities : {}".format(vulns))
+        node.vulns.need_update = True
+        node.vulns.distrib_vulns = vulns
+        verbose_vuln = node.vulns.get_distrib_vulns(verbose=True) or ""
+        try:
+            verbose_vuln = "<br>".join([x for x in verbose_vuln.split('\n') if x != ""])
+        except:
+            pass
+        node.vulns.distrib_vulns_verbose = verbose_vuln
+
+    vulns = node.vulns.get_kernel_vulns()
+    if vulns:
+        logger.info("New Kernel vulnerabilities : {}".format(vulns))
+        node.vulns.need_update = True
+        node.vulns.kernel_vulns = vulns
+        verbose_vuln = node.vulns.get_kernel_vulns(verbose=True) or ""
+        try:
+            verbose_vuln = "<br>".join([x for x in verbose_vuln.split('\n') if x != ""])
+        except:
+            pass
+        node.vulns.kernel_vulns_verbose = verbose_vuln
+
+    node.save(bootstrap=True)
+    logger.info("Ending check vulns process")
+except Exception as e:
+    logger.error("An error has occurred during check vulns process")
+    logger.exception(e)
+

@@ -1,0 +1,223 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+	<div class="row">
+        <input type="hidden" id="id_repo_interne" value="{{ repo_interne }}"/>
+		<form class="form-horizontal bootstrap-validator-form" action="/services/global/" method="post" novalidate="novalidate">
+			{% csrf_token %}
+			<div class="x_panel">
+	          <div class="x_title">
+	            <h2><i class="fa fa-desktop"></i>&nbsp;{% trans "Vulture Service Settings" %}</h2>
+	            <ul class="nav navbar-right panel_toolbox">
+	            	<li><a href="/services/global/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+	                <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+	            </ul>
+	            <div class="clearfix"></div>
+	          </div>
+	          <div class="x_content">
+	            <div class="" role="tabpanel" data-example-id="togglable-tabs">
+	              <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+	                <li role="presentation" class="active"><a href="#tab_content1">{% trans "Settings panel" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="/services/dns/">{% trans "DNS" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="/services/ntp/">{% trans "NTP" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="/services/smtp/">{% trans "SMTP" %}</a>
+	                </li>
+                    <li role="presentation" class=""><a href="/services/ssh/">{% trans "SSH" %}</a>
+                    </li>
+                    <li role="presentation" class=""><a href="/services/ipsec/">{% trans "IPSEC" %}</a>
+                    </li>
+	              </ul>
+	            </div>
+
+                <fieldset class="col-sm-12">
+                    <legend>{% trans "ModSecurity URL settings" %}</legend>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "OWASP CRS URL" %}</label>
+                            <div class="col-sm-8">
+                            {{form.owasp_crs_url}}
+                            {{form.owasp_crs_url.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Trustwave rules URL" %}</label>
+                            <div class="col-sm-8">
+                            {{form.trustwave_url}}
+                            {{form.trustwave_url.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Trustwave licence key" %}</label>
+                            <div class="col-sm-8">
+                            {{form.trustwave_user}}
+                            {{form.trustwave_user.errors}}
+                            </div>
+                    </div>
+                 </fieldset>
+                <fieldset class="col-sm-12">
+                    <legend>{% trans "Vulture settings" %}</legend>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Source branch" %}</label>
+                            <div class="col-sm-8">
+                            {{form.source_branch}}
+                            {{form.source_branch.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Portal Cookie Name" %}</label>
+                            <div class="col-sm-8">
+                            {{form.portal_cookie}}
+                            {{form.portal_cookie.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Application Cookie Name" %}</label>
+                            <div class="col-sm-8">
+                            {{form.app_cookie}}
+                            {{form.app_cookie.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Public Token Name" %}</label>
+                            <div class="col-sm-8">
+                            {{form.public_token}}
+                            {{form.public_token.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "OAuth2 HTTP header" %}</label>
+                            <div class="col-sm-8">
+                            {{form.x_vlt_token}}
+                            {{form.x_vlt_token.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "GUI Timeout" %}</label>
+                            <div class="col-sm-8">
+                            {{form.gui_timeout}}
+                            {{form.gui_timeout.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Trusted IP for which Vulture will grant access to Apache Status" %}</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control tageditor" name="vulture_status_ip_allowed" value="{{ apache_status }}"/>
+                        </div>
+                    </div>
+
+                 </fieldset>
+
+                 <fieldset class="col-sm-12">
+                    <legend>{% trans "Log settings" %}</legend>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Vulture's internal logs repository" %}</label>
+                        <div class="col-sm-5">
+                            {{form.logs_repository}}
+                            {{form.logs_repository.errors}}
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="log_rotate">
+                        <label class="col-sm-4 control-label">{% trans "Delete internal logs older than N days" %}</label>
+                        <div class="col-sm-5">
+                            {{form.log_rotate}}
+                            {{form.log_rotate.errors}}
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="log_rotate">
+                        <label class="col-sm-4 control-label">{% trans "Rotate logs files" %}</label>
+                        <div class="col-sm-5">
+                            {{form.file_logrotate}}
+                            {{form.file_logrotate.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group" id="log_rotate">
+                        <label class="col-sm-4 control-label">{% trans "Number of rotation archives to keep" %}</label>
+                        <div class="col-sm-5">
+                            {{form.keep_logs}}
+                            {{form.keep_logs.errors}}
+                        </div>
+                    </div>
+                 </fieldset>
+                <fieldset class="col-sm-12">
+                    <legend>{% trans "Location settings" %}</legend>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "City name" %}</label>
+                        <div class="col-sm-5">
+                            {{form.city_name}}
+                            {{form.city_name.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Latitude" %}</label>
+                        <div class="col-sm-5">
+                            {{form.latitude}}
+                            {{form.latitude.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Longitude" %}</label>
+                        <div class="col-sm-5">
+                            {{form.longitude}}
+                            {{form.longitude.errors}}
+                        </div>
+                    </div>
+                </fieldset>
+
+	          </div>
+	        </div>
+	    </form>
+	</div>
+	
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+
+{% endblock %}
+
+{% block jquery_code  %}
+
+    if ($('#id_logs_repository').val() === $('#id_repo_interne').val())
+        $('#log_rotate').show();
+    else
+        $('#log_rotate').hide();
+
+    $('#id_logs_repository').on('change', function(){
+        if ($(this).val() === $('#id_repo_interne').val())
+            $('#log_rotate').show();
+        else
+            $('#log_rotate').hide(); 
+    });
+
+    if( "{{ reload_apps }}" === "True" ) {
+        new PNotify({
+            title: 'Success',
+            text: '<a style="color:white; text-decoration: underline;" href="/application/">Please reload the applications</a>',
+            type: 'success',
+            styling: 'bootstrap3',
+            buttons: {
+                closer: true,
+                sticker: false
+            }
+        });
+    }
+
+    $('.tageditor').tagEditor({
+        delimiter: ',',
+        forceLowercase: true,
+    })
+
+{% endblock %}

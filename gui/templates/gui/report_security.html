@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-bar-chart"></i>&nbsp;{% trans "Report / Security" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="col-sm-12 col-lg-3">
+            <label class="control-label">{% trans "Applications" %}</label>&nbsp;&nbsp;
+            <div class="btn-group btn-group-xs">
+                <button id="all_apps" class="btn btn-default">{% trans "All" %}</button>
+                <button id="no_apps" class="btn btn-danger"><i class="fa fa-times"></i></button>
+            </div>
+            <select id="app_select" multiple="multiple" class="reload_map" style="margin-top:5px;">
+                    {% for app in apps %}
+                        <option value="{{ app.id }}">{{ app.name }}</option>
+                    {% endfor %}
+                </select>
+        </div>
+
+        <div class="col-sm-12 col-lg-4">
+            <label class="control-label">Date</label>&nbsp;&nbsp;
+            <div>
+                <input class="report_date_input" type="text" name="daterange" placeholder="Select a Date"/>
+                <input id="daterange_input" type="hidden" />
+                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+            </div>
+        </div>
+
+    </div>
+</div>
+<br/>
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12 radar_chart" id="requests_chart"></div>
+</div>
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12 radar_chart" id="average_score"></div>
+</div>
+<div class="row">
+    <div class="col-md-5 col-sm-12 col-xs-12 radar_chart" id="security_radar"></div>
+	<div class="col-md-7 col-sm-12 col-xs-12 radar_chart" id="blocked_requests"></div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12 network_chart" id="owasp_top10"></div>
+</div>
+<br />
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12 combined_chart" id="reputation_chart"></div>
+</div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+    <script src="{% static "plugins/datatables/dataTables.bootstrap.js" %}"></script>
+    <script src="{% static 'js/echarts3-all.min.js' %}"></script>
+    <script src="{% static 'js/report_security.js' %}"></script>
+    <script src="{% static 'js/daterangepicker.js' %}"></script>
+    <script src="{% static 'js/dateformat.min.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+{% endblock %}

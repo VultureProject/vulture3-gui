@@ -1,0 +1,121 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form class="form-horizontal bootstrap-validator-form" action="/services/loganalyser/" method="post" novalidate="novalidate">
+            {% csrf_token %}
+            <div class="x_panel">
+                  <div class="x_title">
+                    <h2><i class="fa fa-cog"></i>&nbsp;{% trans "Vulture reputation database" %}</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                        <li><a href="/services/loganalyser/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                        <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">{% trans "Check reputation of the following IP or Network range (eg 1.2.3.0/24): " %}<input type="text" class="test_reputation"><input type="button" class="test_reputation_btn btn-success" value="{% trans "Check" %}"><div id="rep_info"</div></div>
+                  <div class="x_content">
+                    <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="settings_list">
+                        <thead>
+                            <tr>
+                                <th>{% trans "URL" %}</th>
+                                <th>{% trans "Description" %}</th>
+                                <th>{% trans "Tags" %}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblData">
+
+                        </tbody>
+                    </table>
+                    <p style="text-align:right;margin-top:10px;">
+                        <div class="add-group">
+                            <button class="addlink addplus" id="btnAddIn" type="button">{% trans "Add an Entry" %}</button>
+                        </div>
+                    </p>
+                </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+   var id = 0;
+
+    function Delete(){
+        var par = $(this).parent().parent(); //tr
+        par.remove();
+    };
+
+    function add_row(){
+
+        $("#tblData").append(
+        "<tr>"+
+        "<td class='col-sm-4'><input type='text' class='form-control' name='loganalyser_rules["+ id +"]'/></td>"+
+        "<td class='col-sm-4'><input type='text' class='form-control' name='loganalyser_rules["+ id +"]'/></td>"+
+        "<td class='col-sm-4'><input type='text' class='form-control' name='loganalyser_rules["+ id +"]'/></td>"+
+        "<td><a class='btnDelete'><i class='fa fa-trash-o' style='color: #fff;'></i></a></td>"+
+        "</tr>");
+
+        $(".btnDelete").css('cursor', 'pointer');
+        $(".btnDelete").bind("click", Delete);
+        id++;
+    };
+
+    function add_row_values(url, description, tags){
+
+        $("#tblData").append(
+        "<tr>"+
+        "<td class='col-sm-4'><input type='text' class='form-control' name='loganalyser_rules["+ id +"]' value='"+url+"'/></td>"+
+        "<td class='col-sm-4'><input type='text' class='form-control' name='loganalyser_rules["+ id +"]' value='"+description+"'/></td>"+
+        "<td class='col-sm-4'><input type='text' class='form-control' name='loganalyser_rules["+ id +"]' value='"+tags+"'/></td>"+
+        "<td><a class='btnDelete'><i class='fa fa-trash-o' style='color: #fff;'></i></a></td>"+
+        "</tr>");
+
+        $(".btnDelete").css('cursor', 'pointer');
+        $(".btnDelete").bind("click", Delete);
+        id++;
+    };
+
+    $("#btnAddIn").bind("click", add_row);
+    $(".btnDelete").css('cursor', 'pointer');
+    $(".btnDelete").bind("click", Delete);
+
+    {% for rule in rules %}
+        add_row_values("{{ rule.url }}", "{{ rule.description }}", "{{ rule.tags }}")
+    {% endfor %}
+
+    $('.test_reputation_btn').on('click', function(e) {
+        $.post(
+            '/services/loganalyser/',
+            {'test_reputation': $('.test_reputation').val()},
+            function(data){
+                $('#rep_info').html('Reputation is: ' + data['status']);
+            }
+        )
+    })
+
+
+{% endblock %}

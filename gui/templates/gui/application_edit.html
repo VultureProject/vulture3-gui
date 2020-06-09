@@ -1,0 +1,3667 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-cube"></i>&nbsp;{% trans "Application -> Edit" %}</h3></li>
+{% endblock %}
+
+
+{% block content %}
+	<div class="row">
+		<form class="form-horizontal bootstrap-validator-form" action="/application/edit/{% if object_id %}{{object_id}}{% endif %}" method="post" id="application_form" novalidate="novalidate">
+			{% csrf_token %}
+			<div class="x_panel">
+	          <div class="x_title">
+	            <h2>{% if application.name %} {% trans "Change settings for application " %} "{{application.name}}" {% else %} {% trans "New application" %} {% endif %}</h2>   
+	            <ul class="nav navbar-right panel_toolbox">
+	            	<li><a href="/application/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+	                <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+	            </ul>
+	            <div class="clearfix"></div>
+	          </div>
+	          <div class="x_content">
+	            <div class="" role="tabpanel" data-example-id="togglable-tabs">
+	              <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+	                <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Internet" %}</a>
+	                </li>
+                    <li role="presentation" class=""><a href="#tab_content1bis" id="profile-tab" role="tab" data-toggle="tab" aria-expanded="false">{% trans "Backend" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Network" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content3" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Security" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content4" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Logs" %}</a>
+	                </li>
+                    <li role="presentation" class=""><a href="#tab_content5" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Request Headers" %}</a>
+                    </li>
+                    <li role="presentation" class=""><a href="#tab_content6" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Response Headers" %}</a>
+                    </li>
+                    <li role="presentation" class=""><a href="#tab_content7" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Content Rewriting" %}</a>
+                    </li>
+                    <li role="presentation" class=""><a href="#tab_content8" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Authentication" %}</a>
+                    </li>
+                    <li role="presentation" class=""><a href="#tab_content9" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "SSO Forward" %}</a>
+                    </li>
+                    <li role="presentation" class=""><a href="#tab_content10" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Advanced SSO Forward" %}</a>
+                    </li>
+                    <li role="presentation" class=""><a href="#tab_content11" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Custom configuration" %}</a>
+                    </li>
+	              </ul>
+	              <div id="myTabContent" class="tab-content">
+	                <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                        <fieldset class="col-lg-12 sol-sm-12">
+                            <legend>{% trans "Global settings" %}</legend>
+                            {%  if object_id %}
+                              <div class="form-group">
+                                  <label class="col-sm-3 control-label">{% trans "Application ID" %}</label>
+                                  <div class="col-sm-6">
+                                      <input class="form-control" data-placement="right" data-toggle="tooltip" title="Application ID, for technical purpose" value="{{ object_id }}" style="font-size: 10px;" type="text" disabled>
+                                  </div>
+                              </div>
+                            {% endif %}
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">{% trans "Friendly name" %}</label>
+                                <div class="col-sm-6">
+                                    {{form.name}}
+                                    {{form.name.errors}}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">{% trans "GUI tags" %}</label>
+                                <div class="col-sm-6">
+                                    {{form.tags}}
+                                    {{form.tags.errors}}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">{% trans "Enable application" %}</label>
+                                <div class="col-sm-6">
+                                    <div class="">
+                                        <label id="id_enabled">
+                                            {{form.enabled}}
+                                            {{form.enabled.errors}}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label">{% trans "Set application as a model" %}</label>
+                                <div class="col-sm-6">
+                                    <div class="">
+                                        <label id="id_is_model">
+                                            {{form.is_model}}
+                                            {{form.is_model.errors}}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset class="col-lg-12 sol-sm-12">
+                                <legend>{% trans "Public URL mapping" %}</legend>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Public FQDN" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.public_name}}
+                                        {{form.public_name.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Public Alias (use ',' to separate aliases)" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.public_alias}}
+                                        {{form.public_alias.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Public directory (default is '/')" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.public_dir}}
+                                        {{form.public_dir.errors}}
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset class="col-lg-12 sol-sm-12">
+                                <legend>{% trans "HTTP features and performance" %}</legend>
+                                <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Worker profile" %}</label>
+                                        <div class="col-sm-6">
+                                            {{form.worker}}
+                                            {{form.worker.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Enable HTTP/2 protocol" %}</label>
+                                    <div class="col-sm-6">
+                                        <div class="">
+                                            <label>
+                                                {{form.enable_h2}}
+                                                {{form.enable_h2.errors}}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Enable support of Microsoft RPC-Over-HTTP" %}</label>
+                                    <div class="col-sm-6">
+                                        <div class="">
+                                            <label>
+                                                {{form.enable_rpc}}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Enable support of PROXY protocol" %}</label>
+                                    <div class="col-sm-6">
+                                        <div class="">
+                                            <label>
+                                                {{form.enable_proxy_protocol}}
+                                                {{form.enable_proxy_protocol.errors}}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+
+	                </div>
+                      <div role="tabpanel" class="tab-pane fade" id="tab_content1bis" aria-labelledby="profile-tab">
+
+                            <fieldset class="col-lg-12 sol-sm-12">
+                                <legend>{% trans "Application backend settings" %}</legend>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Portal template" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.template}}
+                                        {{form.template.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Application type" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.type}}
+                                        {{form.type.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group private-uri">
+                                    <label class="col-sm-3 control-label">{% trans "Private URI" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.private_uri}}
+                                        {{form.private_uri.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group proxy-balancer">
+                                    <label class="col-sm-3 control-label">{% trans "Proxy Balancer" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.proxy_balancer}}
+                                        {{form.proxy_balancer.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Timeout" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.timeout}}
+                                        {{form.timeout.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Preserve incoming Host Header" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.preserve_host}}
+                                        {{form.preserve_host.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Disable connection reuse" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.disablereuse}}
+                                        {{form.disablereuse.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Send KEEP_ALIVE messages to backend" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.keepalive}}
+                                        {{form.keepalive.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "TTL of inactive connection" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.ttl}}
+                                        {{form.ttl.errors}}
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            <div id="div_ssl_options">
+                                <fieldset class="col-lg-12 sol-sm-12">
+                                    <legend>{% trans "TLS proxy settings" %}</legend>
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "SSL Protocol" %}</label>
+                                        <div class="col-sm-6">
+                                            {{form.ssl_protocol}}
+                                            {{form.ssl_protocol.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Verify Certificate" %}</label>
+                                        <div class="col-sm-6">
+                                            <div class="">
+                                                <label>
+                                                    {{form.ssl_verify_certificate}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Verify Certificate Name" %}</label>
+                                        <div class="col-sm-6">
+                                            <div class="">
+                                                <label>
+                                                    {{form.ssl_verify_certificate_name}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Verify Certificate Expiration" %}</label>
+                                        <div class="col-sm-6">
+                                            <div class="">
+                                                <label>
+                                                    {{form.ssl_verify_certificate_expired}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Vulture client side certificate" %}</label>
+                                        <div class="col-sm-6">
+                                            {{form.ssl_client_certificate}}
+                                            {{form.ssl_client_certificate.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "SSL Cipher Suite" %}</label>
+                                        <div class="col-sm-6">
+                                            {{form.ssl_cipher}}
+                                            {{form.ssl_cipher.errors}}
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+
+                           <fieldset class="col-lg-12 sol-sm-12">
+                                <legend>{% trans "Advanced settings" %}</legend>
+                               <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Send Proxy HTTP headers to backend" %}</label>
+                                    <div class="col-sm-6">
+                                        <div class="">
+                                            <label>
+                                                {{form.proxy_add_header}}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                               <div class="form-group">
+                                    <label class="col-sm-3 control-label"> {% trans "Override backend's HTTP errors" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.override_error}}
+                                        {{form.override_error.errors}}
+                                    </div>
+                                </div>
+                               <div class="form-group">
+                                    <label class="col-sm-3 control-label"> {% trans "Rewrite Cookie Path" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.rewrite_cookie_path}}
+                                        {{form.rewrite_cookie_path.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Accept Web-Socket Protocol Upgrade" %}</label>
+                                    <div class="col-sm-6">
+                                        {{form.enable_ws}}
+                                        {{form.enable_ws.errors}}
+                                    </div>
+                                </div>
+                            </fieldset>
+
+
+	                </div>
+
+	                <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+                            <div class="form-group">
+                                <div class="col-sm-12 ui-widget">
+                                    <table id="tblData_listener" class="table table-striped table-bordered table-hover dt-responsive nowrap table-datatable">
+                                        <thead>
+                                            <tr>
+                                                <th>{% trans "IP Address" %}</th>
+                                                <th>{% trans "Local TCP port" %}</th>
+                                                <th>{% trans "Translated Public TCP port" %}</th>
+                                                <th>{% trans "SSL Profile" %}</th>
+                                                <th>{% trans "Action" %}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                    <p style="text-align:right;margin-top:10px;">
+                                        <div class="add-group">
+                                            <button class="addlink addplus" id="btnAddListener" type="button">{% trans "Add an Entry" %}</button>
+                                        </div>
+                                    </p>
+                                </div>
+                            </div>
+
+	                </div>
+	                
+                    <div role="tabpanel" class="tab-pane fade" id="tab_content3" aria-labelledby="profile-tab"> 
+                        <fieldset class="col-lg-12 sol-sm-12">
+                            <legend>{% trans "Global settings" %}</legend>
+      	                	<div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Use ACLs" %}</label>
+                                <div class="col-sm-5">
+                                    {{form.access_mode}}
+                                    {{form.access_mode.errors}}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Redirect http requests to https, if available" %}</label>
+                                <div class="col-sm-5">
+                                    <div class="">
+                                        <label>
+                                            {{form.force_tls}}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Allowed HTTP Method" %}</label>
+                                <div class="col-sm-5">
+                                    {{form.methods}}
+                                    {{form.methods.errors}}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Trusted IP list which will bypass protection" %}</label>
+                                <div class="col-sm-5">
+                                    {{form.whitelist_ips}}
+                                    {{form.whitelist_ips.errors}}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Enable backend's cookies encryption" %}</label>
+                                <div class="col-sm-5">
+                                    <div class="">
+                                        <label>
+                                            {{form.cookie_encryption}}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="div_cookie_encryption">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">{% trans "Cipher to use for backend's cookies" %}</label>
+                                    <div class="col-sm-5">
+                                        {{form.cookie_cipher}}
+                                        {{form.cookie_cipher.errors}}
+                                    </div>
+                                </div>
+                            </div>
+                             <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Forward X509 Certificate's fields to backend" %}</label>
+                                <div class="col-sm-5">
+                                    <div class="">
+                                        <label>
+                                            {{form.forward_x509_fields}}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </fieldset>
+                        <fieldset class="col-lg-12 sol-sm-12">
+                            <legend>{% trans "WAF Policy settings" %}</legend>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Protect application with WAF profile" %}</label>
+                                <div class="col-sm-5">
+                                    {{form.modsec_policy}}
+                                    {{form.modsec_policy.errors}}
+                                </div>
+                            </div>
+                            <div class="form-group" id="learning_switch">
+                                <label class="col-sm-4 control-label">{% trans "Enable learning mode" %}</label>
+                                <div class="col-sm-5">
+                                    <div class="">
+                                        <label>
+                                            {{form.learning}}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group" id="learning_block_switch">
+                                <label class="col-sm-4 control-label">{% trans "Block in learning mode" %}</label>
+                                <div class="col-sm-5">
+                                    <div class="">
+                                        <label>
+                                            {{form.learning_block}}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset class="col-lg-12 sol-sm-12">
+                            <div id="rules_set" style="display:none;">
+                                <legend>{% trans "WAF Ruleset settings" %}</legend>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">{% trans "Choose the Rules Set to use" %}</label>
+                                    <div class="col-sm-5">
+                                        {{form.rules_set}}
+                                        {{form.rules_set.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">{% trans "URL specific Rules Set to use" %}</label>
+                                    <div class="col-sm-5">
+                                    <table id="tblData_ruleset" class="table table-striped table-bordered table-hover dt-responsive nowrap table-datatable">
+                                        <thead>
+                                           <tr>
+                                               <th>{% trans "Url or Public dir" %}</th>
+                                               <th>{% trans "Rules Set" %}</th>
+                                           </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                        <p style="text-align:right;margin-top:10px;">
+                                            <div class="add-group">
+                                                <button class="addlink addplus" id="btnAddSpecificRS" type="button">{% trans "Add an Entry" %}</button>
+                                            </div>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="form-group-hidden">
+                                    <div>
+                                        {{form.blacklist}}
+                                        {{form.blacklist.errors}}
+                                        {{form.whitelist}}
+                                        {{form.whitelist.errors}}
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <br/>
+                        <br/>
+                        <br/>
+                        <fieldset class="col-lg-12 sol-sm-12">
+                            <legend>{% trans "Source IP Reputation analysis" %}</legend>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Enable Reputation" %}</label>
+                                <div class="col-sm-5">
+                                    <div class="">
+                                        <label>
+                                            {{form.reputation}}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group reputation">
+                                <label class="col-sm-4 control-label">{% trans "Block IP with the following tags" %}<br/></label>
+                                <div class="col-sm-5">
+                                    {{form.block_reputation}}
+                                    {{form.block_reputation.errors}}
+                                    <button type="button" class="btn btn-primary" id="btn-all-reputation">{% trans "Select All" %}</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Enable GeoIP" %}</label>
+                                <div class="col-sm-5">
+                                    <div class="">
+                                        <label>
+                                            {{form.geoip}}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group geoip">
+                                <label class="col-sm-4 control-label">{% trans "High-precision GeoIP (cities)" %}</label>
+                                <div class="col-sm-5">
+                                    <div class="">
+                                        <label>
+                                            {{form.geoip_city}}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group geoip">
+                                <label class="col-sm-4 control-label">{% trans "Block following countries" %}<br/></label>
+                                <div class="col-sm-5">
+                                    {{form.block_geoip}}
+                                    {{form.block_geoip.errors}}
+                                    <button type="button" class="btn btn-primary" id="btn-all-block_geoip">{% trans "Select All" %}</button>
+                                </div>
+                            </div>
+                            <div class="form-group geoip">
+                                <label class="col-sm-4 control-label">{% trans "Only allow following countries" %}<br/></label>
+                                <div class="col-sm-5">
+                                    {{form.allow_geoip}}
+                                    {{form.allow_geoip.errors}}
+                                    <button type="button" class="btn btn-primary" id="btn-all-allow_geoip">{% trans "Select All" %}</button>
+                                </div>
+                            </div>
+
+
+                        </fieldset>
+                        <fieldset class="col-lg-12 sol-sm-12">
+                            <legend>{% trans "Protect application with SVMs" %}</legend>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Choose dataset" %}</label>
+                                <div class="col-sm-5">
+                                    {{form.datasets}}
+                                    {{form.datasets.errors}}
+                                </div>
+                            </div>
+                            {% for d in form.datasets.field.choices %}
+                            {% if d.0 != None %}
+                            <div class='col-sm-6' style='display:none' id="uri_analysis_div_{{ d.0 }}">
+                                {% trans '                      Activated : ' %}
+                                <input type='checkbox' class='form-control js-switch' id="checkbox_chart_uri_analysis_{{ d.0 }}" name="checkbox_chart_uri_analysis_{{ d.0 }}" {% for svm in svms %}{% if svm.dataset_used.id == d.0 and svm.algo_used == "Levenstein" %} checked {% endif %}{% endfor %}>
+                                <div id="chart_uri_analysis_{{ d.0 }}" class='handle-resize' align='center' style='height:400px'></div>
+                            </div>
+                            <div class='col-sm-6' style='display:none' id="uri_analysis_2_div_{{ d.0 }}">
+                                {% trans '                      Activated : ' %}
+                                <input type='checkbox' class='form-control js-switch' id="checkbox_chart_uri_analysis_2_{{ d.0 }}" name="checkbox_chart_uri_analysis_2_{{ d.0 }}" {% for svm in svms %}{% if svm.dataset_used.id == d.0 and svm.algo_used == "Levenstein2" %} checked {% endif %}{% endfor %}>
+                                <div id="chart_uri_analysis_2_{{ d.0 }}" class='handle-resize' align='center' style='height:400px'></div>
+                            </div>
+                            <div class='col-sm-6' style='display:none' id="bytes_received_div_{{ d.0 }}">
+                                {% trans '                      Activated : ' %}
+                                <input type='checkbox' class='form-control js-switch' id="checkbox_chart_bytes_received_{{ d.0 }}" name="checkbox_chart_bytes_received_{{ d.0 }}" {% for svm in svms %}{% if svm.dataset_used.id == d.0 and svm.algo_used == "HTTPcode_bytes_received" %} checked {% endif %}{% endfor %}>
+                                <div id="chart_bytes_received_{{ d.0 }}" class='handle-resize' align='center' style='height:400px'></div>
+                            </div>
+                            <div class='col-sm-6' style='display:none' id="ratio_div_{{ d.0 }}">
+                                {% trans '                      Activated : ' %}
+                                <input type='checkbox' class='form-control js-switch' id="checkbox_chart_ratio_{{ d.0 }}" name="checkbox_chart_ratio_{{ d.0 }}" {% for svm in svms %}{% if svm.dataset_used.id == d.0 and svm.algo_used == "Ratio" %} checked {% endif %}{% endfor %}>
+                                <div id="chart_ratio_{{ d.0 }}" class='handle-resize' align='center' style='height:400px'></div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </fieldset>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="tab_content4" aria-labelledby="profile-tab">    
+	                	<div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Log Profile" %}</label>
+                            <div class="col-sm-5">
+                                {{form.log_custom}}
+                                {{form.log_custom.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Log Level" %}</label>
+                            <div class="col-sm-5">
+                                {{form.log_level}}
+                                {{form.log_level.errors}}
+                            </div>
+                        </div>
+	                </div>
+
+                    <div role="tabpanel" class="tab-pane fade" id="tab_content5" aria-labelledby="profile-tab">    
+                        {% trans "Note: You can drag and drop a row to change rules order" %}<br/>
+                        <table id="tblData" class="table table-striped table-bordered table-hover dt-responsive nowrap table-datatable">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Enable" %}</th>
+                                    <th>{% trans "Action" %}</th>
+                                    <th>{% trans "Header name" %}</th>
+                                    <th>{% trans "Value" %}</th>
+                                    <th>{% trans "Replacement pattern" %}</th>
+                                    <th>{% trans "Condition" %}</th>
+                                    <th>{% trans "Expression / Env. Variable" %}</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                        <p style="text-align:right;margin-top:10px;">
+                            <div class="add-group">
+                                <button class="addlink addplus" id="btnAddIn" type="button">{% trans "Add an Entry" %}</button>
+                            </div>
+                        </p>
+                    </div>
+                    
+                    <div role="tabpanel" class="tab-pane fade" id="tab_content6" aria-labelledby="profile-tab">    
+                        {% trans "Note: You can drag and drop a row to change rules order" %}<br/>
+                        <table id="tblData_response" class="table table-striped table-bordered table-hover dt-responsive nowrap table-datatable">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Enable" %}</th>
+                                    <th>{% trans "Action" %}</th>
+                                    <th>{% trans "Header name" %}</th>
+                                    <th>{% trans "Matching pattern" %}</th>
+                                    <th>{% trans "Replacement pattern" %}</th>
+                                    <th>{% trans "Condition" %}</th>
+                                    <th>{% trans "Expression / Env. Variable" %}</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                        <p style="text-align:right;margin-top:10px;">
+                            <div class="add-group">
+                                <button class="addlink addplus" id="btnAddOut" type="button">{% trans "Add an Entry" %}</button>
+                            </div>
+                        </p>
+                    </div>
+
+                    <div role="tabpanel" class="tab-pane fade" id="tab_content7" aria-labelledby="profile-tab">
+                        <div class="form-group">
+                            <p>Note: Leeve "Substitute" and "With" blank for applying Compress/Decompress rule on all. </p>
+                            <table id="tblData_content" class="table table-striped table-bordered table-hover dt-responsive nowrap table-datatable">
+                                <thead>
+                                    <tr>
+                                        <th>{% trans "Enable" %}</th>
+                                        <th>{% trans "Content-Type" %}</th>
+                                        <th>{% trans "Condition" %}</th>
+                                        <th>{% trans "Compress response" %}</th>
+                                        <th>{% trans "Decompress backend" %}</th>
+                                        <th>{% trans "Substitute" %}</th>
+                                        <th>{% trans "With" %}</th>
+                                        <th>{% trans "Flags" %}</th>
+
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                            <p style="text-align:right;margin-top:10px;">
+                                <div class="add-group">
+                                    <button class="addlink addplus" id="btnAddContent" type="button">{% trans "Add an Entry" %}</button>
+                                </div>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div role="tabpanel" class="tab-pane fade" id="tab_content8" aria-labelledby="profile-tab">
+                        <fieldset class="col-lg-12 sol-sm-12">
+                            <legend>{% trans "Authentication settings" %}</legend>
+
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Enable authentication" %}</label>
+                                        <div class="col-sm-5">
+                                            <div class="">
+                                                <label>
+                                                    {{form.need_auth}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group tracking-form">
+                                        <label class="col-sm-4 control-label">{% trans "Track anonymous connexion" %}</label>
+                                        <div class="col-sm-5">
+                                            <div class="">
+                                                <label>
+                                                    {{form.tracking}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group auth-form">
+                                        <label class="col-sm-4 control-label">{% trans "Disconnect user from app after timeout (in second)" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.auth_timeout}}
+                                            {{form.auth_timeout.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group auth-form">
+                                        <label class="col-sm-4 control-label">{% trans "Restart timeout after a request" %}</label>
+                                        <div class="col-sm-5">
+                                            <div class="">
+                                                <label>
+                                                    {{form.auth_timeout_restart}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group auth-form">
+                                        <label class="col-sm-4 control-label">{% trans "Select authentication type" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.auth_type}}
+                                            {{form.auth_type.errors}}
+                                        </div>
+                                        <div id="div_auth_type_kerberos_error">
+                                            <label class="col-sm-4 control-label"></label>
+                                            <div class="col-sm-5">
+                                                <label id="auth_type_kerberos_error"></label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group auth-form auth-form-template">
+                                        <label class="col-sm-4 control-label">{% trans "Require Captcha" %}</label>
+                                        <div class="col-sm-5">
+                                            <div class="">
+                                                <label>
+                                                    {{form.auth_captcha}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group auth-form auth-form-template">
+                                        <label class="col-sm-4 control-label">{% trans "OTP Repository" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.otp_repository}}
+                                            {{form.otp_repository.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="div_otp_max_retry">
+                                        <label class="col-sm-4 control-label">{{ form.otp_max_retry.label }}</label>
+                                            <div class="col-sm-5">
+                                                {{form.otp_max_retry}}
+                                                {{form.otp_max_retry.errors}}
+                                            </div>
+                                    </div>
+                                    <div class="form-group auth-form">
+                                        <label class="col-sm-4 control-label">{% trans "Select primary authentication backend" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.auth_backend}}
+                                            {{form.auth_backend.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group auth-form">
+                                        <label class="col-sm-4 control-label">{% trans "Select fallback authentication backend" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.auth_backend_fallbacks}}
+                                            {{form.auth_backend_fallbacks.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group auth-form">
+                                        <label class="col-sm-4 control-label">{% trans "Password complexity <br/>(Number of characters)" %}</label>
+                                        <label class="col-sm-1 control-label">{% trans "Total length" %}</label>
+                                        <label class="col-sm-1 control-label">{% trans "Uppercase" %}</label>
+                                        <label class="col-sm-1 control-label">{% trans "Lowercase" %}</label>
+                                        <label class="col-sm-1 control-label">{% trans "Numbers" %}</label>
+                                        <label class="col-sm-1 control-label">{% trans "Symbols" %}</label>
+                                    </div>
+                                    <div class="form-group auth-form">
+                                        <label class="col-sm-4 control-label text-center"></label>
+                                        <div class="col-sm-1">
+                                            {{form.pw_min_len}}
+                                            {{form.pw_min_len.errors}}
+                                        </div>
+                                        <div class="col-sm-1 text-center">
+                                            {{form.pw_min_upper}}
+                                            {{form.pw_min_upper.errors}}
+                                        </div>
+                                        <div class="col-sm-1 text-center">
+                                            {{form.pw_min_lower}}
+                                            {{form.pw_min_lower.errors}}
+                                        </div>
+                                        <div class="col-sm-1 text-center">
+                                            {{form.pw_min_number}}
+                                            {{form.pw_min_number.errors}}
+                                        </div>
+                                        <div class="col-sm-1 text-center">
+                                            {{form.pw_min_symbol}}
+                                            {{form.pw_min_symbol.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group auth-form">
+                                        <label class="col-sm-4 control-label">{% trans "Enable OAuth2" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.enable_oauth2}}
+                                            {{form.enable_oauth2.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group auth-form">
+                                        <label class="col-sm-4 control-label">{% trans "Accept Stateless OAuth2 Token" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.enable_stateless_oauth2}}
+                                            {{form.enable_stateless_oauth2.errors}}
+                                        </div>
+                                    </div>
+                            </fieldset>
+                            <fieldset class="col-lg-12 sol-sm-12 auth-form">
+                                <legend>{% trans "Registration settings" %}</legend>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">{% trans "Enable users registration by mail" %}</label>
+                                    <div class="col-sm-5">
+                                    {{form.enable_registration}}
+                                    {{form.enable_registration.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">{% trans "Add users in group (ldap)" %}</label>
+                                    <div class="col-sm-5">
+                                        {{form.group_registration}}
+                                        {{form.group_registration.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">{% trans "Update group members (ldap)" %}</label>
+                                    <div class="col-sm-5">
+                                        {{form.update_group_registration}}
+                                        {{form.update_group_registration.errors}}
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset class="col-lg-12 sol-sm-12 auth-form">
+                                <legend>{% trans "Advanced settings" %}</legend>
+                                <div class="form-group auth-form">
+                                    <label class="col-sm-4 control-label">{% trans "Force portal URI" %}</label>
+                                    <div class="col-sm-5">
+                                        {{form.auth_portal}}
+                                        {{form.auth_portal.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group auth-form">
+                                    <label class="col-sm-4 control-label">{% trans "Force redirection to this URI after authentication" %}</label>
+                                    <div class="col-sm-5">
+                                        {{form.redirect_uri}}
+                                        {{form.redirect_uri.errors}}
+                                    </div>
+                                </div>
+                            </fieldset>
+
+
+                    </div>
+                    
+                    <div role="tabpanel" class="tab-pane fade" id="tab_content9" aria-labelledby="profile-tab">    
+                        <div class="form-group auth-form">
+                            <label class="col-sm-4 control-label">{% trans "Enable SSO Forward" %}</label>
+                            <div class="col-sm-5">
+                                <div class="">
+                                    <label>
+                                        {{form.sso_enabled}}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group sso-form">
+                            <label class="col-sm-4 control-label">{% trans "Select forward type" %}</label>
+                            <div class="col-sm-5">
+                                {{form.sso_forward}}
+                                {{form.sso_forward.errors}}
+                            </div>
+                            <label class="col-sm-4"></label>
+                            <div class="col-sm-7">
+                                <label id="sso_type_kerberos_error"></label>
+                            </div>
+                        </div>
+                        <div class="form-group sso-form sso-auth-kerberos">
+                            <label class="col-sm-4 control-label">{% trans "Kerberos service of the app" %}</label>
+                            <div class="col-sm-1">
+                                <input value="HTTP/" type="text" class="form-control" disabled="">
+                            </div>
+                            <div class="col-sm-4">
+                                {{form.app_krb_service}}
+                                {{form.app_krb_service.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group sso-form sso-auth-basic">
+                            <label class="col-sm-4 control-label">{% trans "Forward credentials" %}</label>
+                            <div class="col-sm-5">
+                                {{form.sso_forward_basic_mode}}
+                                {{form.sso_forward_basic_mode.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group sso-form sso-auth-basic">
+                            <label class="col-sm-4 control-label">{% trans "Send Authorization header only to the login page" %}</label>
+                            <div class="col-sm-5">
+                                <div class="">
+                                    <label>
+                                        {{form.sso_forward_only_login}}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group sso-form sso-auth-basic sso-auth-basic-url">
+                            <label class="col-sm-4 control-label">{% trans "URL to login to your private application" %}</label>
+                            <div class="col-sm-5">
+                                {{form.sso_forward_basic_url}}
+                                {{form.sso_forward_basic_url.errors}}
+                            </div>
+                        </div>
+
+                        <div class="form-group sso-form sso-auth-form sso-content-type">
+                            <label class="col-sm-4 control-label">{% trans "Content-Type of POST Request" %}</label>
+                            <div class="col-sm-5">
+                                {{form.sso_forward_content_type}}
+                                {{form.sso_forward_content_type.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group sso-form sso-auth-form sso-auth-basic">
+                            <label class="col-sm-4 control-label">{% trans "Follow the 30[1|2] redirection after SSO request" %}</label>
+                            <div class="col-sm-5">
+                                <div class="">
+                                    <label>
+                                        {{form.sso_forward_follow_redirect}}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group sso-form sso-auth-form sso-auth-basic">
+                            <label class="col-sm-4 control-label">{% trans "Immediately return the SSO response" %}</label>
+                            <div class="col-sm-5">
+                                <div class="">
+                                    <label>
+                                        {{form.sso_forward_return_post}}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group sso-form sso-auth-form">
+                            <label class="col-sm-4 control-label">{% trans "Use Vulture User-Agent" %}</label>
+                            <div class="col-sm-5">
+                                <div class="">
+                                    <label>
+                                        {{form.sso_vulture_agent}}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group sso-form sso-auth-form">
+                            <label class="col-sm-4 control-label">{% trans "Directly make the request" %}</label>
+                            <div class="col-sm-5">
+                                <div class="">
+                                    <label>
+                                        {{form.sso_direct_post}}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group sso-form sso-auth-form">
+                            <label class="col-sm-4 control-label">{% trans "Make a GET instead of a POST" %}</label>
+                            <div class="col-sm-5">
+                                <div class="">
+                                    <label>
+                                        {{form.sso_forward_get_method}}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group sso-form sso-auth-form ">
+                            <label class="col-sm-4 control-label">{% trans "URL to login to your private application" %}</label>
+                            <div class="col-sm-3">
+                                {{form.sso_url}}
+                                {{form.sso_url.errors}}
+                            </div>
+                            <div class="col-sm-1">
+                                <button id="ssotest" class="btn-ssotest btn-save">{% trans "Wizard" %}</button>
+                                {{form.sso_profile}}
+                            </div>
+                        </div>
+                          <div class="form-group sso-form sso-auth-form">
+                                <label class="col-sm-4 control-label">{% trans "SSO Forward Status" %}</label>
+                                <div class="col-sm-5" id="sso-status"></div>
+                            </div>
+                        <div class="form-group sso-form">
+                            <label class="col-sm-4 control-label">{% trans "URL Regex to disconnect from your private application" %}</label>
+                            <div class="col-sm-5">
+                                {{form.app_disconnect_url}}
+                                {{form.app_disconnect_url.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group sso-form">
+                            <label class="col-sm-4 control-label">{% trans "Display the logout message from template" %}</label>
+                            <div class="col-sm-5">
+                                <div class="">
+                                    <label>
+                                        {{form.app_display_logout_message}}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group sso-form">
+                            <label class="col-sm-4 control-label">{% trans "Destroy portal session on disconnect" %}</label>
+                            <div class="col-sm-5">
+                                <div class="">
+                                    <label>
+                                        {{form.app_disconnect_portal}}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div role="tabpanel" class="tab-pane fade" id="tab_content10" aria-labelledby="profile-tab">    
+                        <div class="form-group sso-form">
+                            <label class="col-sm-4 control-label">{% trans "Capture content in SSO Response" %}</label>
+                            <div class="col-sm-1">
+                                <div class="">
+                                    <label>
+                                        {{form.sso_capture_content_enabled}}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-sm-4 sso-form sso-form-advanced-1">
+                                    {{form.sso_capture_content}}
+                                    {{form.sso_capture_content.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group sso-form">
+                            <label class="col-sm-4 control-label">{% trans "Replace content in SSO Response" %}</label>
+                            <div class="col-sm-1">
+                                <div class="">
+                                    <label>
+                                        {{form.sso_replace_content_enabled}}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-sm-2 sso-form sso-form-advanced-2">
+                                    {{form.sso_replace_pattern}}
+                                    {{form.sso_replace_pattern.errors}}
+                            </div>
+                            <div class="col-sm-2 sso-form sso-form-advanced-2">
+                                    {{form.sso_replace_content}}
+                                    {{form.sso_replace_content.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group sso-form">
+                            <label class="col-sm-4 control-label">{% trans "Make an additionnal GET request after SSO Request" %}</label>
+                            <div class="col-sm-1">
+                                <div class="">
+                                    <label>
+                                        {{form.sso_after_post_request_enabled}}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-sm-4 sso-form sso-form-advanced-3">
+                                {{form.sso_after_post_request}}
+                                {{form.sso_after_post_request.errors}}
+                            </div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="tab_content11" aria-labelledby="profile-tab">
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                {{form.custom_vhost}}
+                                {{form.custom_vhost.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                {{form.custom_location}}
+                                {{form.custom_location.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                {{form.custom_proxy}}
+                                {{form.custom_proxy.errors}}
+                            </div>
+                        </div>
+                    </div>
+
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	    </form>
+	</div>
+
+    <div class="modal fade " id="myModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" >
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Configuration error</h4>
+                </div>
+                <div class="modal-body">
+                    {% if form.errors %}
+                        <ul>
+                            {% for field, errors in form.errors.items %}
+                                <li><b>{{ field|title }}</b>: {{ errors }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+             </div>
+        </div>
+    </div>
+    <div class="modal fade " id="myModalScan" role="dialog" aria-labelledby="myModalScanLabel" aria-hidden="false">
+      <div class="modal-dialog modal-xlg">
+        <div class="modal-content" >
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalScanLabel">Vulture SSO Forward Wizard</h4>
+          </div>
+          <div class="modal-body" >
+            <div class="sso-form" id="sso_form_detail"></div>
+          </div>
+         </div>
+      </div>
+    </div>
+{% endblock %}
+
+{% block css_include %}
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static "plugins/TableDnD/jquery.tablednd.js" %}"></script>
+    <script src="{% static "js/echarts-all.js" %}"></script>
+{% endblock %}
+
+{% block jquery_code %}
+    let modelAppInput = $('#id_is_model').children('input');
+
+    function checkModel () {
+        if (modelAppInput.is(':checked')) {
+            $('#id_enabled').hide();
+        } else {
+            $('#id_enabled').show();
+        }
+    }
+
+    checkModel();
+
+    modelAppInput.change(() => {
+        checkModel();
+    });
+
+    $("#id_custom_vhost").css('font-size', '10px');
+    $("#id_custom_vhost").css('width', '100%');
+
+    $("#id_custom_location").css('font-size', '10px');
+    $("#id_custom_location").css('width', '100%');
+
+    $("#id_custom_proxy").css('font-size', '10px');
+    $("#id_custom_proxy").css('width', '100%');
+
+    if (!String.prototype.endsWith) {
+      String.prototype.endsWith = function(searchString, position) {
+        var subjectString = this.toString();
+        if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
+          position = subjectString.length;
+        }
+        position -= searchString.length;
+        var lastIndex = subjectString.indexOf(searchString, position);
+        return lastIndex !== -1 && lastIndex === position;
+      };
+    }
+
+
+    var id = 0;
+    var id_specific_RS = 0;
+
+    $('#id_block_reputation').select2({ width: '80%' });
+    $('#btn-all-reputation').on('click', function(){
+        var all_options = [];
+        $('#id_block_reputation > option').each(function(){
+            all_options.push($(this).val());
+        })
+
+        $('#id_block_reputation').select2().val(all_options).trigger('change');
+    })
+
+    $('#id_block_geoip').select2({ width: '80%' });
+    $('#id_allow_geoip').select2({ width: '80%' });
+    $('#btn-all-allow_geoip').on('click', function(){
+        var all_options = [];
+        $('#id_allow_geoip > option').each(function(){
+            all_options.push($(this).val());
+        })
+        $('#id_allow_geoip').select2().val(all_options).trigger('change');
+    })
+    $('#btn-all-block_geoip').on('click', function(){
+        var all_options = [];
+        $('#id_block_geoip > option').each(function(){
+            all_options.push($(this).val());
+        })
+        $('#id_block_geoip').select2().val(all_options).trigger('change');
+    })
+
+    $('#id_rules_set option').each(function(){
+        if ($(this).text() === $('#id_name').val())
+            $(this).remove()
+    })
+
+    {% for header in headers_in %}
+        AddIn("{{header.enable}}", "{{header.action}}","{{header.name}}","{{header.value}}","{{header.replacement}}","{{header.condition}}","{{header.condition_v}}");
+    {% endfor %}
+
+    {% for header in headers_out %}
+        AddOut("{{header.enable}}", "{{header.action}}","{{header.name}}","{{header.value}}","{{header.replacement}}","{{header.condition}}","{{header.condition_v}}");
+    {% endfor %}
+
+    {% for content in content_rules %}
+        AddContent("{{content.enable}}", "{{content.types}}", "{{content.condition}}", "{{content.deflate}}", "{{content.inflate}}","{{content.pattern}}","{{content.replacement}}","{{content.flags}}");
+    {% endfor %}
+
+    {% for listener in listeners %}
+        AddListener("{{listener.address.id}}","{{listener.address}}","{{listener.port}}","{{listener.redirect_port}}","{{listener.ssl_profile.id}}","{{listener.isRunning}}");
+    {% endfor %}
+
+    {% for specific_rs in specific_rules_set %}
+        AddSpecificRS("{{specific_rs.url}}", "{{specific_rs.rs.name}}");
+    {% endfor %}
+
+
+    function AddSpecificRS(url, RS_name){
+        console.log(url);
+        url = typeof url !== 'undefined' ? url : '/login/';
+        RS_name = typeof RS_name !== 'undefined' ? RS_name : "{{ rules_set_list.0.name }}";
+        var select_input = "<tr>"+
+        "<td><input id='SpecificRS_url_" + id_specific_RS + "' type='text' class='form-control' name='SpecificRS_url_" + id_specific_RS + "' value='"+url+"'/></td>"+
+        '<td><select title="Select the Rules Set to use" name="modsec_specific_rs_select' + id_specific_RS + '" id="modsec_specific_rs_select' + id_specific_RS + '" data-toggle="tooltip" data-placement="right" class="form-control" style="font-size: 10px;">';
+            {% for rule_set_item in rules_set_list %} var selected_input = "";
+                if( RS_name === "{{ rule_set_item.name }}" ) {
+                    selected_input = "selected";
+                }
+                select_input += '<option ' + selected_input + ' value="{{ rule_set_item.id }}">{{ rule_set_item.name }}</option>';
+            {% endfor %}
+        select_input += '</select></td>'+
+        "<td><a class='btnDelete'><i class='fa fa-trash-o'></i></a></td>"+
+        "</tr>";
+
+        $("#tblData_ruleset tbody").append(select_input);
+
+        $(".form-control").css('font-size', '10px');
+
+        $(".btnDelete").css('cursor', 'pointer');
+        $(".btnDelete").bind("click", Delete);
+
+        id_specific_RS++;
+    };
+
+    $("#btnAddSpecificRS").bind("click", function(){
+        AddSpecificRS();
+    });
+
+
+    $("#id_tags").tagEditor({
+            delimiter: ',',
+            forceLowercase: true,
+    });
+
+    function action_list(out) {
+
+        var str='<option value="set">{% trans "Create or replace" %}</option>';
+        str = str + '<option value="setifempty">{% trans "Create if header does not exist" %}</option>';
+        str = str + '<option value="add">{% trans "Add the header" %}</option>';
+        str = str + '<option value="append">{% trans "Append to the existing header" %}</option>';
+        str = str + '<option value="merge">{% trans "Merge into the existing header" %}</option>';
+        str = str + '<option value="edit">{% trans "Replace the first pattern that match" %}</option>';
+        str = str + '<option value="edit*">{% trans "Replace all patterns that match" %}</option>';
+        str = str + '<option value="unset">{% trans "Delete all headers named" %}</option>';
+
+        if (out = typeof out !== 'undefined') {
+            str = str + '<option value="copy">{% trans "Copy the matching request header in the response" %}</option>';
+            str = str + '<option value="store">{% trans "Store the value of the header inside an internal note" %}</option>';
+        }
+
+        return str;
+    }
+
+    function condition_list () {
+        var str = '<option value="always">{% trans "Always" %}</option>';
+        str = str + '<option value="satisfy">{% trans "If expression is True" %}</option>';
+        str = str + '<option value="env_exists">{% trans "If env. variable exists" %}</option>';
+        str = str + '<option value="env_not_exists">{% trans "If env. variable does not exist" %}</option>';
+        return str;
+    }
+
+    function address_list() {
+        var str='';
+        {% for address in address_list %}
+            str = str + '<option value="{{ address.id }}">{{ address.inet }}</option>';
+        {% endfor %}
+        return str;
+    }
+
+    function ssl_profile_list() {
+        var str='<option></option>';
+        {% for profile in ssl_profile_list %}
+            str = str + '<option value="{{ profile.id }}">{{ profile.name }}</option>';
+        {% endfor %}
+        return str;
+    }
+
+
+    function updateFields() {
+        var par             = $(this).parent().parent(); //tr
+        var tdAction        = par.children("td:nth-child(2)");
+        var tdName          = par.children("td:nth-child(3)");
+        var tdValue         = par.children("td:nth-child(4)");
+        var tdReplacement   = par.children("td:nth-child(5)");
+        var tdCondition     = par.children("td:nth-child(6)");
+        var tdCondition_v   = par.children("td:nth-child(7)");
+
+        var select = tdAction.children("select:nth-child(1)");
+        var name = tdName.children("input:nth-child(1)");
+        var value = tdValue.children("input:nth-child(1)");
+        var replacement = tdReplacement.children("input:nth-child(1)");
+        var condition = tdCondition.children("select:nth-child(1)");
+        var condition_v = tdCondition_v.children("input:nth-child(1)");
+
+        //These action requires exact values - not pattern -  and no replacement is useless - so delete it
+        if (select.val() === "set" || select.val() === "setifempty" || select.val() === "add"
+            || select.val() === "append" || select.val() === "merge" || select.val() === "store") {
+            name.prop('disabled', false);
+            value.prop('disabled', false);
+            condition.prop('disabled', false);
+            replacement.prop('disabled', true);
+        }
+        else if (select.val() === "edit" || select.val() === "edit*") {
+            name.prop('disabled', false);
+            value.prop('disabled', false);
+            condition.prop('disabled', false);
+            replacement.prop('disabled', false);
+            if (value.val() === "") {
+                value.val ("^$");
+            }
+        }
+        else if (select.val() === "unset"){
+            name.prop('disabled', false);
+            value.prop('disabled', true);
+            condition.prop('disabled', false);
+            replacement.prop('disabled', true);
+        }
+        else if (select.val() === "copy"){
+            name.prop('disabled', true);
+            value.prop('disabled', true);
+            condition.prop('disabled', false);
+            replacement.prop('disabled', true);
+        }
+
+        //Condition selector
+        if (condition.val() === "always") {
+            condition_v.prop('disabled', true);
+        }
+        else {
+            condition_v.prop('disabled', false);
+            if (condition_v.val() === "" && (condition.val() === "env_exists" || condition.val() === "env_not_exists")) {
+                condition_v.val("VARIABLE");
+            }
+            else if (condition_v.val() === "" && condition.val() === "satisfy") {
+                condition_v.val("%{REQUEST_STATUS} == 200");
+            }
+        }
+    }
+
+    var header_in_list = [
+        "Accept", "Accept-Charset", "Accept-Encoding", "Accept-Language", "Accept-Datetime", "Authorization", "Cache-Control",
+        "Connection", "Cookie", "Content-Length", "Content-MD5", "Content-Type", "Date", "DNT", "Expect", "From", "Front-End-Https",
+        "Host", "If-Match", "If-Modified-Since", "If-None-Match", "If-Range", "If-Unmodified-Since", "Max-Forwards", "Origin", "Pragma",
+        "Proxy-Authorization", "Proxy-Connection", "Range", "Referer", "TE", "User-Agent", "Upgrade", "Via", "Warning", "X-Requested-With",
+        "X-Forwarded-For", "X-Forwarded-Host", "X-Forwarded-Proto", "X-Http-Method-Override", "X-ATT-DeviceId", "X-Wap-Profile"
+    ];
+
+    var header_out_list = [
+        "Access-Control-Allow-Origin", "Accept-Ranges", "Age", "Allow", "Cache-Control", "Connection", "Content-Encoding", "Content-Language",
+        "Content-Length", "Content-Location", "Content-MD5", "Content-Disposition", "Content-Range", "Content-Type", "Date", "ETag", "Expires",
+        "Last-Modified", "Link", "Location", "P3P", "Pragma", "Proxy-Authenticate", "Public-Key-Pins", "Refresh", "Retry-After", "Server",
+        "Set-Cookie", "Status", "Strict-Transport-Security", "Trailer", "Transfer-Encoding", "Upgrade", "Vary", "Via", "Warning", "WWW-Authenticate",
+        "X-Frame-Options", "X-XSS-Protection", "Content-Security-Policy", "X-Content-Type-Options", "X-Powered-By", "X-UA-Compatible"
+    ];
+
+    var value_list = [
+        {"code": "%t", "description": "{% trans "PROCESS - Date of the request (%t)" %}"},
+        {"code": "%D", "description": "{% trans "PROCESS - Time spent to process the request, in microseconds (%D)" %}"},
+        {"code": "%l", "description": "{% trans "PROCESS - Server mean load (%l)" %}"},
+        {"code": "%i", "description": "{% trans "PROCESS - Server %idle threads (%i)" %}"},
+        {"code": "%b", "description": "{% trans "PROCESS - Server %used threads (%b)" %}"},
+        {"code": "%{VAR}e", "description": "{% trans "PROCESS - Value of the environment variable 'VAR' (%{VAR}e)" %}"},
+    ];
+
+    function imAutocompleteJSONParse(data) {
+        var rows = [];
+        var rowData = null;
+        var dataLength = data.length;
+        for (var i = 0; i < dataLength; i++) {
+            rowData = data[i];
+            rows[i] = {
+                label: rowData.description,
+                value: rowData.code
+            };
+        }
+        return rows;
+    }
+
+    function AddIn(e, a, n, v, r, c, c_v){
+        var checked = e === 'True' ? "checked='checked'" : "";
+        a = typeof a !== 'undefined' ? a : 'add';
+        n = typeof n !== 'undefined' ? n : '';
+        v = typeof v !== 'undefined' ? v : '';
+        r = typeof r !== 'undefined' ? r : '';
+        c = typeof c !== 'undefined' ? c : 'always';
+        c_v = typeof c_v !== 'undefined' ? c_v : '';
+
+        $("#tblData").append(
+        "<tr>"+
+        "<td><input type='checkbox' class='form-control' "+checked+" id='header_enable_"+id+"' name='header_enable_"+id+"'></td>"+
+        "<td><select id='header_select_"+ id + "' class='form-control btnSelect' name='header_action_" + id + "'>" + action_list() + "</select></td>"+
+        "<td><input id='header_name_" + id + "' type='text' class='form-control http_header' name='header_name_" + id + "' value='"+n+"'/></td>"+
+        "<td><input id='header_value_" + id + "' class='form-control header_value_"+id+"' type='text' name='header_value_" + id + "' value='"+v+"'/></td>"+
+        "<td><input class='form-control' type='text' name='header_replacement_" + id + "' value='"+r+"'/></td>"+
+        "<td><select id='header_selectcond_"+ id + "' class='form-control btnSelectCond' name='header_condition_" + id + "' value='"+c+"'>"+condition_list(c_v)+"</select></td>"+
+        "<td><input class='form-control' type='text' name='header_condition_v_" + id + "' value='"+c_v+"'/></td>"+
+        "<td><a class='btnDelete'><i class='fa fa-trash-o'></i></a></td>"+
+        "</tr>");
+
+
+        $("#header_select_"+ id + " option[value='"+a+"']").prop('selected', true);
+        $("#header_selectcond_"+ id + " option[value='"+c+"']").prop('selected', true);
+
+        $(".form-control").css('font-size', '10px');
+
+        $(".btnDelete").css('cursor', 'pointer');
+        $(".btnDelete").bind("click", Delete);
+
+        $(".btnSelect").bind("change", updateFields);
+        $(".btnSelectCond").bind("change", updateFields);
+
+        $(".btnSelect").trigger("change");
+        $(".btnSelectCond").trigger("change");
+
+        $(".http_header").autocomplete({
+            source: header_in_list
+        });
+
+        $(".header_value_"+id).tagEditor({
+            autocomplete: {
+                delay: 0, // show suggestions immediately
+                position: { collision: 'flip' }, // automatic menu position up/down
+                source: function(request, response) {
+                    var rows = imAutocompleteJSONParse(value_list);
+                    return response(rows);
+                },
+            },
+            delimiter: ',',
+            forceLowercase: false,
+        });
+
+        id++;
+        $("#tblData").tableDnD();
+    };
+
+
+    function AddListener(i, a, p, pp, ssl, is_running){
+        p = typeof p !== 'undefined' ? p : '80';
+        pp = typeof pp !== 'undefined' ? pp : '';
+        if (pp == "None") pp="";
+        var running = "";
+
+
+        $("#tblData_listener").append(
+        "<tr>"+
+        "<td><select id='address_"+ id + "' class='form-control' name='address_" + id + "'>" + address_list() + "</select></td>"+
+        "<td><input type='text' class='form-control' name='port_" + id + "' value='"+p+"'/></td>"+
+        "<td><input type='text' class='form-control' name='redirect_port_" + id + "' value='"+pp+"'/></td>"+
+        "<td><select id='ssl_profile_"+ id + "' class='form-control' name='ssl_profile_" + id + "'>" + ssl_profile_list() + "</select></td>"+
+        "<td><a class='btnDelete'><i class='fa fa-trash-o' style='color: #fff;'></i></a></td>"+
+        "</tr>");
+
+
+
+        $("#address_"+ id + " option[value='"+i+"']").prop('selected', true);
+        $("#ssl_profile_"+ id + " option[value='"+ssl+"']").prop('selected', true);
+        $(".btnDelete").css('cursor', 'pointer');
+        $(".form-control").css('font-size', '10px');
+
+        $(".btnDelete").bind("click", Delete);
+        id++;
+    };
+
+    function AddOut(e, a, n, v, r, c, c_v){
+        var checked = e === 'True' ? "checked='checked'" : "";
+        a = typeof a !== 'undefined' ? a : 'add';
+        n = typeof n !== 'undefined' ? n : '';
+        v = typeof v !== 'undefined' ? v : '';
+        r = typeof r !== 'undefined' ? r : '';
+        c = typeof c !== 'undefined' ? c : 'always';
+        c_v = typeof c_v !== 'undefined' ? c_v : '';
+
+        $("#tblData_response").append(
+        "<tr>"+
+        "<td><input type='checkbox' class='form-control' "+checked+" id='header_out_enable_"+id+"' name='header_out_enable_"+id+"'></td>"+
+        "<td><select id='header_out_select_"+ id + "' class='form-control btnSelect' name='header_out_action_" + id + "'>" + action_list(1) + "</select></td>"+
+        "<td><input type='text' class='form-control http_header_out' name='header_out_name_" + id + "' value='"+n+"'/></td>"+
+        "<td><input class='form-control header_out_value_"+id+"' type='text' name='header_out_value_" + id + "' value='"+v+"'/></td>"+
+        "<td><input class='form-control' type='text' name='header_out_replacement_" + id + "' value='"+r+"'/></td>"+
+        "<td><select id='header_out_selectcond_"+ id + "' class='form-control btnSelectCond' name='header_out_condition_" + id + "' value='"+c+"'>"+condition_list(c_v)+"</select></td>"+
+        "<td><input class='form-control' type='text' name='header_out_condition_v_" + id + "' value='"+c_v+"'/></td>"+
+        "<td><a class='btnDelete'><i class='fa fa-trash-o'></i></a></td>"+
+        "</tr>");
+
+        $("#header_out_select_"+ id + " option[value='"+a+"']").prop('selected', true);
+        $("#header_out_selectcond_"+ id + " option[value='"+c+"']").prop('selected', true);
+
+        $(".btnDelete").css('cursor', 'pointer');
+        $(".form-control").css('font-size', '10px');
+
+        $(".btnDelete").bind("click", Delete);
+        $(".btnSelect").bind("change", updateFields);
+        $(".btnSelectCond").bind("change", updateFields);
+
+        $(".btnSelect").trigger("change");
+        $(".btnSelectCond").trigger("change");
+
+        $(".http_header_out").autocomplete({
+            source: header_out_list
+        });
+        $(".header_out_value_"+id).tagEditor({
+            autocomplete: {
+                delay: 0, // show suggestions immediately
+                position: { collision: 'flip' }, // automatic menu position up/down
+                source: function(request, response) {
+                    var rows = imAutocompleteJSONParse(value_list);
+                    return response(rows);
+                },
+            },
+            maxLength: 1024,
+            delimiter: ',',
+            forceLowercase: false,
+        });
+
+        id++;
+        $("#tblData_response").tableDnD();
+    };
+
+
+
+    var content_types = [
+        "application/javascript","application/xhtml+xml","text/css","text/csv","text/html","text/javascript","text/plain","text/xml"
+    ];
+
+
+    var flag_list = [
+        {"code": "i", "description": "{% trans "Substitution is case insensitive (i)" %}"},
+        {"code": "n", "description": "{% trans "Pattern is not a regex but a string (n)" %}"},
+        {"code": "f", "description": "{% trans "Replacement can be modified by following rules (f)" %}"},
+        {"code": "q", "description": "{% trans "Replacement can not be modified by following rules (q)" %}"},
+    ];
+
+    function AddContent(e, ct, cnd, deflate, inflate, p, r, f){
+
+
+        var checked = e === 'True' ? "checked='checked'" : "";
+        var d = deflate === 'True' ? "checked='checked'" : "";
+        var i = inflate === 'True' ? "checked='checked'" : "";
+
+        ct = typeof ct !== 'undefined' ? ct : 'text/html,text/plain';
+        cnd = typeof cnd !== 'undefined' ? cnd : '%{HTTP_HOST} =~ m#^www2.alias.com$#';
+
+        p = typeof p !== 'undefined' ? p : 'pattern';
+        r = typeof r !== 'undefined' ? r : 'replacement';
+        f = typeof f !== 'undefined' ? f : 'i,q';
+        $("#tblData_content").append(
+        "<tr>"+
+        "<td style='width:20px;'><input type='checkbox' class='form-control' "+checked+" id='content_enable_"+id+"' name='content_enable_"+id+"'></td>"+
+        "<td><input type='text' class='form-control content_types_"+id+"' name='content_types_" + id + "' value='"+ct+"'/></td>"+
+        "<td><input type='text' class='form-control condition_"+id+"' name='condition_" + id + "' value='"+cnd+"'/></td>"+
+        "<td style='width:20px;'><input type='checkbox' class='form-control'  id='deflate_"+id+"' "+ d +" name='content_deflate_"+id+"'></td>"+
+        "<td style='width:20px;'><input type='checkbox' class='form-control'  id='inflate_"+id+"' "+ i +" name='content_inflate_"+id+"'></td>"+
+        "<td><input type='text' class='form-control content_pattern' name='content_pattern_" + id + "' value='"+p+"'/></td>"+
+        "<td><input type='text' class='form-control content_replacement' name='content_replacement_" + id + "' value='"+r+"'/></td>"+
+        "<td class='col-md-1'><input type='text' class='form-control content_replacement_flags_" + id + "' name='content_replacement_flags_" + id + "' value='"+f+"'/></td>"+
+        "<td style='width:20px;'><a class='btnDelete'><i class='fa fa-trash-o' style='color: #fff;'></i></a></td>"+
+        "</tr>");
+
+
+        if (d === "True")
+            $(".content_deflate_"+ id).prop('checked', true);
+        else
+            $(".content_deflate_"+ id).prop('checked', false);
+
+        if (i === "True")
+            $(".content_inflate_"+ id).prop('checked', true);
+        else
+            $(".content_inflate_"+ id).prop('checked', false);
+
+        $(".btnDelete").css('cursor', 'pointer');
+        $(".btnDelete").bind("click", Delete);
+        $(".form-control").css('font-size', '10px');
+
+        $(".content_types_"+id).tagEditor({
+            autocomplete: {
+                delay: 0, // show suggestions immediately
+                position: { collision: 'flip' }, // automatic menu position up/down
+                source: content_types
+            },
+            delimiter: ',',
+            forceLowercase: false,
+        });
+
+        $(".content_replacement_flags_"+id).tagEditor({
+            autocomplete: {
+                delay: 0, // show suggestions immediately
+                position: { collision: 'flip' }, // automatic menu position up/down
+                source: function(request, response) {
+                    var rows = imAutocompleteJSONParse(flag_list);
+                    return response(rows);
+                },
+            },
+            delimiter: ',',
+            forceLowercase: false,
+        });
+
+        id++;
+        $("#tblData_content").tableDnD();
+    };
+
+
+    function Delete(){
+        var par = $(this).parent().parent(); //tr
+        par.remove();
+    };
+
+    //Add, Save, Edit and Delete functions code
+    $(".btnDelete").bind("click", Delete);
+    $("#btnAddIn").bind("click", AddIn);
+    $("#btnAddOut").bind("click", AddOut);
+    $("#btnAddContent").bind("click", function() {AddContent(undefined,undefined,undefined,'','','pattern','replacement','i,q')});
+
+
+    $("#btnAddListener").bind("click", AddListener);
+
+    var method_list = [
+        {"code": "OPTIONS", "description": "OPTIONS"},
+        {"code": "GET", "description": "GET"},
+        {"code": "HEAD", "description": "HEAD"},
+        {"code": "POST", "description": "POST"},
+        {"code": "PUT", "description": "PUT"},
+        {"code": "DELETE", "description": "DELETE"},
+        {"code": "TRACE", "description": "TRACE"},
+        {"code": "CONNECT", "description": "CONNECT"},
+
+        {"code": "PROPFIND", "description": "PROPFIND"},
+        {"code": "PROPPATCH", "description": "PROPPATCH"},
+        {"code": "MKCOL", "description": "MKCOL"},
+        {"code": "COPY", "description": "COPY"},
+        {"code": "MOVE", "description": "MOVE"},
+        {"code": "LOCK", "description": "LOCK"},
+        {"code": "UNLOCK", "description": "UNLOCK"},
+
+        {"code": "VERSION-CONTROL", "description": "VERSION-CONTROL"},
+        {"code": "REPORT", "description": "REPORT"},
+        {"code": "CHECKOUT", "description": "CHECKOUT"},
+        {"code": "CHECKIN", "description": "CHECKIN"},
+        {"code": "UNCHECKOUT", "description": "UNCHECKOUT"},
+        {"code": "MKWORKSPACE", "description": "MKWORKSPACE"},
+        {"code": "UPDATE", "description": "UPDATE"},
+        {"code": "LABEL", "description": "LABEL"},
+        {"code": "MERGE", "description": "MERGE"},
+        {"code": "BASELINE-CONTROL", "description": "BASELINE-CONTROL"},
+        {"code": "MKACTIVITY", "description": "MKACTIVITY"},
+        {"code": "MKCALENDAR", "description": "MKCALENDAR"},
+        {"code": "FREEBUSY", "description": "FREEBUSY"},
+
+        {"code": "ORDERPATCH", "description": "ORDERPATCH"},
+
+        {"code": "ACL", "description": "ACL"},
+
+        {"code": "PATCH", "description": "PATCH"},
+
+        {"code": "SEARCH", "description": "SEARCH"},
+
+        {"code": "BCOPY", "description": "BCOPY"},
+        {"code": "BDELETE", "description": "BDELETE"},
+        {"code": "BMOVE", "description": "BMOVE"},
+        {"code": "BPROPFIND", "description": "BPROPFIND"},
+        {"code": "BPROPPATCH", "description": "BPROPPATCH"},
+        {"code": "NOTIFY", "description": "NOTIFY"},
+        {"code": "POLL", "description": "POLL"},
+        {"code": "SUBSCRIBE", "description": "SUBSCRIBE"},
+        {"code": "UNSUBSCRIBE", "description": "UNSUBSCRIBE"},
+        {"code": "X-MS-ENUMATTS", "description": "X-MS-ENUMATTS"},
+    ];
+
+    $("#id_methods").tagEditor({
+        autocomplete: {
+            delay: 0, // show suggestions immediately
+            position: { collision: 'flip' }, // automatic menu position up/down
+            source: function(request, response) {
+                var rows = imAutocompleteJSONParse(method_list);
+                return response(rows);
+            },
+        },
+        initialTags: [{{application.get_methods|safe}}],
+        delimiter: ',',
+        forceLowercase: false,
+        placeholder: 'Enter the allowed HTTP verbs',
+    });
+
+    $("#id_whitelist_ips").tagEditor({
+        autocomplete: {
+            delay: 0, // show suggestions immediately
+            position: { collision: 'flip' }, // automatic menu position up/down
+            source: ['10.0.0.0/8', '172.16.0.0/16', '192.168.1.0/24', '192.168.1.254', '192.168.0.0/22']
+        },
+        delimiter: ' ',
+        forceLowercase: false,
+        placeholder: 'Enter the allowed IP(s) or network(s)'
+    });
+
+    /* LDAP fetch */
+    $('#id_auth_backend').on("change", function(e) {
+        e.preventDefault();
+        $('#id_group_registration').empty();
+        $('#id_group_registration').append(new Option("-------------------", "------------------"));
+        url = "/application/fetch_ldap_groups/"+$('#id_auth_backend').val();
+        $.get(url, function(data) {
+            status = data['status'];
+            group_list = data['list_group'];
+            if (status=="true") {
+                for( group of group_list ) {
+                    console.log(group);
+                    var option = new Option(group, group);
+                    $('#id_group_registration').append(option);
+                }
+            }
+        });
+    });
+
+    //Handle authentication
+    $("#id_need_auth").bind("change", toggleAuth);
+    function toggleAuth() {
+        var auth=$(this);
+        if (auth.prop('checked')) {
+            $(".auth-form").show();
+            $(".tracking-form").hide();
+            var sso=$("#id_sso_enabled");
+            if (sso.prop('checked')) {
+                $(".sso-form").show();
+            }
+            else {
+                $(".sso-form").hide();
+            }
+        }
+        else {
+            $(".tracking-form").show();
+            $(".auth-form").hide();
+            $(".sso-form").hide();
+        }
+    }
+
+    //Handle SSO Forward
+    $("#id_sso_enabled").bind("change", toggleSSO);
+    function toggleSSO() {
+        var auth=$(this);
+        if (auth.prop('checked')) {
+            $(".sso-form").show()
+            $("#id_sso_forward").trigger('change');
+            $("#id_sso_capture_content_enabled").trigger('change');
+            $("#id_sso_replace_content_enabled").trigger('change');
+            $("#id_sso_after_post_request_enabled").trigger('change');
+            $("#id_sso_after_post_replace_content_enabled").trigger('change');
+        }
+        else {
+            $(".sso-form").hide();
+        }
+    }
+
+
+    //Handle first time on Authentication tab
+    if ($("#id_need_auth").prop('checked')) {
+        $(".auth-form").show();
+        $(".tracking-form").hide();
+        if ($("#id_sso_enabled").prop('checked')) {
+            $(".sso-form").show();
+        }
+        else {
+            $(".sso-form").hide();
+        }
+    }
+    else {
+        $(".tracking-form").show();
+        $(".auth-form").hide();
+        $(".sso-form").hide();
+    }
+
+
+    $("#id_sso_capture_content_enabled").trigger('change');
+    $("#id_sso_replace_content_enabled").trigger('change');
+    $("#id_sso_after_post_request_enabled").trigger('change');
+    $("#id_sso_after_post_replace_content_enabled").trigger('change');
+
+    //Handle Advanced SSO Forward
+    $("#id_sso_capture_content_enabled").bind("change", toggleAdvanced_1);
+    function toggleAdvanced_1() {
+        var auth=$(this);
+        if (auth.prop('checked')) 
+            $(".sso-form-advanced-1").show()
+        else
+            $(".sso-form-advanced-1").hide();
+    }
+
+    $("#id_sso_replace_content_enabled").bind("change", toggleAdvanced_2);
+    function toggleAdvanced_2() {
+        var auth=$(this);
+        if (auth.prop('checked')) {
+            $(".sso-form-advanced-2").show()
+        }
+        else {
+            $(".sso-form-advanced-2").hide();
+        }
+    }
+
+    $("#id_sso_after_post_request_enabled").bind("change", toggleAdvanced_3);
+    function toggleAdvanced_3() {
+        var auth=$(this);
+        if (auth.prop('checked')) {
+            $(".sso-form-advanced-3").show()
+        }
+        else {
+            $(".sso-form-advanced-3").hide();
+        }
+    }
+
+    $("#id_sso_after_post_replace_content_enabled").bind("change", toggleAdvanced_4);
+    function toggleAdvanced_4() {
+        var auth=$(this);
+        if (auth.prop('checked')) {
+            $(".sso-form-advanced-4").show()
+        }
+        else {
+            $(".sso-form-advanced-4").hide();
+        }
+    }
+
+    $("#id_reputation").bind("change", toggleReputation);
+    function toggleReputation() {
+        var auth=$(this);
+        if (auth.prop('checked')) {
+            $(".reputation").show()
+        }
+        else {
+            $(".reputation").hide();
+        }
+    }
+    $("#id_reputation").trigger("change");
+
+
+    $("#id_geoip").bind("change", toggleGEOIP);
+    function toggleGEOIP() {
+        var auth=$(this);
+        if (auth.prop('checked')) {
+            $(".geoip").show()
+        }
+        else {
+            $(".geoip").hide();
+        }
+    }
+    $("#id_geoip").trigger("change");
+
+    //Handle options display, based on application type
+    $("#id_proxy_balancer").bind("change", toggleBalancer);
+    $("#id_proxy_balancer").trigger("change");
+    $("#id_type").bind("change", toggleType);
+    $("#id_type").trigger("change");
+
+    function toggleBalancer () {
+        var name =  $("#id_proxy_balancer option:selected").html();
+        if (name.search("TLS") != -1) {
+            $("#div_ssl_options").show()
+        }
+        else {
+            $("#div_ssl_options").hide();
+        }
+    }
+
+    function toggleType () {
+        var uri_type = $(this);
+        console.log(uri_type.val());
+        if (uri_type.val() == "balanced") {
+            $(".private-uri").hide();
+            $(".proxy-balancer").show();
+            toggleBalancer();
+            $("#id_private_uri").val("balanced");
+        }
+        else {
+
+            var type=uri_type.val();
+            if (type=="wstunnel") {
+                type="ws";
+            }
+
+            $(".private-uri").show()
+            $(".proxy-balancer").hide();
+            if ($("#id_private_uri").val()=="balanced") {
+                $("#id_private_uri").val(type + "://");
+                toggleBalancer();
+            }
+            if (uri_type.val() == "https") {
+                $("#div_ssl_options").show();
+            }
+            else {
+                $("#div_ssl_options").hide();
+            }
+
+            str = $("#id_private_uri").val();
+            var re = new RegExp("(.*)://", "g");
+            str = str.replace (re, type + "://");
+            $("#id_private_uri").val(str);
+        }
+    }
+
+    var global_wizard_id=0;
+    $(".btn-ssotest").bind("click", ssoTest);
+    function ssoTest(event){
+        event.preventDefault();
+        $('#myModalScan').modal('show');
+        var uri=$('#id_sso_url').val();
+        var sso_vulture_agent=$('#id_sso_vulture_agent').prop("checked");
+
+        //Get Headers_in to add them in SSO Test request
+        var elements = document.getElementById("application_form").elements;
+        var sso_headers = [];
+        var regex=/([0-9]+)/;
+        for (var i = 0, element; element = elements[i++];) {
+            if ((element.name).indexOf("header_action_") > -1) {
+                var id_header=regex.exec(element.name)[1];
+                var type=document.getElementById ("header_select_"+id_header).value;
+                if (type =="set" || type=="add" || type=="setifempty") {
+                    var name=document.getElementById ("header_name_"+id_header).value;
+                    var value=document.getElementById ("header_value_"+id_header).value;
+                    var sso_header = {};
+                    sso_header[name]=value;
+                    sso_headers.push(sso_header);
+                }
+            }
+        }
+
+        var container = document.getElementById("sso_form_detail");
+        try {
+          var sso_profiles = JSON.parse(document.getElementById('id_sso_profile').value);
+        } catch(e) {
+          var sso_profiles = [];
+        }
+        container.innerHTML = "";
+
+        //Call GUI to fetch login FORM information
+        $.post( 
+            "/application/ssotest", 
+            {
+                "uri":uri,
+                "headers": sso_headers,
+                "sso_vulture_agent": sso_vulture_agent,
+                "ssl_protocol": $("#id_ssl_protocol").val(),
+                "ssl_verify_certificate": $("#id_ssl_verify_certificate").is(":checked") ? "on" : "off",
+                "ssl_client_certificate": $("#id_ssl_client_certificate").val(),
+                "ssl_cipher": $("#id_ssl_cipher").val(),
+                "type": $("#id_type").val(),
+                "private_uri": $("#id_private_uri").val(),
+                "proxy_balancer": $("#id_proxy_balancer").val(),
+            },
+            function( data ) {
+                if (data.error) {
+                    new PNotify({
+                        title: '{% trans "Error" %}',
+                        text: data.error,
+                        type: 'error',
+                        styling: 'bootstrap3',
+                        nonblock: {
+                            nonblock: true
+                        }
+                    });
+                }
+                else {
+                    var arr = JSON.parse(data.forms);
+
+                    if (arr.length === 0) {
+                        let i = 0;
+                        fieldset = document.createElement("FIELDSET");
+                        //var legend = document.createElement("LEGEND");
+                        //legend.innerHTML = "{% trans "Form" %} \"" + form_name + "\" (id="+0+")";
+                        //fieldset.appendChild(legend);
+
+                        addCustomField(container, fieldset, 0);
+                    } else {
+                        var old_form_id = -1;
+                        // Retrieve old form id
+                        for( var w=0 ; w < sso_profiles.length ; w++ ) {
+                            if( sso_profiles[w].name == "id" )
+                              old_form_id = sso_profiles[w].value;
+                        }
+
+                        for(var i=0;i<arr.length;i++){
+                            var obj = arr[i];
+                            var html_form=[];
+                            var html_label=[];
+                            var html_type=[];
+                            var html_value=[];
+                            var html_ids=[];
+                            for(var key in obj){
+                                var attrName = key;
+                                var attrValue = obj[key];
+                                if (attrName == "controls") {
+                                    for(var j=0;j<attrValue.length;j++) {
+                                        var fld = attrValue[j];
+                                        var input = document.createElement("input");
+                                        input.type = "text";
+                                        input.id = 'txt_'+i+'-'+j;
+                                        input.name = fld.name+';vlt;'+fld.id;
+                                        input.value = fld.value;
+                                        input.className="form-control has-popover";
+                                        input.style="width: 400px;font-size:10px;"
+                                        html_form.push(input);
+                                        html_label.push(fld.name+'');
+                                        html_type.push(fld.type+'');
+                                        html_value.push(fld.value+'');
+                                        html_ids.push(fld.id+'');
+                                    }
+                                }
+                                else if (attrName == "name") {
+                                    var form_name=attrValue;
+                                }
+                                else if (attrName == "id") {
+                                    var form_id=attrValue;
+                                }
+                            }
+                            fieldset = document.createElement("FIELDSET");
+                            var legend = document.createElement("LEGEND");
+                            legend.innerHTML = "{% trans "Form" %} \"" + form_name + "\" (id="+form_id+")";
+                            fieldset.appendChild(legend);
+
+                            var arrayLength = html_form.length;
+
+                            for (var j = 0; j < arrayLength; j++) {
+
+                                var div = document.createElement('div');
+                                div.className="form-group sso-form";
+
+                                var label = document.createElement("label");
+                                label.className="col-sm-4 control-label";
+                                label.innerHTML=html_label[j]+" [type="+html_type[j]+"]";
+                                div.appendChild(label);
+
+                                var div2 = document.createElement('div');
+                                div2.className="col-sm-5";
+                                div2.appendChild(html_form[j]);
+
+                                var sso_profile = null;
+                                if( old_form_id == form_id ) {
+                                  for( var w=0 ; w < sso_profiles.length ; w++ ) {
+                                      var old_name = sso_profiles[w].name.split(';vlt;')[0];
+                                      var old_id = sso_profiles[w].name.split(';vlt;')[1];
+                                      if( ( old_name == html_label[j] ) || ( old_id == html_ids[j] ) )
+                                        sso_profile = sso_profiles[w];
+                                  }
+                                }
+
+                                var selectList = document.createElement("select");
+                                // Set auto as first, it will be the default value
+                                selectList.appendChild(new Option("Dynamic Value", "auto", true, sso_profile != undefined && sso_profile.type == "auto"));
+                                selectList.appendChild(new Option("OAuth2 Token", "oauth2_token", false, sso_profile != undefined && sso_profile.type == "oauth2_token"));
+                                selectList.appendChild(new Option("Autologon User", "autologon_user", false, sso_profile != undefined && sso_profile.type == "autologon_user"));
+                                selectList.appendChild(new Option("Autologon Password", "autologon_password", false, sso_profile != undefined && sso_profile.type == "autologon_password"));
+                                selectList.appendChild(new Option("Custom Text Value", "custom", false, sso_profile != undefined && sso_profile.type == "custom"));
+                                selectList.appendChild(new Option("Learning", "learn", false, sso_profile != undefined && sso_profile.type == "learn"));
+                                selectList.appendChild(new Option("Learning Secret", "learn_secret", false, sso_profile != undefined && sso_profile.type == "learn_secret"));
+                                selectList.appendChild(new Option("Do not send", "no_send", false, sso_profile != undefined && sso_profile.type == "no_send"));
+                                selectList.id='select_'+i+'-'+j;
+                                selectList.className="form-control has-popover select-mapping";
+                                selectList.style="width: 200px;font-size:10px;"
+                                div2.appendChild(selectList);
+
+                                var div3 = document.createElement('div');
+                                div3.className="row";
+                                div3.id = "div_learn_"+i+'-'+j;
+                                div3.style = "display:none";
+                                var learning_field_name = document.createElement("label");
+                                learning_field_name.className="col-sm-4 control-label";
+                                learning_field_name.innerHTML="Asked field name : ";
+                                learning_field_name.style="margin-top: 11px; font-size: 10px;";
+                                div3.appendChild(learning_field_name);
+                                var learning_field_val = document.createElement("input");
+                                learning_field_val.className = "col-sm-8 form-control has-popover";
+                                learning_field_val.style="width: 200px; font-size: 11px; height: 25px; margin-top: 5px;";
+                                learning_field_val.id = 'learn_'+i+'-'+j;
+                                if( sso_profile != undefined )
+                                  learning_field_val.value = sso_profile.asked_name;
+                                div3.appendChild(learning_field_val);
+
+                                div2.appendChild(div3);
+                                div2.appendChild(document.createElement("br"));
+                                div.appendChild(div2);
+
+                                fieldset.appendChild(div);
+                                global_wizard_id=global_wizard_id+1;
+                            }
+
+                            addCustomField(container, fieldset, i);
+                            // Add old custom fields
+                            if( old_form_id == form_id ) {
+                              for( var w=0 ; w < sso_profiles.length ; w++ ) {
+                                // Custom fields doesn't contains ";vlt;"
+                                if( sso_profiles[w].name.indexOf(";vlt;") == -1 && sso_profiles[w].name != "id" ) {
+                                  addNewMapping(form_id, sso_profiles[w].name, sso_profiles[w].send_type, sso_profiles[w].type);
+                                }
+                              }
+                            }
+                        }
+                    }
+                }
+            }
+        );
+        // Wait for the modal to be initialized, to trigger
+        $("#myModalScan").on('shown.bs.modal', function() { $('.select-mapping').trigger('change'); console.log("test") });
+        $("#myModalScan").on('shown.bs.modal', function() { $('.wizard-custom-select').trigger('change'); console.log("test") });
+    }
+
+    function addCustomField (container, fieldset, i) {
+        var div = document.createElement('div');
+        div.className="form-group sso-form";
+        var div2 = document.createElement('table');
+        div2.className="col-sm-9 table";
+        div2.id="wizard-additional-fields-"+i;
+        div.appendChild(div2);
+        fieldset.appendChild(div);
+
+
+        var div = document.createElement('div');
+        div.className="form-group sso-form";
+        var label = document.createElement("label");
+        label.className="col-sm-4 control-label";
+        div.appendChild(label);
+
+        var div2 = document.createElement('div');
+        div2.className="col-sm-2";
+        var button = document.createElement('button');
+        button.id = "custom_mapping_"+i;
+        button.innerHTML = '{% trans "Add Custom Field" %}';
+        button.className="btn-save btn-custom-mapping";
+        div2.appendChild (button);
+        div.appendChild(div2);
+
+        var div2 = document.createElement('div');
+        div2.className="col-sm-2";
+        var button = document.createElement('button');
+        button.id = i;
+        button.name = 'save_' + i;
+        button.innerHTML = '{% trans "Save mapping" %}';
+        button.className="btn-save btn-mapping";
+        div2.appendChild (button);
+        div.appendChild(div2);
+
+        fieldset.appendChild(div);
+
+
+        container.appendChild(fieldset);
+    }
+
+    $("#myModalScan").on('click', '.btn-custom-mapping', addMapping);
+    function addMapping(event) {
+      form_id=this.id.replace(/custom_mapping_/,"");
+      addNewMapping(form_id, null, null);
+    }
+    function addNewMapping(form_id, field_name, send_type, mapping) {
+        if( !field_name )
+          field_name = "Field name";
+        $("#wizard-additional-fields-"+form_id).append("<tr>"+
+        "<td class='col-sm-2'><input type='text' class='form-control' id='wizard_custom_name_"+form_id+"-"+global_wizard_id+"' value='" + field_name + "'/></td>"+
+        "<td class='col-sm-2'><select class='form-control' id='wizard_custom_type_"+form_id+"-"+global_wizard_id+"'>" +
+           "<option value=''>-- Send as --</option>" +
+           "<option value='cookie'" + ((send_type == "cookie") ? "selected" : "") + ">Cookie</option>" +
+           "<option value='form'" + ((send_type == "form") ? "selected" : "") + ">POST Field</option></select></td>" +
+        "<td class='col-sm-2'><select class='form-control wizard-custom-select' id='select_"+form_id+"-"+global_wizard_id+"'>" +
+          "<option value=''>-- Choose mapping --</option>" +
+          "<option value='oauth2_token' " + ((mapping == "oauth2_token") ? "selected" : "") + ">OAuth2 Token</option>" +
+          "<option value='autologon_user' " + ((mapping == "autologon_user") ? "selected" : "") + ">Autologon User</option>" +
+          "<option value='autologon_password' " + ((mapping == "autologon_password") ? "selected" : "") + ">Autologon Password</option>" +
+          "<option value='custom' " + ((mapping == "custom") ? "selected" : "") + ">Custom Text Value</option>" +
+          "<option value='learn' " + ((mapping == "learn") ? "selected" : "") + ">Learning</option>" +
+          "<option value='learn_secret' " + ((mapping == "learn_secret") ? "selected" : "") + ">Learning Secret</option></select></td>"+
+        "<td class='col-sm-2'><input type='text' class='form-control' id='txt_"+form_id+"-"+global_wizard_id+"'/></td>"+
+        "<td class='col-sm-3'><input type='text' placeholder='Asked field name' class='form-control' id='learn_"+form_id+"-"+global_wizard_id+"'/></td>"+
+        "<td class='col-sm-1'><a class='btnDelete'><i class='fa fa-trash-o'></i></a></td>" +
+        "</tr>");
+
+        global_wizard_id=global_wizard_id+1;
+
+        $(".btnDelete").css('cursor', 'pointer');
+        $(".btnDelete").bind("click", Delete);
+    }
+
+
+    $("#myModalScan").on('click', '.btn-mapping', saveMapping);
+    function saveMapping() {
+        /* build a json structure with form values */
+        form_id = this.id;
+        i=0;
+        var form_content=[];
+        while (true) {
+            var txt='txt_'+form_id+'-'+i;
+
+            if (document.getElementById(txt)) {
+                txt=document.getElementById(txt);
+                var myObject = new Object();
+
+                var sel = 'select_'+form_id+'-'+i;
+                if (document.getElementById(sel)) {
+                    sel=document.getElementById(sel);
+                    myObject.type=sel.options[sel.selectedIndex].value;
+                }
+
+                /* This is a Custom Mapping field */
+                if (txt.name=="") {
+                    var c_name='wizard_custom_name_'+form_id+'-'+i;
+                    txt2=document.getElementById(c_name);
+                    myObject.name=txt2.value;
+                    var sel = 'wizard_custom_type_'+form_id+'-'+i;
+                    if (document.getElementById(sel)) {
+                        sel=document.getElementById(sel);
+                        myObject.send_type=sel.options[sel.selectedIndex].value;
+                    }
+                }
+                else {
+                    myObject.name=txt.name;
+                    myObject.name_id=txt.name_id;
+                    myObject.send_type="form";
+                }
+                // If learn or learn_secret, save "Asked field name"
+                if( txt.value == "learn" || txt.value == "learn_secret" ) {
+                    myObject.asked_name = document.getElementById("learn_"+form_id+'-'+i).value;
+                }
+                myObject.value=txt.value;
+                form_content.push(myObject);
+            }
+            if (i>20) {
+                break;
+            }
+            i++;
+        }
+        var myObject = new Object();
+        myObject.name='id';
+        myObject.type='id';
+        myObject.value=form_id;
+        form_content.push(myObject);
+        var data = JSON.stringify(form_content);
+
+
+        //Save mapping result in a hidden field
+        hidden=document.getElementById("id_sso_profile");
+        hidden.value=data;
+        $('#myModalScan').modal('hide');
+        var status=document.getElementById("sso-status");
+        status.innerHTML="<span class='listener_running'>{% trans "Configured" %}</span>";
+    }
+
+
+    $("#myModalScan").on('change', '.select-mapping', changeMapping);
+    $("#myModalScan").on('change', '.wizard-custom-select', changeMapping);
+
+    function changeMapping() {
+        var sel_id=this.id.replace(/select_/,"")
+        var txt=document.getElementById("txt_"+sel_id);
+        val = this.options[this.selectedIndex].value;
+        if (val=="autologon_user" || val=="autologon_password" || val=="repo_user" || val=="repo_passwd" || val=="oauth2_token" || val=="learn" || val=="learn_secret"|| val=="auto" || val == "no_send") {
+            txt.value = val;
+            txt.readOnly = true;
+        }
+        else {
+            txt.value = "Please enter a value";
+            txt.readOnly = false;
+        }
+        var div=document.getElementById("div_learn_"+sel_id);
+        if(val=="learn" || val=="learn_secret") {
+          div.style.display = null;
+        } else {
+          div.style.display = "none";
+        }
+    }
+
+    $(window).load(function(){
+        $("#id_sso_enabled").trigger("change");
+        $("#id_need_auth").trigger("change");
+        $("#id_sso_forward").trigger("change");
+        $("#id_sso_capture_content_enabled").trigger("change");
+        $("#id_sso_replace_content_enabled").trigger("change");
+        $("#id_sso_after_post_request_enabled").trigger("change");
+        $("#id_sso_after_post_replace_content_enabled").trigger("change");
+        {% if form.errors %}
+            $('#myModal').modal('show');
+        {% endif %}
+
+        hidden=document.getElementById("id_sso_profile");
+        var status=document.getElementById("sso-status");
+
+        if (hidden.value) {
+            status.innerHTML="<span class='listener_running show_sso_forward_detail'>{% trans "Configured" %}</span><span id='sso_forward_detail'></span>";
+        }
+        else {
+            status.innerHTML="<span class='listener_stopped'>{% trans "Not Configured" %}</span>";
+        }
+
+        $(".show_sso_forward_detail").mouseover (function () {
+            var e=document.getElementById('sso_forward_detail');
+            var h=document.getElementById("id_sso_profile");
+            e.textContent=h.value;
+        });
+       $(".show_sso_forward_detail").mouseout (function () {
+            var e=document.getElementById('sso_forward_detail');
+            e.textContent='';
+        });
+
+    });
+
+
+    if( $("#id_otp_repository").val() == "" )
+        $('#div_otp_max_retry').hide();
+    else
+        $('#div_otp_max_retry').show();
+
+
+    $('#id_otp_repository').on('change', function() {
+        if( $(this).val() == "" )
+            $('#div_otp_max_retry').hide();
+        else
+            $('#div_otp_max_retry').show();
+    });
+
+
+    $("#id_sso_forward").bind("change", toggleSSOForward);
+    function toggleSSOForward() {
+        var sso_type = $(this);
+        if (!$('#id_need_auth').is(':checked'))
+            return;
+
+        if (!$('#id_sso_enabled').is(':checked')){
+            $(".sso-form").hide()
+            return;
+        }
+
+        if (sso_type.val() === "form") {
+
+            $(".sso-auth-basic").hide();
+            $(".sso-auth-kerberos").hide();
+            $(".sso-auth-basic-url").hide();
+            $(".sso-auth-form").show()
+
+            $("#id_sso_forward_only_login").trigger("change");
+            $("#id_auth_type").trigger("change");
+
+            document.getElementById("sso_type_kerberos_error").innerHTML = "";
+            document.getElementById("auth_type_kerberos_error").innerHTML = "";
+        }
+        else if (sso_type.val() === "basic") {
+            $(".sso-auth-form").hide();
+            $(".sso-auth-kerberos").hide();
+            $(".sso-auth-basic").show();
+
+            $("#id_sso_forward_only_login").trigger("change");
+            $("#id_auth_type").trigger("change");
+
+            document.getElementById("sso_type_kerberos_error").innerHTML = "";
+            document.getElementById("auth_type_kerberos_error").innerHTML = "";
+        }
+        else if (sso_type.val() === "kerberos") {
+            $(".sso-auth-form").hide();
+            $(".sso-auth-kerberos").show();
+            $(".sso-auth-basic").show();
+            $(".sso-auth-basic-url").show();
+
+            $("#id_sso_forward_only_login").trigger("change");
+            $("#id_auth_type").trigger("change");
+
+            // It is not possible to have auth_type='kerberos' AND sso_forward='kerberos
+            if( $("#id_auth_type").val() === "kerberos" )
+            {
+                document.getElementById("sso_type_kerberos_error").innerHTML = "You cannot set authentication type AND sso forward type to 'kerberos'";
+                $(this).value = 'basic';
+            }
+            else
+            {
+                document.getElementById("sso_type_kerberos_error").innerHTML = "";
+                document.getElementById("auth_type_kerberos_error").innerHTML = "";
+            }
+        }
+        else if (sso_type.val() == "form_basic") {
+            $(".sso-auth-basic").hide();
+            $(".sso-auth-form").hide();
+            $(".sso-auth-kerberos").show()
+
+            $("#id_sso_forward_only_login").trigger("change");
+            $("#id_auth_type").trigger("change");
+
+            document.getElementById("sso_type_kerberos_error").innerHTML = "";
+            document.getElementById("auth_type_kerberos_error").innerHTML = "";
+        }
+    }
+
+    $("#id_auth_type").bind("change", toggleAuthType);
+    $("#id_auth_type").trigger("change");
+    function toggleAuthType() {
+        var auth_type = $(this);
+
+        if (!$('#id_need_auth').is(':checked'))
+            return;
+
+        if (auth_type.val() == "form") {
+            $(".auth-form-template").show()
+            document.getElementById("auth_type_kerberos_error").innerHTML = "";
+            document.getElementById("sso_type_kerberos_error").innerHTML = "";
+        } else if (auth_type.val() === 'kerberos'){
+            $(".auth-form-template").hide();
+
+            // It is not possible to have auth_type='kerberos' AND sso_forward='kerberos
+            if( $("#id_sso_forward").val() == "kerberos" )
+            {
+                document.getElementById("auth_type_kerberos_error").innerHTML = "You cannot set authentication type AND sso forward type to 'kerberos'";
+                $(this).value = 'basic';
+            }
+            else
+            {
+                document.getElementById("auth_type_kerberos_error").innerHTML = "";
+                document.getElementById("sso_type_kerberos_error").innerHTML = "";
+            }
+        } else  {
+            $(".auth-form-template").hide();
+            document.getElementById("auth_type_kerberos_error").innerHTML = "";
+            document.getElementById("sso_type_kerberos_error").innerHTML = "";
+        }
+    }
+
+
+    $("#id_sso_forward_only_login").bind("change", toggleSSOForwardOnlyLogin);
+    $("#id_sso_forward_only_login").trigger("change");
+    function toggleSSOForwardOnlyLogin() {
+        if ($(this).is(':checked') && ($('#id_sso_forward').val() === 'basic' || $('#id_sso_forward').val() === 'kerberos')) {
+            $(".sso-auth-basic-url").show()
+        }
+        else {
+            $(".sso-auth-basic-url").hide();
+        }
+    }
+
+
+    function toggleSSOForwardGETrequest() {
+      if( $(this).is(':checked') ) {
+        $('.sso-content-type').hide();
+      } else if ( $('#id_auth_type').val() == "form" ) {
+        $('.sso-content-type').show();
+      }
+    }
+    $("#id_sso_forward_get_method").bind("change", toggleSSOForwardGETrequest);
+    $("#id_sso_forward_get_method").trigger("change");
+
+    // Wrapper on form submit, check if at least one listener is add before submit
+    $('#application_form').submit(function(event){
+        var error = [];
+        if($('#tblData_listener tbody tr').length === 0)
+            error.push("{% trans 'Listener not configured' %}")
+
+        if ($('#id_log_custom').val() === "")
+            error.push("{% trans 'Log profile not configured' %}");
+
+        if ($('#id_worker').val() === "")
+            error.push("{% trans 'Worker not configured' %}");
+
+        if ($('#id_template').val() === "")
+            error.push("{% trans 'Template not configured' %}");
+
+        if ($('#id_is_model').children('input').is(':checked')) {
+            $('#id_enabled').children('input').prop('checked', false);
+        }
+
+        if (error.length > 0){
+            new PNotify({
+                title: 'Error',
+                text: error.join('<br/>'),
+                type: 'error',
+                styling: 'bootstrap3',
+                nonblock: {
+                    nonblock: true
+                }
+            });
+
+            return false;
+        }
+
+        return true;
+    })
+
+    if ($('#id_modsec_policy').val() !== ""){$('#rules_set').show()};
+    $('#id_modsec_policy').on('change', function(){
+        if ($(this).val() !== ""){
+            $('#learning_switch').show();
+            if( $('#id_learning').is(':checked') !== false) {
+                $('#learning_block_switch').show();
+            }
+            $('#rules_set').show();
+        } else {
+            if ($('#id_learning').is(':checked') !== false) {
+                $('#id_learning').trigger("click");
+            }
+            $('#learning_switch').hide();
+            $('#learning_block_switch').hide();
+            $('#rules_set').hide();
+            $('#id_rules_set option:selected').removeAttr('selected');
+        }
+    })
+
+    if ($('#id_learning').is(':checked') !== false) {
+        $('#learning_block_switch').show();
+    } else {
+        $('#learning_block_switch').hide();
+    }
+    $('#id_learning').bind('change', function() {
+        if ($('#id_learning').is(':checked') !== false) {
+            $('#learning_block_switch').show();
+        } else {
+            $('#learning_block_switch').hide();
+        }
+    });
+
+    // Hide the cookie encryption options if not enabled
+    if ($('#id_cookie_encryption').is(':checked') !==false) {
+        $('#div_cookie_encryption').show();
+    }
+    else {
+        $('#div_cookie_encryption').hide();
+    }
+
+    $('#id_cookie_encryption').bind('change', function(){
+        if ($('#id_cookie_encryption').is(':checked') !==false) {
+            $('#div_cookie_encryption').show();
+        }
+        else {
+            $('#div_cookie_encryption').hide();
+        }
+    })
+
+    $('#id_auth_backend_fallbacks').select2({ width: '100%' });
+    $('#id_rules_set').select2({ width: '100%' });
+    $('#id_access_mode').select2({ width: '100%' });
+
+    // SVM Bloc code 
+
+var theme = {
+
+    // backgroundColor: 'rgba(0,0,0,0)',
+
+    color: ['#ff7f50','#87cefa','#da70d6','#32cd32','#6495ed',
+            '#ff69b4','#ba55d3','#cd5c5c','#ffa500','#40e0d0',
+            '#1e90ff','#ff6347','#7b68ee','#00fa9a','#ffd700',
+            '#6699FF','#ff6666','#3cb371','#b8860b','#30e0e0'],
+
+
+    title: {
+        x: 'left',
+        y: 'top',
+        backgroundColor: 'rgba(0,0,0,0)',
+        borderColor: '#617079',
+        borderWidth: 0,
+        padding: 5,
+        itemGap: 10,
+        textStyle: {
+            fontSize: 20,
+            fontWeight: 'normal',
+            color: '#FFC312'
+        },
+        subtextStyle: {
+            color: '#21accb'
+        }
+    },
+
+
+    legend: {
+        orient: 'horizontal',                                
+        x: 'center',                               
+        y: 'top',                           
+        backgroundColor: 'rgba(0,0,0,0)',
+        borderColor: '#ccc',       
+        borderWidth: 0,            
+        padding: 5,
+        itemGap: 10,
+        itemWidth: 20,             
+        itemHeight: 14,            
+        textStyle: {
+            color: '#333'          
+        }
+    },
+
+    dataRange: {
+        orient: 'vertical',       
+        x: 'left',                                             
+        y: 'bottom',                                         
+        backgroundColor: '#557582',
+        borderColor: '#ccc',       
+        borderWidth: 0,            
+        padding: 5,
+        itemGap: 10,
+        itemWidth: 20,             
+        itemHeight: 14,            
+        splitNumber: 5,            
+        color:['#1e90ff','#1e90ff'],
+         
+        textStyle: {
+            color: '#333'          
+        }
+    },
+
+    toolbox: {
+        orient: 'horizontal',                 
+        x: 'right',                                     
+        y: 'top',                                        
+        color : ['#1e90ff','#22bb22','#4b0082','#d2691e'],
+        backgroundColor: 'rgb(38,48,55)',
+        borderColor: '#ccc',       
+        borderWidth: 0,            
+        padding: 5,
+        itemGap: 10,
+        itemSize: 16,              
+        featureImageIcon : {},     
+        featureTitle : {
+            dataZoom : 'Zoom',
+            dataZoomReset : 'Reset Zoom',
+            restore : 'Restore',
+            dataView: 'Datas',
+            saveAsImage : 'Save as image'
+        }
+    },
+
+    tooltip: {
+        trigger: 'item',           
+        showDelay: 20,             
+        hideDelay: 100,            
+        transitionDuration : 0.4,  
+        backgroundColor: 'rgba(0,0,0,0.7)',     
+        borderColor: '#333',       
+        borderRadius: 4,           
+        borderWidth: 0,            
+        padding: 5,
+        axisPointer : {            
+            type : 'line',        
+            lineStyle : {          
+                color: '#48b',
+                width: 2,
+                type: 'solid'
+            },
+            shadowStyle : {                       
+                width: 'auto',                   
+                color: 'rgba(150,150,150,0.3)'  
+            }
+        },
+        textStyle: {
+            color: '#21accb'
+        }
+    },
+
+    dataZoom: {
+        orient: 'horizontal',
+        backgroundColor: 'rgba(0,0,0,0)',       
+        dataBackgroundColor: '#000000',
+        fillerColor: 'rgba(144,197,237,0.2)',   
+        handleColor: 'rgba(70,130,180,0.8)'     
+    },
+
+    grid: {
+        x: 80,
+        y: 60,
+        x2: 80,
+        y2: 60,
+
+        backgroundColor: '#557582',
+        borderWidth: 1,
+        borderColor: '#626F76'
+    },
+
+    axis: {
+        position: 'bottom',    
+        nameLocation: 'end',   
+        boundaryGap: true,     
+        axisLine: {            
+            show: true,        
+            lineStyle: {       
+                color: '#21accb',
+                width: 2,
+                type: 'solid'
+            }
+        },
+        axisTick: {            
+            show: true,       
+            interval: 'auto',
+            // onGap: null,
+            inside : false,    
+            length :5,         
+            lineStyle: {       
+                color: '#333',
+                width: 1
+            }
+        },
+        axisLabel: {           
+            show: true,
+            interval: 'auto',
+            rotate: 0,
+            color: '#21accb',
+            margin: 8,
+            textStyle: {                       
+                color: '#21accb'
+            }
+        },
+        splitLine: {          
+            show: true,       
+            lineStyle: {       
+                color: ['#ccc'],
+                width: 1,
+                type: 'solid'
+            }
+        },
+        splitArea: {           
+            show: false,      
+          
+            areaStyle: {     
+                color: ['rgba(250,250,250,0.3)','rgba(200,200,200,0.3)']
+            }
+        }
+    },
+
+    valueAxis: {
+        position: 'left',      
+        nameLocation: 'end',   
+        nameTextStyle: {},     
+        boundaryGap: [0, 0],   
+        splitNumber: 5,        
+        axisLine: {            
+            show: true,        
+            lineStyle: {       
+                color: '#21accb',
+                width: 2,
+                type: 'solid'
+            }
+        },
+        axisTick: {            
+            show: false,       
+            inside : false,    
+            length :5,         
+            lineStyle: {       
+                color: '#21accb',
+                width: 1
+            }
+        },
+        axisLabel: {           
+            show: true,
+            rotate: 0,
+            margin: 8,
+            textStyle: {       
+                color: '#FFC312'
+            }
+        },
+        splitLine: {           
+            show: true,        
+            lineStyle: {       
+                color: ['#21accb'],
+                width: 1,
+                type: 'solid'
+            }
+        },
+        splitArea: {           
+            show: false,       
+            areaStyle: {       
+                color: ['rgba(250,250,250,0.3)','rgba(200,200,200,0.3)']
+            }
+        }
+    },
+
+    polar : {
+        center : ['50%', '50%'],    
+        radius : '75%',
+        startAngle : 90,
+        splitNumber : 5,
+        name : {
+            show: true,
+            textStyle: {       
+                color: '#333'
+            }
+        },
+        axisLine: {            
+            show: true,        
+            lineStyle: {       
+                color: '#ccc',
+                width: 1,
+                type: 'solid'
+            }
+        },
+        axisLabel: {           
+            textStyle: {       
+                color: '#333'
+            }
+        },
+        splitArea : {
+            show : true,
+            areaStyle : {
+                color: ['rgba(250,250,250,0.3)','rgba(200,200,200,0.3)']
+            }
+        },
+        splitLine : {
+            show : true,
+            lineStyle : {
+                width : 1,
+                color : '#ccc'
+            }
+        }
+    },
+
+    bar: {
+        barMinHeight: 0,          
+                                    
+        barGap: '30%',           
+        barCategoryGap : '20%',   
+        itemStyle: {
+            normal: {
+                barBorderColor: '#fff',       
+                barBorderRadius: 0,           
+                barBorderWidth: 1,            
+                label: {
+                    show: false
+                }
+            },
+            emphasis: {
+                barBorderColor: 'rgba(0,0,0,0)',   
+                barBorderRadius: 0,                
+                barBorderWidth: 1,                 
+                label: {
+                    show: false
+
+                }
+            }
+        }
+    },
+
+    line: {
+        itemStyle: {
+            normal: {
+
+                label: {
+                    show: false
+                },
+                lineStyle: {
+                    width: 2,
+                    type: 'solid',
+                    shadowColor : 'rgba(0,0,0,0)', 
+                    shadowBlur: 5,
+                    shadowOffsetX: 3,
+                    shadowOffsetY: 3
+                }
+            },
+            emphasis: {
+                label: {
+                    show: false
+                }
+            }
+        },
+        //smooth : false,
+        //symbol: null,         
+        symbolSize: 2,          
+                                  
+        showAllSymbol: false    
+    },
+
+    k: {
+
+        itemStyle: {
+            normal: {
+                color: '#fff',          
+                color0: '#00aa11',      
+                lineStyle: {
+                    width: 1,
+                    color: '#ff3200',   
+                    color0: '#00aa11'   
+                }
+            },
+            emphasis: {
+
+            }
+        }
+    },
+
+    scatter: {
+        
+        symbolSize: 4,
+        large: false,        
+        itemStyle: {
+            normal: {
+                label: {
+                    show: false
+
+                }
+            },
+            emphasis: {
+                label: {
+                    show: false
+
+                }
+            }
+        }
+    },
+
+    radar : {
+        itemStyle: {
+            normal: {
+                label: {
+                    show: false
+                },
+                lineStyle: {
+                    width: 2,
+                    type: 'solid'
+                }
+            },
+            emphasis: {
+                label: {
+                    show: false
+                }
+            }
+        },
+        //symbol: null,         
+        symbolSize: 2           
+        //symbolRotate : null,  
+    },
+
+    pie: {
+        center : ['50%', '50%'],    
+        radius : [0, '75%'],
+        clockWise : false,          
+        startAngle: 90,
+        minAngle: 0,                
+        selectedOffset: 10,         
+        itemStyle: {
+            normal: {
+                borderColor: '#fff',
+                borderWidth: 1,
+                label: {
+                    show: true,
+                    position: 'outer'
+                    // textStyle: null      
+                },
+                labelLine: {
+                    show: true,
+                    length: 20,
+                    lineStyle: {
+                        width: 1,
+                        type: 'solid'
+                    }
+                }
+            },
+            emphasis: {
+                borderColor: 'rgba(0,0,0,0)',
+                borderWidth: 1,
+                label: {
+                    show: false
+                    // position: 'outer'
+                    // textStyle: null     
+                },
+                labelLine: {
+                    show: false,
+                    length: 20,
+                    lineStyle: {
+                        width: 1,
+                        type: 'solid'
+                    }
+                }
+            }
+        }
+    },
+
+    map: {
+        mapType: 'world',
+        mapLocation: {
+            x : 'center',
+            y : 'center'
+
+        },
+        showLegendSymbol : true,       
+        itemStyle: {
+            normal: {
+                borderColor: '#fff',
+                borderWidth: 1,
+                areaStyle: {
+                    color: '#ccc'//rgba(135,206,250,0.8)
+                },
+                label: {
+                    show: false,
+                    textStyle: {
+                        color: 'rgba(139,69,19,1)'
+                    }
+                }
+            },
+            emphasis: {                 
+         
+                borderColor: 'rgba(0,0,0,0)',
+                borderWidth: 1,
+                areaStyle: {
+                    color: 'rgba(255,215,0,0.8)'
+                },
+                label: {
+                    show: false,
+                    textStyle: {
+                        color: 'rgba(139,69,19,1)'
+                    }
+                }
+            }
+        }
+    },
+
+    force : {
+        
+        minRadius : 10,
+        maxRadius : 20,
+        density : 1.0,
+        attractiveness : 1.0,
+        
+        initSize : 300,
+        
+        centripetal : 1,
+        
+        coolDown : 0.99,
+        
+        itemStyle: {
+            normal: {
+                label: {
+                    show: false
+                    // textStyle: null      
+                },
+                nodeStyle : {
+                    brushType : 'both',
+                    color : '#f08c2e',
+                    strokeColor : '#5182ab'
+                },
+                linkStyle : {
+                    strokeColor : '#5182ab'
+                }
+            },
+            emphasis: {
+                label: {
+                    show: false
+                    // textStyle: null      
+                },
+                nodeStyle : {},
+                linkStyle : {}
+            }
+        }
+    },
+
+    chord : {
+        radius : ['65%', '75%'],
+        center : ['50%', '50%'],
+        padding : 2,
+        sort : 'none', // can be 'none', 'ascending', 'descending'
+        sortSub : 'none', // can be 'none', 'ascending', 'descending'
+        startAngle : 90,
+        clockWise : false,
+        showScale : false,
+        showScaleText : false,
+        itemStyle : {
+            normal : {
+                label : {
+                    show : true
+                    // textStyle: null      
+                },
+                lineStyle : {
+                    width : 0,
+                    color : '#000'
+                },
+                chordStyle : {
+                    lineStyle : {
+                        width : 1,
+                        color : '#666'
+                    }
+                }
+            },
+            emphasis : {
+                lineStyle : {
+                    width : 0,
+                    color : '#000'
+                },
+                chordStyle : {
+                    lineStyle : {
+                        width : 2,
+                        color : '#333'
+                    }
+                }
+            }
+        }
+    },
+
+    island: {
+        r: 15,
+        calculateStep: 0.1  
+    },
+
+    markPoint : {
+        symbol: 'pin',         
+      symbolSize: 10,          
+
+        itemStyle: {
+            normal: {
+                borderWidth: 2,            
+                label: {
+                    show: true,
+                    position: 'inside' 
+                    
+                }
+            },
+            emphasis: {
+                
+                label: {
+                    show: true
+                    
+                    
+                }
+            }
+        }
+    },
+
+    markLine : {
+        
+     symbol: ['circle', 'arrow'],
+         
+        symbolSize: [2, 4],
+        
+
+        itemStyle: {
+            normal: {   
+                borderWidth: 2,          
+                label: {
+                    show: false,
+                    
+                    position: 'inside',
+                    textStyle: {         
+                        color: '#333'
+                    }
+                },
+                lineStyle: {
+                    
+                    
+                    type: 'solid',
+                    shadowColor : 'rgba(0,0,0,0)', 
+                    shadowBlur: 5,
+                    shadowOffsetX: 3,
+                    shadowOffsetY: 3
+                }
+            },
+            emphasis: {
+          
+                label: {
+                    show: false
+            
+                },
+                lineStyle : {}
+            }
+        }
+    },
+
+    textStyle: {
+        decoration: 'none',
+        fontFamily: 'Arial, Verdana, sans-serif',
+        fontFamily2: '微软雅黑',    
+        fontSize: 12,
+        fontStyle: 'normal',
+        fontWeight: 'normal'
+    },
+
+    symbolList : [
+      'circle', 'rectangle', 'triangle', 'diamond',
+      'emptyCircle', 'emptyRectangle', 'emptyTriangle', 'emptyDiamond'
+    ],
+    loadingText : 'Loading...',
+   
+    calculable: false,
+    calculableColor: 'rgba(255,165,0,0.6)',       
+    calculableHolderColor: '#ccc', 
+    nameConnector: ' & ',
+    valueConnector: ' : ',
+    animation: true,
+    animationThreshold: 2500,       
+    addDataAnimation: true,         
+    animationDuration: 2000,
+    animationEasing: 'ExponentialOut'    
+
+};
+
+var previous_svm;
+$('#id_datasets').on('focus', function() {
+        previous_svm = $(this).val();
+});
+$('#id_datasets').on('change', function(){
+    var dataset_id = $(this).val();
+    if( previous_svm != dataset_id && previous_svm != "" ) {
+            $("#bytes_received_div_"+previous_svm).hide();
+            $("#uri_analysis_div_"+previous_svm).hide();
+            $("#uri_analysis_2_div_"+previous_svm).hide();
+            $("#ratio_div_"+previous_svm).hide();
+    }
+    if( dataset_id != "" ) {
+        bytes_received_vs_code(dataset_id);
+        uri_analysis(dataset_id);
+        uri_analysis_2(dataset_id);
+        ratiochart(dataset_id);
+    }
+});
+
+function bytes_received_vs_code(dataset_id){
+    $.post(
+        '/dataset/print_graph',
+
+        {'dataset_id': dataset_id, 'algo_used': "HTTPcode_bytes_received"},
+
+        function(data){
+            var ser = [];
+            ser.push({name:'suspicious',
+                    type:'scatter',
+                    data: []});
+            ser.push({name:'valid',
+                    type:'scatter',
+                    data: []});
+            var circle = data['contour'];
+            for (i=0; i < circle.length ; i++) {
+                ser.push({name:i,
+                    type:'line',
+                    itemStyle: {normal: {areaStyle: {type: 'default'}}},
+                    smooth :true,
+                    data: circle[i]});
+            }
+
+            if( circle != "" ) {
+                $("#bytes_received_div_"+dataset_id).show();
+                var chart_bytes_received = echarts.init(document.getElementById('chart_bytes_received_'+dataset_id), theme);
+                // Show a loading circle and a message to ask for waiting
+                chart_bytes_received.showLoading({
+                    text: "Loading charts... Please wait"
+                });
+    
+                var contour = data['contour'];
+                // Set the option for the chart
+    
+                var option = {
+                    title : {
+                        text: 'Data received / HTTP status code'
+                    },
+                    tooltip : {
+                        trigger: 'item',
+                        showDelay : 0,
+                        enterable: true,
+                        formatter : function (params, ticket, callback) {
+                            var res  = "";
+    
+                            if (params.value.length > 1) {
+                                res = res + params.seriesName + ' :<br/>'
+                                   + params.value[0] + ' http_code ' + ' <br/>'
+                                   + params.value[1] + ' byte_received ' + ' <br/>';
+                            }
+                            else {
+                                res = res + ' :<br/>'+ params.seriesName + ' :<br/>'
+                                   + params.name + ' : ' + ' :<br/>'
+                                   + params.value + ' ';
+                            }
+                            res = res + params.data[2];
+    
+    
+    
+                            setTimeout(function(){
+                                callback(ticket, res);
+                            }, 0);
+    
+                            return 'Loading';
+                        }
+                    },
+                    toolbox: {
+                        show : true,
+                        feature : {
+                            mark : {show: false},
+                            dataZoom : {show: true, title: 'Zoom'},
+                            dataView : {show: true, readOnly: false, title: 'Data'},
+                            restore : {show: true, title: 'Restore'},
+                            saveAsImage : {show: true, title: 'Save as Image'}
+    
+                        }
+                    },
+                    xAxis : [
+                        {
+                            type : 'value',
+                            scale:true,
+                            axisLabel : {
+                                formatter: '{value} http_code'
+                            }
+                        }
+                    ],
+                    yAxis : [
+                        {
+                            type : 'value',
+                            scale:true,
+                            axisLabel : {
+                                formatter: '{value} bytes'
+                            }
+                        }
+                    ],
+                    series : ser
+                };
+    
+                // Load data into the ECharts instance
+                chart_bytes_received.setOption(option);
+                // Remove the loading message
+    
+                chart_bytes_received.hideLoading();
+            }
+        }
+    )
+}
+
+function uri_analysis(dataset_id){
+    $.post(
+        '/dataset/print_graph',
+        {'dataset_id': dataset_id, 'algo_used': "Levenstein"},
+
+        function(data){
+            var ser = [];
+            ser.push({name:'suspicious',
+                    type:'scatter',
+                    data: []});
+            ser.push({name:'valid',
+                    type:'scatter',
+                    data: []});
+            var circle = data['contour'];
+            for (var i=0; i < circle.length ; i++) {
+                ser.push({name:i,
+                    type:'line',
+                    itemStyle: {normal: {areaStyle: {type: 'default'}}},
+                    smooth :true,
+                    data: circle[i]});
+            }
+
+            if( circle != "" ) {
+                $("#uri_analysis_div_"+dataset_id).show();
+                var chart_uri_analysis = echarts.init(document.getElementById('chart_uri_analysis_'+dataset_id), theme);
+                // Show a loading circle and a message to ask for waiting
+                chart_uri_analysis.showLoading({
+                    text: "Loading charts... Please wait"
+                });
+    
+                var contour = data['contour'];
+                // Set the option for the chart
+                var option = {
+                    title : {
+                        text: 'Average levenshtein distance uri / Length uri part (splitted by /)'
+                    },
+                    tooltip : {
+                        trigger: 'item',
+                        showDelay : 0,
+                        enterable: true,
+                        formatter : function (params, ticket, callback) {
+                            var res  = "";
+    
+                            if (params.value.length > 1) {
+                                res = res + params.seriesName + ' :<br/>'
+                                   + params.value[0] + ' occurence ' + ' <br/>'
+                                   + params.value[1] + ' distance ' + ' <br/>';
+                            }
+                            else {
+                                res = res + ' :<br/>'+ params.seriesName + ' :<br/>'
+                                   + params.name + ' : ' + ' :<br/>'
+                                   + params.value + ' ';
+                            }
+                            res = res + params.data[2];
+    
+    
+    
+                            setTimeout(function(){
+                                callback(ticket, res);
+                            }, 0);
+    
+                            return 'Loading';
+                        }
+                    },
+                    toolbox: {
+                        show : true,
+                        feature : {
+                            mark : {show: false},
+                            dataZoom : {show: true, title: 'Zoom'},
+                            dataView : {show: true, readOnly: false, title: 'Data'},
+                            restore : {show: true, title: 'Restore'},
+                            saveAsImage : {show: true, title: 'Save as Image'}
+    
+                        }
+                    },
+                    xAxis : [
+                        {
+                            type : 'value',
+                            scale:true,
+                            axisLabel : {
+                                formatter: '{value}'
+                            }
+                        }
+                    ],
+                    yAxis : [
+                        {
+                            type : 'value',
+                            scale:true,
+                            axisLabel : {
+                                formatter: '{value}'
+                            }
+                        }
+                    ],
+                    series : ser
+                };
+    
+                // Load data into the ECharts instance
+                chart_uri_analysis.setOption(option);
+                // Remove the loading message
+    
+                chart_uri_analysis.hideLoading();
+            }
+        }
+    )
+}
+
+function uri_analysis_2(dataset_id){
+    $.post(
+        '/dataset/print_graph',
+        {'dataset_id': dataset_id, 'algo_used': "Levenstein2"},
+
+        function(data){
+            var ser = [];
+            ser.push({name:'suspicious',
+                    type:'scatter',
+                    data: []});
+            ser.push({name:'valid',
+                    type:'scatter',
+                    data: []});
+            var circle = data['contour'];
+            for (var i=0; i < circle.length ; i++) {
+                ser.push({name:i,
+                    type:'line',
+                    itemStyle: {normal: {areaStyle: {type: 'default'}}},
+                    smooth :true,
+                    data: circle[i]});
+            }
+
+            if( circle != "" ) {
+                $("#uri_analysis_2_div_"+dataset_id).show();
+                var chart_uri_analysis_2 = echarts.init(document.getElementById('chart_uri_analysis_2_'+dataset_id), theme);
+                // Show a loading circle and a message to ask for waiting
+                chart_uri_analysis_2.showLoading({
+                    text: "Loading charts... Please wait"
+                });
+    
+                var contour = data['contour'];
+                // Set the option for the chart
+                var option = {
+                    title : {
+                        text: 'Average levenshtein distance uri / Length uri'
+                    },
+                    tooltip : {
+                        trigger: 'item',
+                        showDelay : 0,
+                        enterable: true,
+                        formatter : function (params, ticket, callback) {
+                            var res  = "";
+    
+                            if (params.value.length > 1) {
+                                res = res + params.seriesName + ' :<br/>'
+                                   + params.value[0] + ' occurence ' + ' <br/>'
+                                   + params.value[1] + ' distance ' + ' <br/>';
+                            }
+                            else {
+                                res = res + ' :<br/>'+ params.seriesName + ' :<br/>'
+                                   + params.name + ' : ' + ' :<br/>'
+                                   + params.value + ' ';
+                            }
+                            res = res + params.data[2];
+    
+    
+    
+                            setTimeout(function(){
+                                callback(ticket, res);
+                            }, 0);
+    
+                            return 'Loading';
+                        }
+                    },
+                    toolbox: {
+                        show : true,
+                        feature : {
+                            mark : {show: false},
+                            dataZoom : {show: true, title: 'Zoom'},
+                            dataView : {show: true, readOnly: false, title: 'Data'},
+                            restore : {show: true, title: 'Restore'},
+                            saveAsImage : {show: true, title: 'Save as Image'}
+    
+                        }
+                    },
+                    xAxis : [
+                        {
+                            type : 'value',
+                            scale:true,
+                            axisLabel : {
+                                formatter: '{value}'
+                            }
+                        }
+                    ],
+                    yAxis : [
+                        {
+                            type : 'value',
+                            scale:true,
+                            axisLabel : {
+                                formatter: '{value}'
+                            }
+                        }
+                    ],
+                    series : ser
+                };
+    
+    
+                // Load data into the ECharts instance
+                chart_uri_analysis_2.setOption(option);
+                // Remove the loading message
+    
+                chart_uri_analysis_2.hideLoading();
+            }
+        }
+    )
+}
+
+function ratiochart(dataset_id){
+    $.post(
+        '/dataset/print_graph',
+
+        {'dataset_id': dataset_id, 'algo_used': "Ratio"},
+
+        function(data){
+            var ser = [];
+            ser.push({name:'suspicious',
+                    type:'scatter',
+                    data: []});
+            ser.push({name:'valid',
+                    type:'scatter',
+                    data: []});
+            var circle = data['contour'];
+            for (i=0; i < circle.length ; i++) {
+                ser.push({name:i,
+                    type:'line',
+                    itemStyle: {normal: {areaStyle: {type: 'default'}}},
+                    smooth :true,
+                    data: circle[i]});
+            }
+
+            if( circle != "" ) {
+                $("#ratio_div_"+dataset_id).show();
+                var chart_ratio = echarts.init(document.getElementById('chart_ratio_'+dataset_id), theme);
+                // Show a loading circle and a message to ask for waiting
+                chart_ratio.showLoading({
+                    text: "Loading charts... Please wait"
+                });
+    
+                var contour = data['contour'];
+                // Set the option for the chart
+    
+                var option = {
+                    title : {
+                        text: 'Ratio data received / sent'
+                    },
+                    tooltip : {
+                        trigger: 'item',
+                        showDelay : 0,
+                        enterable: true,
+                        formatter : function (params, ticket, callback) {
+                            var res  = "";
+    
+                            if (params.value.length > 1) {
+                                res = res + params.seriesName + ' :<br/>'
+                                   + params.value[0] + ' http_code ' + ' <br/>'
+                                   + params.value[1] + ' byte_received ' + ' <br/>';
+                            }
+                            else {
+                                res = res + ' :<br/>'+ params.seriesName + ' :<br/>'
+                                   + params.name + ' : ' + ' :<br/>'
+                                   + params.value + ' ';
+                            }
+                            res = res + params.data[2];
+    
+    
+    
+                            setTimeout(function(){
+                                callback(ticket, res);
+                            }, 0);
+    
+                            return 'Loading';
+                        }
+                    },
+                    toolbox: {
+                        show : true,
+                        feature : {
+                            mark : {show: false},
+                            dataZoom : {show: true, title: 'Zoom'},
+                            dataView : {show: true, readOnly: false, title: 'Data'},
+                            restore : {show: true, title: 'Restore'},
+                            saveAsImage : {show: true, title: 'Save as Image'}
+    
+                        }
+                    },
+                    xAxis : [
+                        {
+                            type : 'value',
+                            scale:true,
+                            axisLabel : {
+                                formatter: '{value} http_code'
+                            }
+                        }
+                    ],
+                    yAxis : [
+                        {
+                            type : 'value',
+                            scale:true,
+                            axisLabel : {
+                                formatter: '{value} bytes'
+                            }
+                        }
+                    ],
+                    series : ser
+                };
+    
+                // Load data into the ECharts instance
+                chart_ratio.setOption(option);
+                // Remove the loading message
+    
+                chart_ratio.hideLoading();
+            }
+        }
+    )
+}
+
+{% endblock %}

@@ -1,0 +1,338 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-cubes"></i>&nbsp;{% trans "Applications" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+
+    <div class="row">
+
+        <div class="bs-example-popovers col-md-offset-4 col-md-4">
+          <button type="button" class="btn btn-default btn-lg action_button" id="reloadall" href="/management/reloadall" data-container="body" data-toggle="popover" data-placement="left" data-content='{% trans "Reload all applications" %}' data-original-title="" title="">
+            <i class="fa fa-refresh"> </i>{% trans "Reload all" %}
+          </button>
+          <button type="button" class="btn btn-default btn-lg action_button" id="startall" href="/management/startall" data-container="body" data-toggle="popover" data-placement="top" data-content='{% trans "Start all applications" %}' data-original-title="" title="">
+            <i class="fa fa-play"> </i>{% trans "Start all" %}
+          </button>
+          <button type="button" class="btn btn-default btn-lg action_button" id="stopall" href="/management/stopall" data-container="body" data-toggle="popover" data-placement="bottom" data-content='{% trans "Stop all applications" %}'>
+            <i class="fa fa-pause"> </i>{% trans "Stop all" %}
+          </button>
+        </div>
+
+    </div>
+    <br/>
+
+    <div class="row">
+        {% for node, tmp_l in new_listeners.items %}
+            <div class="col-md-4">
+                <div class="x_panel tile panel-listener">
+                  <div class="x_title">
+                    <h2>{{ node }}</h2>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content listener_table">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>{% trans "Address" %}</th>
+                                <th>{% trans "Port" %}</th>
+                                <th>{% trans "Status" %}</th>
+                                <th>{% trans "Action" %}</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody_{{ node }}">
+                            {% for l in tmp_l %}
+                                <tr id="listener_{{ l.id }}" class="listener_status">
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                  </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+
+    <div class="row">
+        <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="application_list">
+            <thead>
+                <tr>
+                    <th class="col-md-2">{% trans "Application" %}</th>
+                    <th class="col-md-1">{% trans "Enabled" %}</th>
+                    <th class="col-md-1">{% trans "Model" %}</th>
+                    <th class="col-md-1">{% trans "Tags" %}</th>
+                    <th class="col-md-1">{% trans "Authentication" %}</th>
+                    <th class="col-md-1">{% trans "Listener" %}</th>
+                    <th class="col-md-2">{% trans "Public URL" %}</th>
+                    <th class="col-md-2">{% trans "Private URL" %}</th>
+                    <th class="col-md-1">{% trans "Action" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for application in apps %}
+                <tr id="{{ application.id }}">
+                    <td>{{ application.name }}</td>
+                    <td class="icon">
+                        {% if application.enabled %}
+                            <i class="fa fa-check"></i>
+                        {% else %}
+                            <i class="fa fa-times"></i>
+                        {% endif %}
+                    </td>
+                    <td class="icon">
+                        {% if application.is_model %}
+                            <i class="fa fa-check"></i>
+                        {% else %}
+                            <i class="fa fa-times"></i>
+                        {% endif %}
+                    </td>
+                    <td>{{ application.tags }}</td>
+                    <td class="icon">
+                        {% if application.need_auth %}
+                            <i class="fa fa-check"></i>
+                        {% else %}
+                            <i class="fa fa-times"></i>
+                        {% endif %}
+                    </td>
+                    <td>{% for ls in application.listeners %}{{ ls.address.ip }}:{{ ls.port }}{% if ls.redirect_port %} ({{ ls.redirect_port }}){% endif %}<br/>{% endfor %}</td>
+                    <td>{%  if application.has_tls%}https://{% else %}http://{% endif %}{{ application.public_name }}{{ application.public_dir }}</td>
+                    <td>{%  if application.type == 'balanced' and application.proxy_balancer %}{{ application.proxy_balancer.name }}{% else %}{{ application.private_uri }} {% endif %}</td>
+                    <td class="action">
+                        <a class="action_button" href="/application/clone/{{application.id}}"><span><i class="fa fa-copy"></i></span></a>
+                        <a class="action_button" data-id="{{application.id}}" data-action="delete" href="/application/delete/{{application.id}}"><span><i class="fa fa-trash-o"></i></span></a>
+                    </td>
+                </tr>
+
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+     <div class="add-group">
+        <a class="addlink addplus" href="/application/edit/">{% trans "Add an Entry" %} </a>
+     </div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code %}
+    $('#application_list').DataTable({
+        "dom": "<p<'searchbox'f><t>>",
+        "autoWidth": false,
+        "language": {
+            "search": "",
+            "lengthMenu": '_MENU_',
+            "pagingType": "bootstrap",
+            "paginate": {
+                "next": '<img src="{% static 'img/right.png' %}"/>',
+                "previous": '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+        fnCreatedRow: function(nRow, aData){
+            $(nRow).on('click', function(){
+                var id = $(nRow).attr('id');
+                if (id)
+                    location.href = "/application/edit/"+id;
+            })
+        }
+    });
+    
+    var lang = ['{% trans "Stopped" %}', '{% trans "Started" %}', '{% trans "Error, node is down ?" %}'];
+
+    function refresh_status(){
+        {% for key, listener in listeners.items %}
+            var url = "/management/statusfull/{{ listener.id }}";
+            $.ajax({
+                url: url,
+                type: 'GET',
+                success: function(data){
+                    listener_status('{{listener.address.ip}}', '{{ listener.port }}', '{{listener.related_node.name}}', '{{ listener.id }}', data, lang);
+                    $('.listener_status a').unbind('click');
+                    $('.listener_status a').on('click', reload_list);
+
+                    $('.dl_button').unbind('click');
+                    $('.dl_button').on('click', function(e){
+                        var win = window.open($(this).data('href'), '_blank');
+                    })
+                },
+                error: function(data) {
+                }
+            });
+        {% endfor %}
+    }
+
+    setInterval(refresh_status, 30000);
+    refresh_status();
+
+    $('.listener_status a').on('click', reload_list);
+    $('#reloadall').on('click', reload_list);
+    $('#startall').on('click', reload_list);
+    $('#stopall').on('click', reload_list);
+
+    var lock = false;
+    function reload_list(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (lock)
+            return;
+
+        lock = true;
+        var spinner = "<i class='fa fa-spinner fa-spin'></i>"
+        if ($.inArray($(this)[0].id, ["reloadall"]) >= 0)
+            var spinner = "<i class='fa fa-spinner fa-spin fa-no-margin-right'></i> Reloading"
+        else if ($.inArray($(this)[0].id, ["startall"]) >= 0)
+            var spinner = "<i class='fa fa-spinner fa-spin fa-no-margin-right'></i> Starting"
+        else if ($.inArray($(this)[0].id, ["stopall"]) >= 0)
+            var spinner = "<i class='fa fa-spinner fa-spin fa-no-margin-right'></i> Stopping"
+
+        var btn  = this;
+        var text = $(btn).html()
+        $(btn).html(spinner)
+
+        $('#modal_errors').html('')
+        var url = $(this).attr("href");
+        
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function(data){
+                $(btn).html(text);
+                lock = false;
+                status = data['status'];
+                if(status === 'true'){
+                    PNotify.removeAll();
+                    new PNotify({
+                        title: 'Success',
+                        text: data['msg'],
+                        type: 'success',
+                        styling: 'bootstrap3',
+                        nonblock: {
+                            nonblock: true
+                        }
+                    });
+
+                    refresh_status();
+                }
+                else if(data['need_pass']){
+                    ssl_profiles = data['need_pass'];
+                    $('#modal_askpass_msg').html(data['html']);
+                    $('#modal_askpass').modal('show');
+                }
+                else {
+                    errors = data['errors'];
+
+                    // If user not logged in
+                    if (errors === undefined)
+                        window.location.href = window.location.href;
+
+                    if (errors.constructor === Array){
+                        var ul = $('<ul/>').appendTo('#modal_errors');
+                        $.each(errors, function(key, value) {
+                            var li = $('<li/>').addClass('ui-menu-item').attr('role', 'menuitem').appendTo(ul);
+                            var group = $('<span/>').text(value).appendTo(li);
+                        });
+                    }
+                    else {
+                        PNotify.removeAll();
+                        new PNotify({
+                            title: 'Error',
+                            text: data['errors'],
+                            type: 'error',
+                            styling: 'bootstrap3',
+                            hide: false,
+                        });
+                    }
+                }
+            },
+            error: function(jqXHR, status, error){
+                lock = false;
+                $(btn).html(text);
+                PNotify.removeAll();
+                new PNotify({
+                    title  : 'Error',
+                    text   : jqXHR.responseText.split('\n')[0],
+                    type   : 'error',
+                    styling: 'bootstrap3',
+                    hide   : false
+                });
+            },
+        });
+    }
+
+
+    $('#modal_askpass').on('click', '#save_askpass', function (e) {
+        form_data = $('#form_askpass').serializeArray();
+        url = $('#form_askpass').attr('action');
+        e.preventDefault();
+        var indexed_data = {};
+        $.map(form_data, function(n, i){
+            indexed_data[n['name']] = n['value'];
+        });
+        $.post(url, indexed_data, function(data){
+            status = data['status'];
+            if(status === 'true'){
+                $('#modal_askpass').modal('hide');
+                PNotify.removeAll();
+                new PNotify({
+                    title: 'Success',
+                    text: data['msg'],
+                    type: 'success',
+                    styling: 'bootstrap3',
+                    nonblock: {
+                        nonblock: true
+                    }
+                });
+                refresh_status()
+            }
+            else {
+                errors = data['errors'];
+                $('#modal_askpass').modal('hide');
+                if (errors.constructor == Array){
+                    var ul = $('<ul/>').appendTo('#modal_errors');
+                    $.each(errors, function(key, value) {
+                        var li = $('<li/>').addClass('ui-menu-item').attr('role', 'menuitem').appendTo(ul);
+                        var group = $('<span/>').text(value).appendTo(li);
+                    });
+                }
+                else {
+                    PNotify.removeAll();
+                    new PNotify({
+                        title: 'Error',
+                        text: data['errors'],
+                        type: 'error',
+                        styling: 'bootstrap3',
+                        hide: false,
+                    });
+                }
+            }
+        })
+    });
+
+    $('#modal_askpass').on('click', '#cancel_askpass', function (e) {
+        $('#modal_askpass').modal('hide');
+    });
+
+
+
+{% endblock %}

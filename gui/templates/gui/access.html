@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-cog"></i>&nbsp;{% trans "Access Control" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="access_list">
+            <thead>
+                <tr>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Network ACL" %}</th>
+                    <th>{% trans "User ACL" %}</th>
+                    <th>{% trans "Group ACL" %}</th>
+                    <th>{% trans "Action" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for access in accesses %}
+                <tr id="{{ access.id }}">
+                    <td>{{ access.name }}</td>
+                    <td><p>{% if access.showconf %}{{ access.showconf |safe }}{% else %}N/A{% endif %}</p></td>
+                    <td>{% if access.user_list %}{{ access.user_list |safe}}{% else %}N/A{% endif %}</td>
+                    <td>{% if access.group_list %}{{ access.group_list |safe}}{% else %}N/A{% endif %}</td>
+                    <td class="action">
+                            <a class="action_button" href="/firewall/access/clone/{{access.id}}"><span><i class="fa fa-copy"></i></span></a>
+                            <a class="action_button"  href="/firewall/access/delete/{{access.id}}"><span><i class="fa fa-trash-o"></i></span></a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="add-group">
+            <a class="addlink addplus" href="/firewall/access/edit/">{% trans "Add an Entry" %} </a>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+    $('#access_list').DataTable({
+        "dom": "<p<'searchbox'f><t>>",
+        "autoWidth": false,
+        "language": {
+            "search": "",
+            "lengthMenu": '_MENU_',
+            "pagingType": "bootstrap",
+            "paginate": {
+                "next": '<img src="{% static 'img/right.png' %}"/>',
+                "previous": '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+        fnCreatedRow: function(nRow, aData){
+            $(nRow).on('click', function(){
+                var id = $(nRow).attr('id');
+                if (id)
+                    location.href = "/firewall/access/edit/"+id;
+            })
+        }
+    });
+{% endblock %}

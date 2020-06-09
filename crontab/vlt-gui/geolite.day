@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# Get global variables in rc conf
+. /etc/rc.conf
+
+# If there is a proxy
+if [ "$http_proxy" != "" ]
+then
+    # Modify format of http(s)_proxy variables, for wget
+    export https_proxy="http://$http_proxy"
+    export http_proxy="http://$http_proxy"
+fi
+
+cd /var/db/loganalyzer/
+/usr/local/bin/wget -q --no-check-certificate -O ./GeoLite2-Country.mmdb.gz https://updates.maxmind.com/geoip/databases/GeoLite2-Country/update
+gunzip -f ./GeoLite2-Country.mmdb.gz
+chown vlt-gui:vlt-gui ./GeoLite2-Country.mmdb
+
+/usr/local/bin/wget -q --no-check-certificate -O ./GeoLite2-City.mmdb.gz https://updates.maxmind.com/geoip/databases/GeoLite2-City/update
+gunzip -f ./GeoLite2-City.mmdb.gz
+chown vlt-gui:vlt-gui ./GeoLite2-City.mmdb

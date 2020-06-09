@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-globe"></i>&nbsp;{% trans "Topology" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+    
+    <div class="row">
+        <div class="col-md-12">
+            <form method="POST" action="/network/topology/">
+                <div class="x_panel">
+                  <div class="x_title">
+                    <h2>{% trans "Remote Proxy" %}</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                        <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    {% csrf_token %}
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Trusted IP for which X-Forwarded-For is  acceptable" %}</label>
+                            <div class="col-sm-5">
+                                <input type="text" class="form-control tageditor" name="remote_ip_internal_proxy" value="{{ remote_ip_internal_proxy }}"/>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+{% endblock %}
+
+{% block js_include %}
+{% endblock %}
+
+{% block jquery_code  %}
+
+    if( "{{ reload_apps }}" === "True" ) {
+        new PNotify({
+            title: 'Success',
+            text: '<a style="color:white; text-decoration: underline;" href="/application/">Please reload the applications</a>',
+            type: 'success',
+            styling: 'bootstrap3',
+            buttons: {
+                closer: true,
+                sticker: false
+            }
+        });
+    }
+
+    $(".tageditor").tagEditor({
+        delimiter: ',',
+        forceLowercase: true,
+    });
+
+
+
+{% endblock %}

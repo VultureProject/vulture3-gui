@@ -1,0 +1,257 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-cog"></i>&nbsp;{% trans "Access Control" %}</h3></li>
+{% endblock %}
+{% block js_include %}
+    <script src="{% static "plugins/TableDnD/jquery.tablednd.js" %}"></script>
+{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <form class="form-horizontal bootstrap-validator-form" action="/firewall/access/edit/{% if object_id %}{{object_id}}{% endif %}" method="post" novalidate="novalidate">
+            {% csrf_token %}
+            <div class="x_panel">
+              <div class="x_title">
+                <h2><i class="fa fa-cog"></i>&nbsp;{% trans "Access Control" %}</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a href="/firewall/access/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                    <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                    <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Global" %}</a>
+                        </li>
+                        <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Policy" %}</a>
+                        </li>
+                        <li role="presentation" class=""><a href="#tab_content3" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "User & Groups ACL" %}</a>
+                        </li>
+                    </ul>
+                    <div id="myTabContent" class="tab-content">
+                        <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Friendly name" %}</label>
+                                <div class="col-sm-5">
+                                    {{form.name}}
+                                    {{form.name.errors}}
+                                </div>
+                            </div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="tab_content2" aria-labelledby="home-tab">
+                            <div class="form-group">
+                                <div class="col-sm-12 ui-widget">
+                                    {% trans "Note: If no condition fails and at least one returns True, then access is granted" %}<br/>
+                                    {% trans "Note: 'local' expected value can be used to match any local IP address" %}<br/><br/>
+                                    <table id="tblData" class="table table-bordered table-striped table-hover table-heading table-datatable">
+                                        <thead>
+                                            <tr>
+                                                <th>{% trans "Element" %}</th>
+                                                <th>{% trans "Is / is not" %}</th>
+                                                <th>{% trans "Expected value" %}</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                    <div class="add-group">
+                                        <button class="addlink addplus" id="btnAddRule" type="button">{% trans "Add a rule" %}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                         <div role="tabpanel" class="tab-pane" id="tab_content3" aria-labelledby="home-tab">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Select LDAP backend" %}</label>
+                                <div class="col-sm-5">
+                                    {{form.ldap_repo}}
+                                    {{form.ldap_repo.errors}}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                 <label class="col-sm-4 control-label">{% trans "Base DN:" %}</label>
+                                 <div class="col-sm-5"><span id="base_dn"></span></div>
+                            </div>
+                            <div class="form-group">
+                                 <label class="col-sm-4 control-label">{% trans "User DN:" %}</label>
+                                 <div class="col-sm-5"><span id="user_dn"></span></div>
+                            </div>
+                             <div class="form-group">
+                                 <label class="col-sm-4 control-label">{% trans "Group DN:" %}</label>
+                                 <div class="col-sm-5"><span id="group_dn"></span></div>
+                            </div>
+                            <div class="form-group">
+                                 <label class="col-sm-4 control-label">{% trans "Authorized users" %}</label>
+                                 <div class="col-sm-5">
+                                     {{form.user_list}}
+                                 </div>
+                            </div>
+                             <div class="form-group">
+                                 <label class="col-sm-4 control-label">{% trans "Authorized groups" %}</label>
+                                 <div class="col-sm-5">
+                                     {{form.group_list}}
+                                 </div>
+                            </div>
+
+                        </div>
+                    </div>
+              </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block jquery_code  %}
+
+    $(window).load(function(){
+        $("#id_ldap_repo").trigger("change");
+    });
+
+    var id = 0;
+    {% for rule in access_rules %}
+        AddRule("{{rule.element}}","{{rule.isnot}}","{{rule.expected}}");
+    {% endfor %}
+
+    function element_list () {
+        var str='<option value="all-denied">{% trans "All denied" %}</option>';
+        str = str + '<option value="all-granted">{% trans "All granted" %}</option>';
+        str = str + '<option value="env">{% trans "If env. variable" %}</option>';
+        str = str + '<option value="expr">{% trans "If expression" %}</option>';
+        str = str + '<option value="host">{% trans "If client HostnameLookups" %}</option>';
+        str = str + '<option value="ip">{% trans "If client IP Address" %}</option>';
+        str = str + '<option value="method">{% trans "If HTTP Method" %}</option>';
+
+        return str;
+    }
+
+    function updateFields() {
+        var par             = $(this).parent().parent(); //tr
+        var tdElement       = par.children("td:nth-child(1)");
+        var tdNot           = par.children("td:nth-child(2)");
+        var tdExpected      = par.children("td:nth-child(3)");
+
+        var select = tdElement.children("select:nth-child(1)");
+        var not = tdNot.children("select:nth-child(1)");
+        var expected = tdExpected.children("input:nth-child(1)");
+
+        //These action requires exact values - not pattern -  and no replacement is useless - so delete it
+        if (select.val() == "all-denied" || select.val() == "all-granted" || select.val() == "valid-user") {
+            not.prop('disabled', true);
+            expected.prop('disabled', true);
+        }
+        else {
+            not.prop('disabled', false);
+            expected.prop('disabled', false);
+        }
+    }
+
+    function AddRule(elt, not, exp) {
+
+        elt = typeof elt !== 'undefined' ? elt : 'all';
+        not = typeof not !== 'undefined' ? not : 'is';
+        exp = typeof exp !== 'undefined' ? exp : '';
+
+
+        $("#tblData").append(
+        "<tr>"+
+        "<td class='col-sm-3'><select id='element_select_"+ id + "' class='form-control btnSelect' name='element_" + id + "'>" + element_list() + "</select></td>"+
+        "<td class='col-sm-2'><select id='element_not_"+ id + "' class='form-control' name='element_not_" + id + "'><option value='is'>{% trans "is" %}</option><option value='isnot'>{% trans "is not" %}</option></select></td>"+
+        "<td class='col-sm-6'><input class='form-control' type='text' name='expected_" + id + "' value='"+exp+"'/></td>"+
+        "<td><a class='btnDelete'><i class='fa fa-trash-o'></i></a></td>"+
+        "</tr>");
+
+
+        $("#element_select_"+ id + " option[value='"+elt+"']").prop('selected', true);
+        $("#element_not_"+ id + " option[value='"+not+"']").prop('selected', true);
+        $(".btnSelect").bind("change", updateFields);
+        $(".btnSelect").trigger("change");
+        $(".btnDelete").css('cursor', 'pointer');
+        $(".form-control").css('font-size', '10px');
+
+        $(".btnDelete").bind("click", Delete);
+
+        id++;
+        $("#tblData").tableDnD();
+    };
+
+     function Delete(){
+        var par = $(this).parent().parent(); //tr
+        par.remove();
+    };
+
+    //Add, Save, Edit and Delete functions code
+    $(".btnDelete").bind("click", Delete);
+    $("#btnAddRule").bind("click", AddRule);
+
+
+    /* LDAP fetch */
+    $('#id_ldap_repo').on("change", function(e){
+        e.preventDefault()
+        url = "/firewall/access/fetch_ldap_user/"+$('#id_ldap_repo').val();
+        $.get(url, function(data){
+            status = data['status'];
+            user_list = data['list_user'];
+            group_list = data['list_group'];
+            if (status=="true") {
+                document.getElementById('id_user_list').value="";
+                document.getElementById('base_dn').innerHTML=data['base_dn'];
+                document.getElementById('user_dn').innerHTML=data['user_dn'];
+                document.getElementById('group_dn').innerHTML=data['group_dn'];
+                try {
+                    $("#id_user_list").tagEditor('destroy');
+                } catch(e) {}
+                $("#id_user_list").tagEditor({
+                    initialTags: [{{modaccess.get_user_list|safe}}],
+                    autocomplete: {
+                        delay: 0, // show suggestions immediately
+                        position: { collision: 'flip' }, // automatic menu position up/down
+                        source: user_list
+                    },
+                    delimiter: '|',
+                    forceLowercase: false,
+                    maxLength: 9999
+                });
+                try {
+                    $("#id_group_list").tagEditor('destroy');
+                } catch(e) {}
+                $("#id_group_list").tagEditor({
+                    initialTags: [{{modaccess.get_group_list|safe}}],
+                    autocomplete: {
+                        delay: 0, // show suggestions immediately
+                        position: { collision: 'flip' }, // automatic menu position up/down
+                        source: group_list
+                    },
+                    delimiter: '|',
+                    forceLowercase: false,
+                    maxLength: 9999
+                });
+            }
+            else {
+                $("#id_user_list").tagEditor('destroy');
+                $("#id_group_list").tagEditor('destroy');
+                document.getElementById('id_user_list').value="";
+                document.getElementById('id_group_list').value="";
+                document.getElementById('base_dn').innerHTML="";
+                document.getElementById('user_dn').innerHTML="";
+                document.getElementById('group_dn').innerHTML="";
+            }
+        });
+
+
+    });
+
+
+
+   
+{% endblock %}
+

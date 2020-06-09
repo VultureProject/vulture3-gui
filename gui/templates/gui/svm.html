@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-task"></i>&nbsp;{% trans "Machine Learning Profile" %} - {{dataset.name}}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+
+        <div class="x_panel">
+            <div class="x_title">
+                <label>{% trans "Real time :" %}</label>
+                <img id="wait_ajax" src="{% static 'img/ajax_wait.svg' %}"/>
+                <div class="">
+                    <label>
+                        <input type="checkbox" class="js-switch" id="real_time"/>
+                    </label>
+                </div>
+            </div>
+            <div class="x_content">
+                <input type="hidden" id="dataset_id" value="{{dataset.id}}"/>
+                <input type="hidden" id="svm" value="charts"/>
+                <div class="col-sm-6"><div id="chart_req_per_ip" class="handle-resize" align="center" style="height:400px"></div></div>
+                <div class="col-sm-6"><div id="chart_req_per_user" class="handle-resize" align="center" style="height:400px"></div></div>
+                <div class="col-sm-6"><div id="chart_uri_analysis" class="handle-resize" align="center" style="height:400px"></div></div>
+                <div class="col-sm-6"><div id="chart_uri_analysis_2" class="handle-resize" align="center" style="height:400px"></div></div>
+                <div class="col-sm-6"><div id="chart_bytes_received" class="handle-resize" align="center" style="height:400px"></div></div>
+                <div class="col-sm-6"><div id="chart_ratio" class="handle-resize" align="center" style="height:400px"></div></div>
+                <!--<div class="col-sm-6"><div id="chart_bytes_sent" class="handle-resize" align="center" style="height:400px"></div></div>-->
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static "js/echarts3-all.min.js" %}"></script>
+    <script src="{% static "js/svm.js" %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+
+{% endblock %}

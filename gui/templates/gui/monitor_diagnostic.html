@@ -1,0 +1,97 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% load tags_utils %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-stethoscope"></i>&nbsp;{% trans "Status / Diagnostic" %}</h3></li>
+{% endblock %}
+
+
+{% block content %}
+    {% for node, modules in results.items %}
+        <div class="col-lg-4 col-md-6 col-sm-12 col-xs-12">
+            <div class="x_panel">
+              <div class="x_title">
+                <h2><span id="{{ node }}"></span>Node: <b>{% trans node|title %}</b></h2>
+                <ul class="nav navbar-right panel_toolbox" id="diagnostic-panel-toolbox">
+                  <li><a class="collapse-link"><i class="fa fa-chevron-up"></i></a></li>
+                  <li><a class="close-link"><i class="fa fa-close"></i></a></li>
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+              <div style="display: block;" class="x_content">
+
+                {% if modules %}
+                    {% for module, tests in modules.diagnostic.items %}
+                        {% if module != 'setup' and module != 'cleanup' and module != 'global_status' %}
+                            <!-- start accordion -->
+                            <div class="accordion" id="accordion1" role="tablist" aria-multiselectable="false">
+                              <div class="panel">
+                                <a class="panel-heading" role="tab" id="heading{{ modules.id }}{{module|add:module|search:' '|replace:''}}1" data-toggle="collapse" data-parent="#accordion1" href="#collapse{{ modules.id }}{{module|add:module|search:' '|replace:''}}1" aria-expanded="true" aria-controls="collapse{{ modules.id }}{{module|add:module|search:' '|replace:''}}">
+                                  <h4 class="panel-title"><span id="subtitle"></span>{{ module }}</h4>
+                                </a>
+                                <div style="height: 0px" aria-expanded="false" id="collapse{{ modules.id }}{{module|add:module|search:' '|replace:''}}1" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{ modules.id }}{{module|add:module|search:' '|replace:''}}">
+                                  <div class="panel-body">
+                                    <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="status-list">
+                                      <thead>
+                                        <tr>
+                                          <th>Test Name</th>
+                                          <th>Status</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {% for test, status in tests.items %}
+                                            <tr>
+                                              <td>{{ test|search:'_'|replace:' '|title }}</td>
+                                              <td>{% if status %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-exclamation-triangle" data-node="{{ node }}"></i>{% endif %}</td>
+                                            </tr>
+                                        {% endfor %}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- end of accordion -->
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+              </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}
+
+
+{% block css_include %}
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+    $('#application_list').DataTable()
+
+    var errors = $('.fa-exclamation-triangle');
+    if (errors.length){
+      $('.fa-exclamation-triangle').each(function(){
+        var node = $(this).data('node');
+        $('#'+node).html("<i class='fa fa-exclamation-triangle'>&nbsp;&nbsp;</i>");
+        
+        var subtitle = $(this).parents(".accordion").children().find('h4').find("#subtitle");
+        $(subtitle).html("<i class='fa fa-exclamation-triangle'>&nbsp;&nbsp;</i>");
+      })
+    }
+
+{% endblock %}

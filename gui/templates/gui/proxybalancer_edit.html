@@ -1,0 +1,370 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block css_include %}
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static "plugins/TableDnD/jquery.tablednd.js" %}"></script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form class="form-horizontal bootstrap-validator-form" action="/network/proxybalancer/edit/{% if object_id %}{{object_id}}{% endif %}" method="post" novalidate="novalidate">
+            {% csrf_token %}
+            <div class="x_panel">
+                  <div class="x_title">
+                    <h2><i class="fa fa-globe"></i>&nbsp;{% trans "Proxy Balancer" %}</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                        <li><a href="/network/proxybalancer/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                        <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <div class="x_content">
+                        <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                          <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                            <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Settings" %}</a>
+                            </li>
+                            <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Members" %}</a>
+                            </li>
+                            <li role="presentation" class=""><a href="#tab_content3" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Health Check" %}</a>
+                            </li>
+                          </ul>
+                            <div id="myTabContent" class="tab-content">
+                                <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Friendly name" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.name}}
+                                            {{form.name.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Load-balancing method" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.lbmethod}}
+                                            {{form.lbmethod.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Sticky session" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.stickysession}}
+                                            {{form.stickysession.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Sticky session separator" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.stickysessionsep}}
+                                            {{form.stickysessionsep.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Expert config" %}</label>
+                                        <div class="col-sm-5">
+                                                {{form.config}}
+                                                {{form.config.errors}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="tab_content2" aria-labelledby="home-tab">
+                                    <table id="tblData_member" class="table table-bordered table-striped table-hover table-heading table-datatable">
+                                        <thead>
+                                            <tr>
+                                                <th>{% trans "Backend Type" %}</th>
+                                                <th>{% trans "IP Address" %}</th>
+                                                <th>{% trans "Disable reuse" %}</th>
+                                                <th>{% trans "KeepAlive" %}</th>
+                                                <th>{% trans "Group ID" %}</th>
+                                                <th>{% trans "Retry" %}</th>
+                                                <th>{% trans "Route" %}</th>
+                                                <th>{% trans "Timeout" %}</th>
+                                                <th>{% trans "TTL" %}</th>
+                                                <th>{% trans "Expert Config" %}</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                        {{ form.members.errors }}
+                                    </table>
+                                    <div class="add-group">
+                                        <button class="addlink addplus" id="btnAddMember" type="button">{% trans "Add a member" %}</button>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="tab_content3" aria-labelledby="home-tab">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Health checking method" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.hcmethod}}
+                                            {{form.hcmethod.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group hc_enabled">
+                                        <label class="col-sm-4 control-label">{% trans "Number of successful health check tests before worker is re-enabled" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.hcpasses}}
+                                            {{form.hcpasses.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group hc_enabled">
+                                        <label class="col-sm-4 control-label">{% trans "Number of failed health check tests before worker is disabled" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.hcfails}}
+                                            {{form.hcfails.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group hc_enabled">
+                                        <label class="col-sm-4 control-label">{% trans "Period of health checks in seconds (e.g. performed every 30 seconds)" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.hcinterval}}
+                                            {{form.hcinterval.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group hc_enabled hc_http">
+                                        <label class="col-sm-4 control-label">{% trans "Additional URI to be appended to the worker URL for the health check" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.hcuri}}
+                                            {{form.hcuri.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group hc_enabled hc_http">
+                                        <label class="col-sm-4 control-label">{% trans "Expression used to check response headers for health" %}</label>
+                                        <div class="col-sm-4">
+                                            {{form.hcexpr}}
+                                            {{form.hcexpr.errors}}
+                                        </div>
+                                        <div class="col-sm-4 body_check">
+                                            {{form.hcexpr_data}}
+                                            {{form.hcexpr_data.errors}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block jquery_code  %}
+    
+    //Fixme: Set to the number of item in the header list
+    var id = 0;
+
+    {% for member in members %}
+        AddMember("{{member.uri_type}}","{{ member.uri }}","{{ member.disablereuse }}","{{ member.keepalive }}",
+        "{{ member.lbset }}", "{{ member.retry }}","{{ member.route }}","{{ member.timeout }}","{{ member.ttl }}", "{{ member.config }}");
+    {% endfor %}
+
+    function uri_type_list() {
+
+        var str='<option value="http">http</option>';
+        str = str + '<option value="https">https</option>';
+        str = str + '<option value="ftp">ftp</option>';
+        str = str + '<option value="fcgi">fcgi</option>';
+        str = str + '<option value="scgi">scgi</option>';
+        str = str + '<option value="wstunnel">wstunnel</option>';
+        str = str + '<option value="ajp">ajp</option>';
+        return str;
+    }
+
+    var balancer_value_list = [
+        {"code": "maxattempts=", "description": "{% trans "maxattempts= Number of try before failure" %}"},
+        {"code": "nofailover=", "description": "{% trans "nofailover= If set to 'On', session will stop if backend server is not available" %}"},
+        {"code": "scolonpathdelim=", "description": "{% trans "scolonpathdelim= If set to 'On', ';' will be used as a separator for path session" %}"},
+        {"code": "timeout=", "description": "{% trans "timeout= How long to wait for a free backend, in second" %}"},
+        {"code": "failonstatus=", "description": "{% trans "failonstatus= List of semicolon-separated HTTP code to fail on, if returned by backend" %}"},
+        {"code": "failontimeout=", "description": "{% trans "failontimeout= If set to 'On', the process will fail if backend do not respond before timeout" %}"},
+        {"code": "forcerecovery=", "description": "{% trans "forcerecovery= If set to 'On', backend will be contacted again, regardless of 'retry', if all backend are failed" %}"},
+
+    ];
+
+    var member_value_list = [
+        {"code": "min=", "description": "{% trans "min= Minimum pool entries" %}"},
+        {"code": "max=", "description": "{% trans "max= Maximum pool entries. Default is ThreadsPerChild" %}"},
+        {"code": "acquire=", "description": "{% trans "acquire= How long to wait for a free connection in pool, in millisecond" %}"},
+        {"code": "connectiontimeout=", "description": "{% trans "connectionTimeout= How long to wait for a connection, in second or millisecond (ms)" %}"},
+        {"code": "flushpackets=", "description": "{% trans "flushpackets= Define output buffer flushing" %}"},
+        {"code": "flushwait=", "description": "{% trans "flushwait= If flush packets is set to 'auto', defines the wait time in milliseconds" %}"},
+        {"code": "iobuffersize=", "description": "{% trans "iobuffersize= Override ProxyIOBufferSize" %}"},
+        {"code": "ping=", "description": "{% trans "ping= Backend must respond to CPING before this time, in second or millisecond (ms)" %}"},
+        {"code": "receivebuffersize=", "description": "{% trans "receivebuffersize= Override ProxyReceiveBufferSize" %}"},
+        {"code": "redirect=", "description": "{% trans "redirect= Route to redirect to if no session ID defined" %}"},
+        {"code": "status=", "description": "{% trans "status= Initial status of backend (D,S,I,H,E,N)" %}"},
+    ];
+
+    function imAutocompleteJSONParse(data) {
+        var rows = [];
+        var rowData = null;
+        var dataLength = data.length;
+        for (var i = 0; i < dataLength; i++) {
+            rowData = data[i];
+            rows[i] = {
+                label: rowData.description,
+                value: rowData.code
+            };
+        }
+        return rows;
+    }
+
+    function AddMember(uri_type, uri, disablereuse, keepalive, lbset, retry, route, timeout, ttl, config) {
+
+        uri_type            = typeof uri_type !== 'object' ? uri_type : 'http';
+        uri                 = typeof uri !== 'undefined' ? uri : '192.168.1.1';
+        disablereuse        = typeof disablereuse !== 'undefined' ? disablereuse : 'Off';
+        keepalive           = typeof keepalive !== 'undefined' ? keepalive : 'Off';
+        lbset               = typeof lbset !== 'undefined' ? lbset : '0';
+        retry               = typeof retry !== 'undefined' ? retry : '60';
+        route               = typeof route !== 'undefined' ? route : 'node_'+id;
+        timeout             = typeof timeout !== 'undefined' ? timeout : '';
+        ttl                 = typeof ttl !== 'undefined' ? ttl : '';
+        config              = typeof config !== 'undefined' ? config : '';
+
+
+        $("#tblData_member").append(
+            "<tr>"+
+            "<td class='col-sm-1'><select id='uri_type_"+ id + "' class='form-control btnSelect' name='uri_type_" + id + "'>" + uri_type_list() + "</select></td>"+
+            "<td class='col-sm-1'><input type='text' class='form-control' name='uri_" + id + "' value='" + uri + "'/></td>"+
+            "<td class='col-sm-1'><div class='toggle-switch toggle-switch-primary'><label><input type='checkbox' class='form-control disablereuse_" + id + "' name='disablereuse_" + id + "'><div class='toggle-switch-inner'></div></label></div></td>"+
+            "<td class='col-sm-1'><div class='toggle-switch toggle-switch-primary'><label><input type='checkbox' class='form-control keepalive_" + id + "' name='keepalive_" + id + "' /><div class='toggle-switch-inner'></div></label></div></td>"+
+            "<td class='col-sm-1'><input type='text' class='form-control' name='lbset_" + id + "' value='" + lbset + "'/></td>"+
+            "<td class='col-sm-1'><input type='text' class='form-control' name='retry_" + id + "' value='" + retry + "'/></td>"+
+            "<td class='col-sm-1'><input type='text' class='form-control' name='route_" + id + "' value='" + route + "'/></td>"+
+            "<td class='col-sm-1'><input type='text' class='form-control' name='timeout_" + id + "' value='" + timeout + "'/></td>"+
+            "<td class='col-sm-1'><input type='text' class='form-control' name='ttl_" + id + "' value='" + ttl + "'/></td>"+
+            "<td class='col-sm-3'><input type='text' class='form-control config_"+id+"' name='config_" + id + "' value='" + config + "'/></td>"+
+            "<td><a class='btnDelete'><i class='fa fa-trash-o'></i></a></td>"+
+            "</tr>"
+        );
+
+
+        $("#id_hcexpr").bind("change", toggleBODY);
+        function toggleBODY() {
+            if ($(this).val().includes("body")) {
+                $(".body_check").show();
+            }
+            else {
+                $(".body_check").hide();
+            }
+        }
+        $("#id_hcexpr").trigger('change');
+
+
+        $("#id_hcmethod").bind("change", toggleHC);
+        function toggleHC() {
+            if ($(this).val()!="" && $(this).val()!="None") {
+                $(".hc_enabled").show();
+                if ($(this).val()=="OPTIONS" || $(this).val()=="HEAD" || $(this).val()=="GET") {
+                    $(".hc_http").show();
+
+                    if ($("#id_hcexpr").val().includes("body")) {
+                        $(".body_check").show();
+                    }
+                    else {
+                        $(".body_check").hide();
+                    }
+                }
+                else {
+                    $(".hc_http").hide();
+                }
+            }
+            else {
+                $(".hc_enabled").hide();
+            }
+        }
+        $("#id_hcmethod").trigger('change');
+
+
+
+
+
+
+
+        $("#uri_type_"+ id + " option[value='"+uri_type+"']").prop('selected', true);
+        if (disablereuse=="True") {
+            $(".disablereuse_"+ id).prop('checked', true);
+        }
+        else {
+            $(".disablereuse_"+ id).prop('checked', false);
+        }
+
+        if (keepalive=="True") {
+            $(".keepalive_"+ id).prop('checked', true);
+        }
+        else {
+            $(".keepalive_"+ id).prop('checked', false);
+        }
+
+        $(".btnDelete").css('cursor', 'pointer');
+        $(".btnDelete").bind("click", Delete);
+        $(".form-control").css('font-size', '10px');
+
+        $(".config_"+id).tagEditor({
+            autocomplete: {
+                delay: 0, // show suggestions immediately
+                position: { collision: 'flip' }, // automatic menu position up/down
+                source: function(request, response) {
+                    var rows = imAutocompleteJSONParse(member_value_list);
+                    return response(rows);
+                },
+            },
+            delimiter: ',',
+            forceLowercase: false,
+        });
+
+        id++;
+        $("#tblData_member").tableDnD();
+
+    };
+
+
+    function Delete(){
+        var par = $(this).parent().parent(); //tr
+        par.remove();
+    };
+
+    //Add, Save, Edit and Delete functions code
+    $(".btnDelete").bind("click", Delete);
+    $("#btnAddMember").bind("click", AddMember);
+
+    $("#id_config").tagEditor({
+        autocomplete: {
+            delay: 0, // show suggestions immediately
+            position: { collision: 'flip' }, // automatic menu position up/down
+            source: function(request, response) {
+                var rows = imAutocompleteJSONParse(balancer_value_list);
+                return response(rows);
+            },
+        },
+        delimiter: ',',
+        forceLowercase: false,
+    });
+
+    var intf_table = $('#tblData_member').dataTable({
+        "dom": "<p<'searchbox'f><t>>",
+        "autoWidth": false,
+        "language": {
+            "search": "",
+            "lengthMenu": '_MENU_',
+            "pagingType": "bootstrap",
+            "paginate": {
+                "next": '<img src="{% static 'img/right.png' %}"/>',
+                "previous": '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+    });
+
+{% endblock %}

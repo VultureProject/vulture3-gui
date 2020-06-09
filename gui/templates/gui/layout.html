@@ -1,0 +1,274 @@
+{% load i18n %}{% load staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Vulture</title>
+    <link href="{% static 'vendors/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'plugins/bootstrapvalidator/bootstrapValidator.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/select2/dist/css/select2.min.css' %}" rel="stylesheet">
+    <link href="{% static 'plugins/jquery-ui/jquery-ui.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/switchery/dist/switchery.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/jquery.tag-editor.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/pnotify/dist/pnotify.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/pnotify/dist/pnotify.buttons.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/pnotify/dist/pnotify.nonblock.css' %}" rel="stylesheet">
+    <link href="{% static 'css/custom.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    {% block css_include %}{% endblock %}
+  </head>
+
+  <body class="nav-md">
+    <div class="container body">
+      <div class="main_container">
+        <div class="col-md-3 left_col">
+          <div class="left_col scroll-view">
+            <div class="navbar nav_title" style="border: 0;">
+              <a href="/" class="site_title"><img id='large_logo' src="{% static 'img/vulture_logo.png' %}"/><img id='small_logo' style="display:none;" src="{% static 'img/vulture-logo-small.png' %}"/>&nbsp;&nbsp;<!--<span>Vulture</span>--></a>
+            </div>
+
+            <div class="clearfix"></div>
+
+            <br />
+
+            <div class="modal fade" id="modal_success" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content" >
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="myModalLabel">{% trans "Engine status" %}</h4>
+                        </div>
+                        <div class="modal-body" >
+                            <span id="modal_msg"></span>
+                        </div>
+                     </div>
+                </div>
+            </div>
+            <div class="modal fade" id="modal_askpass" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content" >
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="myModalLabel">{% trans "Engine status" %}</h4>
+                        </div>
+                        <div class="modal-body" >
+                            <span id="modal_askpass_msg"></span>
+                        </div>
+                     </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="modal_error" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content" >
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            <h4 class="modal-title" id="myModalLabel">{% trans "Engine status: Configuration error" %}</h4>
+                        </div>
+                        <div class="modal-body" >
+                            <span id="modal_errors"></span>
+                        </div>
+                     </div>
+                </div>
+            </div>
+
+            {% block sidebar %}{% endblock %}
+            <!-- /menu footer buttons -->
+          </div>
+        </div>
+
+        <!-- top navigation -->
+        <div class="top_nav">
+          <div class="nav_menu">
+            <nav>
+              <div class="nav toggle">
+                <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+              </div>
+
+              <ul class="nav navbar-nav navbar-left">
+                {% block navleft %}{% endblock %}
+              </ul>
+              <ul class="nav navbar-nav navbar-right" >
+                <li class="">
+                  <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                   {{ request.user.nb_session }}{% if request.user.nb_session == 1 %}{% trans " user connected" %}{% else %}{% trans " users connected" %}{% endif %} - <i class="fa fa-user"></i>
+                    <span class=" fa fa-angle-down"></span>
+                  </a>
+                  <ul class="dropdown-menu dropdown-usermenu pull-right">
+                    <li><a href="/logout"><i class="fa fa-sign-out pull-right"></i>{% trans "Log Out" %} - &nbsp;&nbsp;{{ request.user.username|title }}</a></li>
+                  </ul>
+                </li>
+
+                <li role="presentation" class="dropdown" id="notification-bell-widget">
+                  <a href="javascript:;" class="dropdown-toggle info-number" data-toggle="dropdown" aria-expanded="false">
+                    <i class="fa fa-bell"></i>
+                    <span class="badge bg-green" id="notification-number"></span>
+                  </a>
+                  <ul id="menu" class="dropdown-menu list-unstyled msg_list" role="menu">
+                      <li id="update-notification"><a href="/cluster/update/"><i class="fa fa-warning fa-2x"></i>&nbsp;&nbsp;{% trans "Update available" %}</a></li>
+                      <li id="vulns-notification"><a href="/cluster/update/" id="widget-vulns-text"><i class="fa fa-warning fa-2x"></i></a></li>
+                      <li id="diagnostic-notification"><a href="/monitor/diagnostic/" id="widget-diagnostic-text"><i class="fa fa-warning fa-2x"></i><b>&nbsp;&nbsp;{% trans "Diagnostic" %}</b></a></li>
+                  </ul>
+                </li>
+
+              </ul>
+            </nav>
+          </div>
+        </div>
+        <!-- /top navigation -->
+
+        <!-- page content -->
+        <div class="right_col" role="main">
+            {% block content %}{% endblock %}
+        </div>
+        <!-- /page content -->
+
+        <!-- footer content -->
+        <!-- <footer>
+          <div class="pull-right">
+          	Vulture
+          </div>
+          <div class="clearfix"></div>
+        </footer> -->
+        <!-- /footer content -->
+      </div>
+    </div>
+
+    <script src="{% static 'vendors/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'vendors/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'plugins/jquery-ui/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'vendors/select2/dist/js/select2.full.min.js' %}"></script>
+    <script src="{% static 'vendors/switchery/dist/switchery.min.js' %}"></script>
+    <script src="{% static 'plugins/jQuery-tagEditor-master/jquery.tag-editor.min.js' %}"></script>
+    <script src="{% static 'js/custom.min.js' %}"></script>
+    <script src="{% static 'js/moment.min.js' %}"></script>
+    <script src="{% static 'vendors/pnotify/dist/pnotify.js' %}"></script>
+    <script src="{% static 'vendors/pnotify/dist/pnotify.buttons.js' %}"></script>
+    <script src="{% static 'vendors/pnotify/dist/pnotify.nonblock.js' %}"></script>
+    <script src="{% static 'vendors/fastclick/lib/fastclick.js' %}"></script>
+    <script src="{% static 'js/vulture.js' %}"></script>
+    {% block js_include %}{% endblock %}
+
+    <script>
+      $(function(){
+
+        {% block jquery_code %}{% endblock %}
+
+        $('#notification-bell-widget').hide();
+        $('#update-notification').hide();
+        $('#vulns-notification').hide();
+        $('#diagnostic-notification').hide();
+
+        $('[data-type="tooltip"]').tooltip();
+
+        window.nbr_notifications = 0;
+
+        $.getJSON( "/cluster/update/status/", function(data) {
+            if(data['need_update'] == true){
+                $('#notification-bell-widget').show();
+                $('#update-notification').show();
+                window.nbr_notifications += 1;
+                $("#notification-number").text(window.nbr_notifications.toString());
+            }
+        });
+
+        /*$('#menu_toggle').click(() => {
+            $.post(link, { collapse: true }, (data) => {
+              console.log("SUCCESS!")
+            });
+        });*/
+
+        $.getJSON( "/cluster/vulns/status/", function(data) {
+            if( data['need_update'] == true ) {
+                $('#widget-vulns-text').append("<b> Packets vulns: </b>"+data['global_vulns']+"<br> <b> Kernel vulns: </b>"+data['kernel_vulns']+"<br> <b> BSD version vulns: </b>"+data['distrib_vulns']);
+                $('#notification-bell-widget').show();
+                $('#vulns-notification').show();
+                window.nbr_notifications += 1;
+                $("#notification-number").text(window.nbr_notifications.toString());
+            }
+        });
+
+        $.getJSON("/cluster/diagnostic/status/", function(data) {
+            $.each(data, function(node, status) {
+                if (!status) {
+                    $('#widget-diagnostic-text').append("<br/>Error on node <b>" + node + "</b>.");
+                    $('#notification-bell-widget').show();
+                    $('#diagnostic-notification').show();
+                    window.nbr_notifications += 1;
+                    $("#notification-number").text(window.nbr_notifications.toString());
+                }
+            });
+        });
+
+        $('#app_reload').click(function(e){
+            e.preventDefault();
+
+            var btn = this;
+            $($(btn).find('i')[0]).addClass('fa-spin');
+            var href = $(this).attr('href');
+
+
+
+            $.post(
+                href,
+                null,
+
+                function(data){
+                    $($(btn).find('i')[0]).removeClass('fa-spin');
+                    var status = data['status'];
+                    if(status === true){
+                        new PNotify({
+                            title: 'Success',
+                            text: data['msg'],
+                            type: 'success',
+                            styling: 'bootstrap3',
+                            nonblock: {
+                                nonblock: true
+                            }
+                        });
+                        
+                        $('#app_reload').hide();
+                        refresh_status();
+                    }
+                    else if(data['need_pass']){
+                        var ssl_profiles = data['need_pass'];
+                        $.each(ssl_profiles, function(key, value) {});
+                        $('#modal_askpass_msg').html(data['html']);
+                        $('#modal_askpass').modal('show');
+                    }
+                    else {
+                        var errors = data['errors'];
+                        if (errors.constructor === Array){
+                            var ul = $('<ul/>').appendTo('#modal_errors');
+                            $.each(errors, function(key, value) {
+                                var li = $('<li/>').addClass('ui-menu-item').attr('role', 'menuitem').appendTo(ul);
+                                var group = $('<span/>').text(value).appendTo(li);
+                            });
+                        }
+                        else {
+                            new PNotify({
+                                title: 'Error',
+                                text: data['errors'],
+                                type: 'error',
+                                styling: 'bootstrap3',
+                                nonblock: {
+                                    nonblock: true
+                                }
+                            })
+                        }
+                        $('#modal_error').modal('show');
+                    }
+                }
+            )
+        })
+      })
+    </script>
+  </body>
+</html>

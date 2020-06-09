@@ -1,0 +1,142 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-globe"></i>&nbsp;{% trans "Report / Map" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="col-sm-12 col-lg-3">
+                <label class="control-label">{% trans "Applications" %}</label>&nbsp;&nbsp;
+                <div class="btn-group btn-group-xs">
+                    <button id="all_apps" class="btn btn-default">{% trans "All" %}</button>
+                    <button id="no_apps" class="btn btn-danger"><i class="fa fa-times"></i></button>
+                </div>
+                <select id="app_select" multiple="multiple" class="reload_map" style="margin-top:5px;">
+                    {% for app in apps %}
+                        <option value="{{ app.id }}">{{ app.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-sm-12 col-lg-3">
+                <label class="control-label">{% trans "Status codes" %}</label>
+                <select id="status_code" multiple="multiple" class="reload_map">
+                    <option value="100">100</option>
+                    <option value="101">101</option>
+                    <option value="102">102</option>
+                    <option value="200">200</option>
+                    <option value="201">201</option>
+                    <option value="202">202</option>
+                    <option value="203">203</option>
+                    <option value="204">204</option>
+                    <option value="205">205</option>
+                    <option value="206">206</option>
+                    <option value="207">207</option>
+                    <option value="210">210</option>
+                    <option value="226">226</option>
+                    <option value="301">301</option>
+                    <option value="302">302</option>
+                    <option value="303">303</option>
+                    <option value="304">304</option>
+                    <option value="305">305</option>
+                    <option value="306">306</option>
+                    <option value="307">307</option>
+                    <option value="308">308</option>
+                    <option value="310">310</option>
+                    <option value="400">400</option>
+                    <option value="401">401</option>
+                    <option value="402">402</option>
+                    <option value="403">403</option>
+                    <option value="404">404</option>
+                    <option value="405">405</option>
+                    <option value="406">406</option>
+                    <option value="407">407</option>
+                    <option value="408">408</option>
+                    <option value="409">409</option>
+                    <option value="410">410</option>
+                    <option value="411">411</option>
+                    <option value="413">413</option>
+                    <option value="414">414</option>
+                    <option value="415">415</option>
+                    <option value="416">416</option>
+                    <option value="417">417</option>
+                    <option value="418">418</option>
+                    <option value="421">421</option>
+                    <option value="422">422</option>
+                    <option value="423">423</option>
+                    <option value="424">424</option>
+                    <option value="425">425</option>
+                    <option value="426">426</option>
+                    <option value="428">428</option>
+                    <option value="429">429</option>
+                    <option value="431">431</option>
+                    <option value="444">444</option>
+                    <option value="449">449</option>
+                    <option value="450">450</option>
+                    <option value="451">451</option>
+                    <option value="456">456</option>
+                    <option value="500">500</option>
+                    <option value="501">501</option>
+                    <option value="502">502</option>
+                    <option value="503">503</option>
+                    <option value="504">504</option>
+                    <option value="505">505</option>
+                    <option value="506">506</option>
+                    <option value="507">507</option>
+                    <option value="508">508</option>
+                    <option value="509">509</option>
+                    <option value="510">510</option>
+                    <option value="511">511</option>
+                    <option value="520">520</option>
+                    <option value="521">521</option>
+                    <option value="522">522</option>
+                    <option value="523">523</option>
+                    <option value="524">524</option>
+                    <option value="525">525</option>
+                    <option value="526">526</option>
+                    <option value="527">527</option>
+                </select>
+            </div>
+
+            <div class="col-sm-12 col-lg-6">
+                <label class="control-label">{% trans "Reputations" %}</label>&nbsp;&nbsp;
+                <div class="btn-group btn-group-xs">
+                    <button id="all_tags" class="btn btn-default">{% trans "All" %}</button>
+                    <button id="no_tags" class="btn btn-danger"><i class="fa fa-times"></i></button>
+                </div>
+                <select id="tags_select" multiple="multiple" class="reload_map" style="margin-top:5px;">
+                    {% for tag in tags %}
+                        <option value="{{ tag }}">{{ tag }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        </div>
+    </div>
+    <br/>
+    <div class="row">
+        <div class="col-md-12" id="chart_map" style="height:750px;"></div>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'js/echarts3-all.min.js' %}"></script>
+    <script src="{% static 'js/world_map.js' %}"></script>
+    <script src="{% static 'js/report_map.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+{% endblock %}

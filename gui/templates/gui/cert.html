@@ -1,0 +1,169 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-desktop"></i>&nbsp;{% trans "Certificates" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="x_panel">
+              <div class="x_content">
+                <div role="tabpanel" data-example-id="togglable-tabs">
+                    <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Certificate" %}</a>
+                        </li>
+                        <li role="presentation"><a href="#tab_content2" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Trusted CAs" %}</a>
+                        </li>
+                    </ul>
+                    <div id="myTabContent" class="tab-content">
+                        <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                            <div class="form-group">
+                                <label>{% trans "Show revoked certificate" %}:</label>
+                                <input type="checkbox" id="show_revoked" class="js-switch"/>
+                            </div> 
+                            <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="cert_list">
+                                <thead>
+                                    <tr>
+                                        <th>{% trans "Subject" %}</th>
+                                        <th>{% trans "Name" %}</th>
+                                        <th>{% trans "Issuer" %}</th>
+                                        <th>{% trans "Valid From" %}</th>
+                                        <th>{% trans "Valid Till" %}</th>
+                                        <th>{% trans "Action" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for cert in certs %}
+                                    <tr {% if cert.status == 'R' %}class="tr-striped"{% endif %} >
+                                        <td>{{cert.cn}}{% if cert.is_ca%}&nbsp;&nbsp;<span><i class="fa fa-star"></i> {%endif %}</td>
+                                        <td>{{cert.name}}</td>
+                                        <td>{{cert.issuer}}</td>
+                                        <td>{{cert.validfrom}}</td>
+                                        <td>{{cert.validtill}}</td>
+                                        <td class="action">
+                                            <a class="action_button"  href="/system/cert/download/{{cert.id}}" target="_blank"><span><i class="fa fa-download"></i></span></a>
+                                            <a class="action_button"  href="/system/cert/edit/{{cert.id}}" ><span><i class="fa fa-pencil"></i></span></a>
+                                            {%  if cert.status == 'V' and not cert.is_ca %}
+                                                <a class="action_button"  href="/system/cert/revoke/{{cert.id}}"><span><i class="fa fa-ban"></i></span></a>
+                                            {% elif "CN=Vulture_PKI" not in cert.issuer %}
+                                                <a class="action_button"  href="/system/cert/revoke/{{cert.id}}"><span><i class="fa fa-trash-o"></i></span></a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                            <div class="add-group">
+                                <a class="addlink addplus" href="/system/cert/create">{% trans "Create a certificate" %} </a>
+                                <a class="addlink addplus" href="/system/cert/sign">{% trans "Sign a request" %} </a>
+                                <a class="addlink addplus" href="/system/cert/import">{% trans "Import a certificate" %} </a>
+                            </div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="tab_content2" aria-labelledby="home-tab"> 
+                            <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="trusted_ca_list">
+                                <thead>
+                                    <tr>
+                                        <th>{% trans "Subject" %}</th>
+                                        <th>{% trans "Name" %}</th>
+                                        <th>{% trans "Issuer" %}</th>
+                                        <th>{% trans "Valid From" %}</th>
+                                        <th>{% trans "Valid Till" %}</th>
+                                        <th>{% trans "Action" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for cert in trusted_ca_list %}
+                                    <tr {% if cert.status == 'R' %}class="tr-striped"{% endif %} >
+                                        <td>{{cert.cn}}</td>
+                                        <td>{{cert.name}}</td>
+                                        <td>{{cert.issuer}}</td>
+                                        <td>{{cert.validfrom}}</td>
+                                        <td>{{cert.validtill}}</td>
+                                        <td class="action">
+                                            <a class="action_button"  href="/system/cert/download/{{cert.id}}" target="_blank"><span><i class="fa fa-download"></i></span></a>
+                                            {%  if cert.status == 'V' and not cert.is_ca %}
+                                                <a class="action_button"  href="/system/cert/revoke/{{cert.id}}"><span><i class="fa fa-ban"></i></span></a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                            <div class="add-group">
+                                <a class="addlink addplus" href="/system/cert/import-trusted-ca">{% trans "Import a trusted CA" %} </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <div>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+    $('#cert_list').DataTable({
+        "dom": "<p<'searchbox'f><t>>",
+        "autoWidth": false,
+        "language": {
+            "search": "",
+            "lengthMenu": '_MENU_',
+            "pagingType": "bootstrap",
+            "paginate": {
+                "next": '<img src="{% static 'img/right.png' %}"/>',
+                "previous": '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+    });
+
+    $('#trusted_ca_list').DataTable({
+        "dom": "<p<'searchbox'f><t>>",
+        "autoWidth": false,
+        "language": {
+            "search": "",
+            "lengthMenu": '_MENU_',
+            "pagingType": "bootstrap",
+            "paginate": {
+                "next": '<img src="{% static 'img/right.png' %}"/>',
+                "previous": '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+    });
+
+    $('#show_revoked').on('change', function(){
+        if ($(this).is(':checked')){
+            $('#cert_list tbody tr').each(function(){
+                if ($(this).hasClass('tr-striped'))
+                    $(this).show()
+            })
+        } else {
+            $('#cert_list tbody tr').each(function(){
+                if ($(this).hasClass('tr-striped'))
+                    $(this).hide()
+            })
+        }
+    })
+
+    $('#show_revoked').trigger('change');
+{% endblock %}

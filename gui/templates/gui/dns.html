@@ -1,0 +1,161 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load tags_utils %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<form class="form-horizontal bootstrap-validator-form" action="/services/dns/{% if object_id %}{{object_id}}{% endif %}" method="post" novalidate="novalidate">
+			{% csrf_token %}
+			<div class="x_panel">
+	          <div class="x_title">
+	            <h2><i class="fa fa-desktop"></i>&nbsp;{% trans "Vulture Service Settings" %}</h2>
+	            <ul class="nav navbar-right panel_toolbox">
+	            	<li><a href="/services/dns/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+	                <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+	            </ul>
+	            <div class="clearfix"></div>
+	          </div>
+	          <div class="x_content">
+	            <div class="" role="tabpanel" data-example-id="togglable-tabs">
+	              <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+	                <li role="presentation" class=""><a href="/services/global/">{% trans "Settings panel" %}</a>
+	                </li>
+	                <li role="presentation" class="active"><a href="#">{% trans "DNS" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="/services/ntp/">{% trans "NTP" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="/services/smtp/">{% trans "SMTP" %}</a>
+	                </li>
+                    <li role="presentation" class=""><a href="/services/ssh/">{% trans "SSH" %}</a>
+                    </li>
+                      <li role="presentation" class=""><a href="/services/ipsec/">{% trans "IPSEC" %}</a>
+                    </li>
+	              </ul>
+	            </div>
+
+                <fieldset class="col-sm-8">
+                    <legend>{% trans "DNS Settings" %}</legend>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"> {% trans "Configure DNS Settings of" %} </label>
+                        <div class="col-sm-5">
+                            <select id="cluster_select" class="has-popover form-control" style="margin-top:5px;">
+                                <option value="" >{% trans "Vulture Cluster" %}</option>
+                                {% for node in cluster.members %}
+                                <option value="{{ node.id }}">Node {{ node.name }}</option>
+                                {% endfor %}
+                            </select>
+                            </div>
+                    </div>
+
+                    {% if object_id %}
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Get DNS config from cluster" %}</label>
+                            <div class="col-sm-5">
+                                <div class="toggle-switch toggle-switch-primary">
+                                    <label>
+                                        {{ form.cluster_based_conf }}
+                                        <div class="toggle-switch-inner"></div>
+                                        <div class="toggle-switch-switch"><i class="fa fa-check"></i></div>
+                                    </label>
+                                </div>
+                            </div>
+                    </div>
+                    {% endif %}
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "DNS Domain" %}</label>
+                            <div class="col-sm-5">
+                            {{form.dns_domain}}
+                            {{form.dns_domain.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "DNS Server Address #1" %}</label>
+                            <div class="col-sm-5">
+                            {{form.server_address_1}}
+                            {{form.server_address_1.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "DNS Server Address #2" %}</label>
+                            <div class="col-sm-5">
+                            {{form.server_address_2}}
+                            {{form.server_address_2.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "DNS Server Address #3" %}</label>
+                            <div class="col-sm-5">
+                            {{form.server_address_3}}
+                            {{form.server_address_3.errors}}
+                            </div>
+                    </div>
+                </fieldset>
+
+	          </div>
+	        </div>
+	    </form>
+	</div>
+	
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+
+{% endblock %}
+
+{% block jquery_code %}
+
+    {% if object_id %}
+        /* Select current edited Node */
+        $('#cluster_select option[value={{ object_id }}]').prop('selected', true);
+
+        /* Disable form fields and fill them with cluster values if configuration is cluster based */
+        $("#id_cluster_based_conf").bind("change load", function(event){
+            if ($("#id_cluster_based_conf").is(":checked")){
+                $("input[name*='server_address_']" ).prop('disabled', true);
+                $("input[name='dns_domain']" ).prop('disabled', true);
+                $("input[name='dns_domain']" ).val('{{ cluster.system_settings.dns_settings.dns_domain }}');
+                {% for field in cluster.system_settings.dns_settings %}
+                    {% if cluster.system_settings.dns_settings|key:field %}
+                       $("input[name='{{field}}']").val('{{cluster.system_settings.dns_settings|key:field }}');
+                    {% endif %}
+                {% endfor %}
+            } else {
+                $("input[name*='server_address_']" ).prop('disabled', false);
+                $("input[name='dns_domain']" ).prop('disabled', false);
+            }
+        });
+        $('#id_cluster_based_conf').trigger('load');
+
+    {% endif %}
+
+
+    $('#cluster_select').bind("change", updateFields);
+    function updateFields () {
+        var id=$(this).val();
+        document.location.href= '/services/dns/' + id;
+    }
+
+    if( "{{ popup }}" != "" ) {
+    new PNotify({
+        title: '{{ popup.0 }}',
+        text: '<a style="color:white; text-decoration: underline; font-weight: bold;">{{ popup.1 | linebreaks }}</a>',
+        {% if popup.0 == "UP" or popup.0 == "DOWN" %}type: 'success',{% else %}type: 'error',{% endif %}
+        styling: 'bootstrap3',
+        width: '500px',
+        buttons: {
+            closer: true,
+            sticker: false
+        }
+    });
+  }
+
+{% endblock %}

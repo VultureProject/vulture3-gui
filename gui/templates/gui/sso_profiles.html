@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-user"></i>&nbsp;{% trans "SSO Profiles" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="profile_list">
+            <thead>
+                <tr>
+                    <th>{% trans "Application" %}</th>
+                    <th>{% trans "Repository" %}</th>
+                    <th>{% trans "Login" %}</th>
+                    <th>{% trans "Action" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for profile in profiles %}
+                <tr id="{{ profile.app_id }}">
+                    <td>{{profile.app_name}}</td>
+                    <td>{{profile.repo_name}}</td>
+                    <td>{{profile.login}}</td>
+                    <td class="action">
+                        <a class="has-popover action_button" href="/repository/sso_profiles/delete/{{profile.app_id}}/{{ profile.login }}"><span><i class="fa fa-trash-o"></i></span></a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+
+    $('#profile_list').DataTable({
+        "dom": "<p<'searchbox'f><tl>",
+        "autoWidth": true,
+        "language": {
+            "search": "",
+            "lengthMenu": '_MENU_',
+            "pagingType": "bootstrap",
+            "paginate": {
+                "next": '<img src="{% static 'img/right.png' %}"/>',
+                "previous": '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+        fnCreatedRow: function(nRow, aData){
+            $(nRow).on('click', function(){
+                var app_id = $(nRow).attr('id');
+                var login = $(nRow)[0].children[2].innerText;
+                location.href = "/repository/sso_profiles/edit/"+app_id+"/"+login;
+            })
+        }
+    });
+  
+{% endblock %}

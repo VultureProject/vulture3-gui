@@ -1,0 +1,32 @@
+{
+    "jobs": [
+        {% for repo in conf %}
+        {
+          "id": "Configuration for repo '{{repo.repo_name}}'",
+        {% if repo.es_host %}
+          "data_set": {
+            "pf": {{repo.pf}},
+            "type": "data_elastic",
+            "id_repo": "{{repo.id}}",
+            "batch_count": 100
+          },
+        {% else %}
+          "data_set": {
+            "pf": {{repo.pf}},
+            "type": "data_mongo",
+            "id_repo": "{{repo.id}}",
+            "batch_count": 100
+          },
+        {% endif %}
+          "modules": [
+            {
+              "name": "module_maltrail"
+            }
+          ]
+        }{% if loop.last %}{%else%},{%endif%}
+        {% endfor %}
+
+  ]
+}
+
+

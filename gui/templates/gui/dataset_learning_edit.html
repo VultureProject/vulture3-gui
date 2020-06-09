@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-flask"></i>&nbsp;{% trans "Learning Dataset" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+        <button id="remove_logs" class="btn btn-danger" type="button">{% trans "Remove selected" %}</button>
+
+        <div class="dataset" id="{{collection_name}}"></div>
+        <table id="table_dataset" data-name="security" cellspacing="0" class="table table-bordered table-striped table-hover table-heading table-datatable table-dataset table_logs compact">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="checkall"/></th>
+                    <th>{% trans "Date" %}</th>
+                    <th>{% trans "URI" %}</th>
+                    <th>{% trans "Pattern in URL" %}</th>
+                    <th>{% trans "Pattern in Cookie" %}</th>
+                    <th>{% trans "Pattern in ARGS" %}</th>
+                    <th>{% trans "Pattern in BODY" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal fade" id="modal_wl" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <h4 class="modal-title" id="myModalLabel">{% trans "WhiteList" %}</h4>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="col-sm-11">
+                                <div id="success_modal" class="alert alert-success alert-logs" role="alert"></div>
+                                <div id="error_modal" class="alert alert-danger alert-logs" role="alert"></div>
+                            </div>
+                            <div class="col-sm-1">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding-top:0;padding-bottom:0;" id="wl-proposal">
+                </div>
+                <div class="modal-footer" style="margin-top:0px;padding-top:0;padding-bottom:0;">
+                    <input type="button" class="btn btn-label-left btn-primary" id="add_wl" disabled value="Add to Ruleset">
+                </div>
+             </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static "plugins/contextMenu/jquery.contextMenu.min.css" %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'plugins/datatables/dataTables.bootstrap.js' %}"></script>
+    <script src="{% static "plugins/contextMenu/jquery.contextMenu.min.js" %}"></script>
+    <script src="{% static 'js/learning_logs.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+
+{% endblock %}

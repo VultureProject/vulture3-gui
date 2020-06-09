@@ -1,0 +1,52 @@
+#!/bin/sh
+
+mongod_status () {
+    pidfile="/var/db/mongodb/mongod.lock"
+
+    if ! [ -s ${pidfile} ]; then
+        echo "mongod is not running"
+        return 1
+    fi
+
+    pid=`cat ${pidfile} 2>/dev/null || echo 0`
+
+    if [ "$pid" -le 0 ]; then
+        echo "mongod is not running."
+        return 1
+    fi
+
+    ps aux | grep ${pid} | grep mongod 2>/dev/null >/dev/null
+    if [ "$?" -ne 0 ]; then
+        echo "mongod is not running."
+        return 1
+    fi
+
+    echo "mongod is running."
+    return 0
+}
+
+. /etc/rc.conf
+
+set -ex
+
+if mongod_status; then
+    if [ ! -d "/var/db/mongodb_dumps" ]; then
+        echo "/var/db/mongodb_dumps folder not found"
+        exit 1
+    fi
+
+    DATE=`/bin/date +%Y-%m-%d_%H-%M`
+
+    /usr/local/bin/mongodump --gzip --db vulture --archive=/var/db/mongodb_dumps/vulture_dump_$DATE.archive --excludeCollection=monitor --ssl --sslPEMKeyFile /var/db/mongodb/mongod.pem --sslCAFile /var/db/mongodb/ca.pem --host $hostname --port 9091
+
+    if [ "$?" -ne 0 ]; then
+        echo "Something went wrong during mongodump."
+        exit 1
+    fi
+
+    if [ `/bin/ls /var/db/mongodb_dumps | /usr/bin/wc -l` -gt 2 ]; then
+        cd /var/db/mongodb_dumps/; /bin/ls -t | tail -n +3 | xargs /bin/rm --
+    fi
+
+    exit 0
+fi

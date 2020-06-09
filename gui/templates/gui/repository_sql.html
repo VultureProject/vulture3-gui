@@ -1,0 +1,393 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<form id="sql_form" class="form-horizontal bootstrap-validator-form" action="/repository/sql/edit/{% if object_id %}{{object_id}}{% endif %}" autocomplete=off method="post" novalidate="novalidate">
+			{% csrf_token %}
+			<div class="x_panel">
+	          <div class="x_title">
+	            <h2><i class="fa fa-database"></i>&nbsp;{% trans "SQL -> Edit" %} {% if form.instance.repo_name %}({{ form.instance.repo_name }}) {% endif %}</h2>
+	            <ul class="nav navbar-right panel_toolbox">
+	            	<li><a href="/repository/sql/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+	                <li><button id="save" class="btn-save" type="submit" {% if not object_id %}disabled style="display:none;"{% endif %}>{% trans "SAVE" %}</button></li>
+	            </ul>
+	            <div class="clearfix"></div>
+	          </div>
+	          <div class="x_content">
+	            <div class="" role="tabpanel" data-example-id="togglable-tabs">
+	              <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+	                <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Connection settings" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "User settings" %}</a>
+	                </li>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content3" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Oauth2 settings" %}</a>
+	                </li>
+	              </ul>
+	              <div id="myTabContent" class="tab-content">
+	                <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.repo_name.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.repo_name}}
+                                {{form.repo_name.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_type.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_type}}
+                                {{form.db_type.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_host.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_host}}
+                                {{form.db_host.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_port.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_port}}
+                                {{form.db_port.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_name.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_name}}
+                                {{form.db_name.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_user.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_user}}
+                                {{form.db_user.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_password.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_password}}
+                                {{form.db_password.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-12" style="text-align:center;">
+                                <button id="connection_test" class="btn-test"><span>{% trans "Test SQL connection (required for saving)" %}</span></button>
+                            </div>
+                        </div>
+	                </div>
+	                <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+	                	<div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_table.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_table}}
+                                {{form.db_table.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_user_column.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_user_column}}
+                                {{form.db_user_column.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_password_column.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_password_column}}
+                                {{form.db_password_column.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_password_hash_algo.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_password_hash_algo}}
+                                {{form.db_password_hash_algo.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_password_salt.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_password_salt}}
+                                {{form.db_password_salt.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_password_salt_position.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_password_salt_position}}
+                                {{form.db_password_salt_position.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_change_pass_column.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_change_pass_column}}
+                                {{form.db_change_pass_column.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_change_pass_value.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_change_pass_value}}
+                                {{form.db_change_pass_value.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_locked_column.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_locked_column}}
+                                {{form.db_locked_column.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_locked_value.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_locked_value}}
+                                {{form.db_locked_value.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_user_phone_column.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_user_phone_column}}
+                                {{form.db_user_phone_column.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.db_user_email_column.label }}</label>
+                            <div class="col-sm-5">
+                                {{form.db_user_email_column}}
+                                {{form.db_user_email_column.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-12" style="text-align:center;">
+                                <button id="user_search_test" class="btn-test"><span>{% trans "Test User authentication settings" %}</span></button>
+                            </div>
+                        </div>
+	                </div>
+	                <div role="tabpanel" class="tab-pane fade" id="tab_content3" aria-labelledby="profile-tab"> 
+	                	<div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Enable Oauth2 scopes in token response" %}</label>
+                             <div class="col-sm-5">
+                                <div class="">
+                                    <label>
+                                        {{form.enable_oauth2}}
+                                        {{form.enable_oauth2.errors}}
+                                    </label>
+                                </div>
+                            </div>
+                       </div>
+
+                        <div class="attr_oauth">
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Get Oauth2 scopes from these columns" %}</label>
+                                <div class="col-sm-5">
+                                    {{form.oauth2_attributes}}
+                                    {{form.oauth2_attributes.errors}}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Form of returned values : " %}</label>
+                                <div class="col-sm-5">
+                                    {{form.oauth2_type_return}}
+                                    {{form.oauth2_type_return.errors}}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Place of returned token : " %}</label>
+                                <div class="col-sm-5">
+                                    {{form.oauth2_token_return}}
+                                    {{form.oauth2_token_return.errors}}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Token time to live : " %}</label>
+                                <div class="col-sm-5">
+                                    {{form.oauth2_token_ttl}}
+                                    {{form.oauth2_token_ttl.errors}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	    </form>
+	</div>
+
+    <div id="modal_test_connection" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">{% trans "Connection test result" %}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <p id="connection_test_msg"></p>
+                        </div>
+                    </div>
+                    <br />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Close" %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal_test_user_search" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">{% trans "User authentication test" %}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <label class="col-sm-6 control-label">{% trans "Username" %}</label>
+                        <div class="col-sm-6 form-group">
+                            <input type="text" name="test_username" id="test_username" data-placement="right" container="body" class="form-control has-popover" data-original-title="" title="">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-sm-6 control-label">{% trans "Password" %}</label>
+                        <div class="col-sm-6 form-group">
+                            <input type="password" name="test_password" id="test_password" data-placement="right" container="body" class="form-control has-popover" data-original-title="" title="">
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <p id="user_search_test_msg" class="test_user"></p>
+                            <div id="user_phone" class="test_user"></div>
+                            <div id="user_email" class="test_user"></div>
+                            <div id="account_locked" class="test_user"></div>
+                            <div id="password_expired" class="test_user"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="button" id="btn_send_user_search" class="btn btn-primary">{% trans "Test credentials" %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+	
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+
+{% endblock %}
+
+{% block jquery_code  %}
+
+    /* SQL connection test */
+    $('#connection_test').on("click", function(e){
+        e.preventDefault()
+        url = "/repository/sql/connection_test/";
+        form_data = $('#sql_form').serializeArray();
+        var indexed_data = {};
+        $.map(form_data, function(n, i){
+            indexed_data[n['name']] = n['value'];
+        });
+        $.post(url, indexed_data, function(data){
+            $("#modal_test_connection").modal('show');
+            status = data['status'];
+            handle_form_errors(data);
+            if(status == 'true'){
+                $('#connection_test_msg').html('<b>{% trans "Successful connection" %}</b>');
+                $(".btn-save").removeAttr('disabled');
+                $(".btn-save").removeAttr('style');
+            }
+            else{
+                reason = data['reason'];
+                $('#connection_test_msg').html("<b>{% trans 'Unable to connect to SQL server, reason: '%}" + reason + "</b>");
+            }
+        });
+    });
+
+    $("[id^='id_db']").on("change", function(e){
+        $('#connection_test_msg').html("");
+    })
+
+
+    /*User search test*/
+    $('#user_search_test').on("click", function(e){
+        $('#user_search_test_msg').html('');
+        $("#modal_test_user_search").modal('show');
+        e.preventDefault()
+    });
+
+    $("[id^='id_db']").on("change", function(e){
+        $('#user_search_test_msg').html("");
+    })
+
+    $('#btn_send_user_search').on("click", function(e){
+        username = $('#test_username').val();
+        password = $('#test_password').val();
+        url = "/repository/sql/user_search_test/";
+        form_data = $('#sql_form').serializeArray();
+        var indexed_data = {};
+        $.map(form_data, function(n, i){
+            indexed_data[n['name']] = n['value'];
+        });
+        indexed_data['username'] = username;
+        indexed_data['password'] = password;
+        $.post(url, indexed_data, function(data){
+            status = data['status'];
+            handle_form_errors(data);
+            if(status == 'true'){
+                $('#user_search_test_msg').html('<b style="color:green;">{% trans "Successful connection" %}</b>');
+            }
+            else{
+                reason = data['reason'];
+                $('#user_search_test_msg').html("<b style='color:red;'>{% trans 'Unable to authenticate user, reason: '%}" + reason + "</b>");
+            }
+            $('#user_phone').html('{% trans "Phone number" %}: '+ data['user_phone']);
+            $('#user_email').html('{% trans "Email address" %}: '+ data['user_email']);
+            $('#account_locked').html('{% trans "Account locked" %}: '+ data['account_locked']);
+            $('#password_expired').html('{% trans "Need change pass" %}: '+ data['password_expired']);
+        });
+    });
+    $("#id_oauth2_attributes").tagEditor({
+        initialTags: [{{application.get_methods|safe}}],
+        delimiter: ',',
+        forceLowercase: false,
+        placeholder: 'Enter the Oauth2 columns',
+    });
+
+    $("#id_enable_oauth2").bind("change", toggleAuth);
+    function toggleAuth() {
+        var auth=$(this);
+        if (auth.is(':checked')) {
+            $(".attr_oauth").show();
+        }
+        else {
+            $(".attr_oauth").hide();
+        }
+    }
+    $("#id_enable_oauth2").trigger("change");
+
+
+{% endblock %}

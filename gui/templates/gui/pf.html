@@ -1,0 +1,298 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+
+{% block navleft %}
+    <li><h3><i class="fa fa-cloud"></i>&nbsp;{% trans "Packet Filter" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<form class="form-horizontal bootstrap-validator-form" action="/services/pf/{% if object_id %}{{object_id}}{% endif %}" method="post" id="form_pf" novalidate="novalidate">
+			{% csrf_token %}
+			<div class="x_panel">
+	          <div class="x_title">
+	            <h2 id='node_name'></h2>   
+	            <ul class="nav navbar-right panel_toolbox">
+	            	<li><a href="/services/pf/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+	                <li><button id="save" class="btn-save" type="button">{% trans "SAVE" %}</button></li>
+	            </ul>
+	            <div class="clearfix"></div>
+	          </div>
+	          <div class="x_content">
+	            <div class="" role="tabpanel" data-example-id="togglable-tabs">
+	              <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+	                <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "General" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Configuration" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content3" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Blacklist / Whitelist" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content4" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Advanced configuration" %}</a>
+	                </li>
+	              </ul>
+	              <div id="myTabContent" class="tab-content">
+	                <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+	                    <fieldset class="col-sm-8">
+                            <legend>{% trans "Firewall Settings" %}</legend>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label"> {% trans "Configure Firewall Settings of" %}</label>
+                                <div class="col-sm-5">
+                                    <select id="cluster_select" class="has-popover form-control" style="margin-top:5px;">
+                                        {% for node in cluster.members %}
+                                            <option value="{{ node.id }}">Node {{ node.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Repository type " %}</label>
+                                <div class="col-sm-5">
+                                    {{form.repository_type}}
+                                    {{form.repository_type.errors}}
+                                </div>
+                            </div>
+                            <div class="form-group data-repo">
+                                <label class="col-sm-4 control-label">{% trans "Log repository" %}</label>
+                                <div class="col-sm-5">
+                                    {{form.repository_choices}}
+                                    {{form.repository_choices.errors}}
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label">{% trans "Optional syslog repository" %}</label>
+                                <div class="col-sm-5">
+                                    {{form.repository_syslog}}
+                                    {{form.repository_syslog.errors}}
+                                </div>
+                            </div>
+                        </fieldset>
+                        <div class="col-sm-4">
+                            <legend>{% trans "Firewall Status" %}</legend>
+                            <div  class="col-sm-12">
+                                <div class="col-sm-8">
+                                    {% for nodename, status in pf_status.items %}
+                                        {% if status == 'UP' %}
+                                        <p><img src="{% static "img/status_green.png" %}" class="img_responsive" />
+                                        {% trans "Firewall is running on node " %} {{ nodename }}</p>
+                                        {% elif status == 'NEED_UPDATE' %}
+                                        <p><img src="{% static "img/status_red.png" %}" class="img_responsive" />
+                                        {% trans "Firewall need a restart to apply new configuration on node " %} {{ nodename }}</p>
+                                        {% else %}
+                                        <p><img src="{% static "img/status_red.png" %}" class="img_responsive" />
+                                        {% trans "Firewall status is: " %} {{ status }} on node {{ nodename }}</p>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <div class="col-sm-4">
+                                    <a href="#" class="btn btn-test btn-label-left" id="restart_pf">
+                                        <span><i class="fa fa-cog fa-2x"></i></span> {% trans "Reload Service" %}
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-sm-12 text-center">
+                                <p>{% trans "Do not forget to reload the service after any configuration change." %}</p>
+                                <p>{% trans "Reloading PF can broke your current connections. Like SSH or GUI." %}</p>
+                            </div>
+                        </div>
+	                </div>
+	                <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label">{% trans "Number of state table entries" %}</label>
+                      <div class="col-sm-5">
+                        {{form.pf_limit_states}}
+                        {{form.pf_limit_states.errors}}
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label">{% trans "Number of packet reassembly entries" %}</label>
+                      <div class="col-sm-5">
+                        {{form.pf_limit_frags}}
+                        {{form.pf_limit_frags.errors}}
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label class="col-sm-4 control-label">{% trans "Number of tracked source IP" %}</label>
+                      <div class="col-sm-5">
+                        {{form.pf_limit_src}}
+                        {{form.pf_limit_src.errors}}
+                      </div>
+                    </div>
+	                	<input type="hidden" id="protocol" value="{{parameters.protocol}}"/>
+                        <input type="hidden" id="action" value="{{parameters.action}}"/>
+                        <input type="hidden" id="direction" value="{{parameters.direction}}"/>
+                        <input type="hidden" id="interfaces" value="{{interfaces}}"/>
+                        <input type="hidden" id="pf_rules" name="pf_rules" value="{{rules}}"/>
+                        <table class="table table-striped table-bordered table-hover dt-responsive nowrap table-datatable" id="table_rules_pf">
+                            <thead>
+                                <tr>
+                                    <th style="width:5%;">{% trans "Policy" %}</th>
+                                    <th style="width:5%;">{% trans "Direction" %}</th>
+                                    <th style="width:5%;">{% trans "Log" %}</th>
+                                    <th style="width:10%;">{% trans "Interface" %}</th>
+                                    <th style="width:5%;">{% trans "Inet" %}</th>
+                                    <th style="width:5%;">{% trans "Protocol" %}</th>
+                                    <th style="width:10%;">{% trans "Source" %}</th>
+                                    <th style="width:10%;">{% trans "Destination" %}</th>
+                                    <th style="width:10%;">{% trans "Port" %}</th>
+                                    <th style="width:15%;">{% trans "Flags" %}</th>
+                                    <th style="width:15%;">{% trans "Rate limit" %}</th>
+                                    <th style="width:15%;">{% trans "Comment" %}</th>
+                                    <th style="width:5%;">{% trans "Action" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                        <p style="text-align:right;margin-top:10px;">
+                            <div class="add-group">
+                                <button class="addlink addplus addline" data-table="table_rules_pf" type="button">{% trans "Add an Entry" %}</button>
+                            </div>
+                        </p>
+	                </div>
+	                <div role="tabpanel" class="tab-pane fade" id="tab_content3" aria-labelledby="profile-tab">
+                        <div class="form-group">
+                            <label class="col-sm-6 control-label">{% trans "Permanent blacklist (One entry per line)" %}</label>
+                            <label class="col-sm-6 control-label">{% trans "Permanent whitelist (One entry per line)" %}</label>
+                            <div class="col-sm-6 control-label">
+                                {{ form.pf_blacklist }}
+                                {{ form.pf_blacklist.errors }}
+                            </div>
+                            <div class="col-sm-6 control-label">
+                                {{ form.pf_whitelist }}
+                                {{ form.pf_whitelist.errors }}
+                            </div>
+
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-6 control-label">{% trans "Current active blacklist" %}</label>
+                            <label class="col-sm-6 control-label">{% trans "Current active whitelist" %}</label>
+                            <div class="col-sm-6 control-label">{{ pf_current_blacklist |safe }}</div>
+                            <div class="col-sm-6 control-label">{{ pf_current_whitelist |safe }}</div>
+                        </div>
+                    </div>
+	                <div role="tabpanel" class="tab-pane fade" id="tab_content4" aria-labelledby="profile-tab">    
+	                	<div class="form-group">
+                            <label class="col-sm-2 control-label">{% trans "Rules" %}</label>
+                            <div class="col-sm-10">
+                                {{form.pf_rules_text}}
+                                {{form.pf_rules_text.errors}}
+                            </div>
+                        </div>
+	                </div>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	    </form>
+	</div>
+
+    
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+    <script src="{% static 'js/pf.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code %}
+    {% if form.instance.data_repository and form.instance.repository_type == "data" %}
+        $('#id_repository_type option[value=data]').prop('selected', true);
+        $('#id_repository_choices option[value={{ form.instance.data_repository }}]').prop('selected', true);
+    {% endif %}
+    {% if form.instance.syslog_repository %}
+        $('#id_repository_syslog option[value={{ form.instance.syslog_repository }}]').prop('selected', true);
+    {% endif %}
+
+    $('#cluster_select').on('change', function(){
+        var node_name = $("#cluster_select option:selected").text();
+        $('#node_name').text(node_name);
+    })
+
+
+    /* Select current edited Node */
+    {% if object_id %}
+        $('#cluster_select option[value={{ object_id }}]').prop('selected', true);
+    {% endif %}
+
+    var node_name = $("#cluster_select option:selected").text();
+    $('#node_name').text(node_name);
+
+    /* Restart Button */
+    $("#restart_pf").click(function(e) {
+        var url = "/services/pf/{% if object_id %}{{object_id}}/{% endif %}restart/";
+        e.preventDefault();
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function(data){
+                alert ("Current pf policy: \n\n" + data['result'][1]['pf_current_policy']);
+                document.location.href= '/services/pf/';
+            },
+            error: function(data) {
+            }
+        });
+    });
+
+    /* Data Repo Authentication repo switch*/
+    var repo_type = $("#id_repository_type").val();
+    if(repo_type == 'file'){
+        $('.file-repo').show();
+        $('.data-repo').hide();
+    }
+    else if(repo_type == 'data'){
+        $('.file-repo').hide();
+        $('.data-repo').show();
+    }
+
+    $("#id_repository_type").on("change", function(e){
+        var repo_type = $("#id_repository_type").val();
+        if(repo_type == 'file'){
+            $('.file-repo').show();
+            $('.data-repo').hide();
+        }
+        else if(repo_type == 'data'){
+            $('.file-repo').hide();
+            $('.data-repo').show();
+        }
+    });
+
+
+    $('.table').DataTable({
+        "dom": "<p<'searchbox'><t>>",
+        "autoWidth": false,
+        "language": {
+            "search": "",
+            "lengthMenu": '_MENU_',
+            "pagingType": "bootstrap",
+            "zeroRecords": "",
+            "info": "",
+            "infoEmpty": "",
+            "emptyTable": "",
+            "infoFiltered": "",
+            "paginate": {
+                "next": '<img src="{% static 'img/right.png' %}"/>',
+                "previous": '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+    });
+
+{% endblock %}

@@ -1,0 +1,338 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form id="worker_form" class="form-horizontal bootstrap-validator-form" action="/system/worker/edit/{% if object_id %}{{object_id}}{% endif %}" method="post" novalidate="novalidate">
+            {% csrf_token %}
+            <div class="x_panel">
+                  <div class="x_title">
+                    <h2><i class="fa fa-cog"></i>&nbsp;{% trans "Worker -> Edit" %}</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                        <li><a href="/system/worker/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                        <li><button id="save_application" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <div class="x_content">
+                        <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                          <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                            <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Performance" %}</a>
+                            </li>
+                            <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "HTTP/2" %}</a>
+                            </li>
+                            <li role="presentation" class=""><a href="#tab_content3" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "KeepAlive" %}</a>
+                            </li>
+                            <li role="presentation" class=""><a href="#tab_content4" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Bandwith" %}</a>
+                            </li>
+                          </ul>
+                            <div id="myTabContent" class="tab-content">
+                                <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                                    <div class="form-group" >
+                                        <label class="col-sm-4 control-label">{% trans "Friendly name" %}</label>
+                                            <div class="col-sm-3">
+                                            {{form.name}}
+                                            {{form.name.errors}}
+                                            </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Graceful Shutdown Timeout" %}</label>
+                                            <div class="col-sm-2">
+                                            {{form.gracefulshutdowntimeout}}
+                                            {{form.gracefulshutdowntimeout.errors}}
+                                            </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Max Connections Per Child" %}</label>
+                                            <div class="col-sm-2">
+                                            {{form.maxconnectionsperchild}}
+                                            {{form.maxconnectionsperchild.errors}}
+                                            </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Min Spare Threads" %}</label>
+                                            <div class="col-sm-2">
+                                            {{form.minsparethreads}}
+                                            {{form.minsparethreads.errors}}
+                                            </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Max Spare Threads" %}</label>
+                                            <div class="col-sm-2">
+                                            {{form.maxsparethreads}}
+                                            {{form.maxsparethreads.errors}}
+                                            </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Maximum number of processes" %}</label>
+                                            <div class="col-sm-2">
+                                            {{form.serverlimit}}
+                                            {{form.serverlimit.errors}}
+                                            </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Number of threads for a child" %}</label>
+                                        <div class="col-sm-2">
+                                        {{form.threadsperchild}}
+                                        {{form.threadsperchild.errors}}
+                                        </div>
+                                        <span><i class="fa maxrequests"></i></span>
+                                    </div>                                    
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="tab_content2" aria-labelledby="home-tab">
+                                    <div class="form-group" id="h2direct"><label class="col-sm-4 control-label">{% trans "H2 Direct Mode" %}</label>
+                                        <div class="col-sm-2">
+                                            <div class="">
+                                                <label>
+                                                {{form.h2direct}}
+                                                {{form.h2direct.errors}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                     <div class="form-group" id="h2maxsessionstreams">
+                                        <label class="col-sm-4 control-label">{% trans "Max Session Streams" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.h2maxsessionstreams}}
+                                            {{form.h2maxsessionstreams.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="h2maxworkeridleseconds">
+                                        <label class="col-sm-4 control-label">{% trans "Max Worker Idle Seconds" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.h2maxworkeridleseconds}}
+                                            {{form.h2maxworkeridleseconds.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="h2maxworkers">
+                                        <label class="col-sm-4 control-label">{% trans "Maximum Number of Workers" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.h2maxworkers}}
+                                            {{form.h2maxworkers.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="h2minworkers">
+                                        <label class="col-sm-4 control-label">{% trans "Minimum Number of Workers" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.h2minworkers}}
+                                            {{form.h2minworkers.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="h2moderntlsonly"><label class="col-sm-4 control-label">{% trans "Modern TLS Only" %}</label>
+                                        <div class="col-sm-2">
+                                            <div class="">
+                                                <label>
+                                                {{form.h2moderntlsonly}}
+                                                {{form.h2moderntlsonly.errors}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="h2push"><label class="col-sm-4 control-label">{% trans "Push mode" %}</label>
+                                        <div class="col-sm-2">
+                                            <div class="">
+                                            <label>
+                                            {{form.h2push}}
+                                            {{form.h2push.errors}}
+                                            </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="h2pushpriority">
+                                        <label class="col-sm-4 control-label">{% trans "Push priority" %}</label>
+                                        <div class="col-sm-3">
+                                            {{form.h2pushpriority}}
+                                            {{form.h2pushpriority.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="h2serializeheaders">
+                                        <label class="col-sm-4 control-label">{% trans "Serialize Headers" %}</label>
+                                        <div class="col-sm-2">
+                                             <label>
+                                             {{form.h2serializeheaders}}
+                                             {{form.h2serializeheaders.errors}}
+                                             </label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="h2streammaxmemsize">
+                                        <label class="col-sm-4 control-label">{% trans "Stream Maximum Memory Size" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.h2streammaxmemsize}}
+                                            {{form.h2streammaxmemsize.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="h2tlscooldownsecs">
+                                        <label class="col-sm-4 control-label">{% trans "TLS Cooldown Seconds" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.h2tlscooldownsecs}}
+                                            {{form.h2tlscooldownsecs.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="h2tlswarmupsize">
+                                        <label class="col-sm-4 control-label">{% trans "TLS Warmup Size" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.h2tlswarmupsize}}
+                                            {{form.h2tlswarmupsize.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="h2upgrade">
+                                        <label class="col-sm-4 control-label">{% trans "H2 Upgrade" %}</label>
+                                        <div class="col-sm-2">
+                                            <div class="">
+                                            <label>
+                                            {{form.h2upgrade}}
+                                            {{form.h2upgrade.errors}}
+                                            </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="h2windowsize">
+                                        <label class="col-sm-4 control-label">{% trans "Windows Size" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.h2windowsize}}
+                                            {{form.h2windowsize.errors}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="tab_content3" aria-labelledby="home-tab">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Network timeout" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.timeout}}
+                                            {{form.timeout.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "HTTP KeepAlive" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.keepalive}}
+                                            {{form.keepalive.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="maxkeepaliverequest">
+                                        <label class="col-sm-4 control-label">{% trans "Max KeepAlive Requests" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.maxkeepaliverequests}}
+                                            {{form.maxkeepaliverequests.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="keepalivetimeout">
+                                        <label class="col-sm-4 control-label">{% trans "KeepAlive Timeout" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.keepalivetimeout}}
+                                            {{form.keepalivetimeout.errors}}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="tab_content4" aria-labelledby="home-tab">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Client bandwith limit" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.rate_limit}}
+                                            {{form.rate_limit.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Request timeout to receive headers" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.req_timeout_header}}
+                                            {{form.req_timeout_header.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Minimum rate for request headers" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.req_timeout_header_rate}}
+                                            {{form.req_timeout_header_rate.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Request timeout to receive body" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.req_timeout_body}}
+                                            {{form.req_timeout_body.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Minimum rate for request body" %}</label>
+                                        <div class="col-sm-2">
+                                            {{form.req_timeout_body_rate}}
+                                            {{form.req_timeout_body_rate.errors}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+{% endblock %}
+
+{% block js_include %}
+{% endblock %}
+
+{% block jquery_code  %}
+    
+    serverlimit=0;
+    threadsperchild=0;
+
+    $( "#id_serverlimit" ).on( "change", function() {
+        serverlimit = $( this ).val();
+        $('.maxrequests').html('Max. Clients = ' + (serverlimit * threadsperchild) + ' (' + serverlimit + ' x ' + threadsperchild + ')');
+    });
+    $( "#id_threadsperchild" ).on( "change", function() {
+        threadsperchild = $( this ).val();
+        $('.maxrequests').html('Max. Clients = ' + (serverlimit * threadsperchild) + ' (' + serverlimit + ' x ' + threadsperchild + ')');
+    });
+
+    $( "#id_serverlimit" ).trigger( "change" );
+    $( "#id_threadsperchild" ).trigger( "change" );
+
+
+
+    //Handle keepalive selection
+    $("#id_keepalive").bind("change", toggleKeepalive);
+    $("#id_keepalive").trigger("change");
+
+    function toggleKeepalive () {
+        var keepalive = $(this);
+        if (keepalive.val() == "on") {
+            $("#keepalivetimeout").css("display", "visible");
+            $("#maxkeepaliverequest").css("display", "visible");
+        }
+        else {
+            $("#keepalivetimeout").css("display", "none");
+            $("#maxkeepaliverequest").css("display", "none");
+        }
+    }
+
+
+    //Handle push priority
+    $("#id_h2push").bind("change", togglePush);
+    function togglePush() {
+        var push=$(this);
+        if (push.prop('checked')) {
+            $("#h2pushpriority").css("display", "visible");
+
+        }
+        else {
+            $("#h2pushpriority").css("display", "none");
+
+        }
+    }
+    $("#id_h2push").change();
+
+{% endblock %}

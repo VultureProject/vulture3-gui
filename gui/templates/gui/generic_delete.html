@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-folder-open"></i>&nbsp;{{menu_name}}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form class="form-horizontal bootstrap-validator-form" action="{{ delete_url }}{{ object_id }}" method="post" novalidate="novalidate">
+        {% csrf_token %}
+            <input type="hidden" name="confirm" value="yes" />
+            <fieldset class="col-sm-12">
+                <legend>{% trans "Confirm delete" %}</legend>
+                <div class="form-group">
+                    <label class="col-sm-12 text-center">
+                        {% trans "Are you sure you want to delete " %}{{ obj_inst }} ? <br />
+                        {% trans "Note: All related data will be lost" %}
+                    </label>
+                </div>
+            </fieldset>
+            <div class="form-group">
+                <div class="col-sm-12 text-center">
+                    <a href="{{ redirect_url }}"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a>
+                    <button id="submit" class="btn-save" type="submit">
+                    <span><i class="fa fa-check"></i></span>
+                    {% trans "Yes" %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+
+{% endblock %}
+
+{% block jquery_code  %}
+  
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-desktop"></i>&nbsp;{% trans "Certificate Request Signin" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form class="form-horizontal bootstrap-validator-form" action="/system/cert/sign" method="post" novalidate="novalidate">
+            {% csrf_token %}
+            <div class="x_panel">
+              <div class="x_title">
+                <h2><i class="fa fa-folder-open"></i>&nbsp;{% trans "Sign an external certificate request" %}</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a href="/system/cert/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                    <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">{% trans "PEM Certificate Request" %}</label>
+                        <div class="col-sm-5">
+                            <textarea class="form-control" rows=10  name='csr' style="font-family: Consolas, monaco, monospace;">{{cert.csr}}</textarea>
+                            {{ error.csr }}
+                        </div>
+                </div>
+              </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block jquery_code  %}
+
+{% endblock %}
+

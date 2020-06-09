@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-bar-chart"></i>&nbsp;{% trans "Report / Packet Filter" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-sm-12 col-lg-2">
+        <label class="control-label">{% trans "Date" %}</label>&nbsp;&nbsp;
+        <div>
+            <input class="report_date_input" type="text" name="daterange" placeholder="Select a Date"/>
+            <input id="daterange_input" type="hidden" />
+        </div>
+    </div>
+    <div class="col-sm-12 col-lg-3 node_select_pf" style="margin-left:10px;">
+        <label class="control-label">{% trans "Node" %}</label>&nbsp;&nbsp;
+        <div>
+            <select id='node_select_pf' class='reload_logs has-popover' data-container="body" data-content="Select a node or the cluster" data-placement="bottom" style="width:200px;">
+                {% for node in packet_filter %}
+                    <option value="{{node.id}}|{{node.repo}}">{{node.name}}</option>
+                {% endfor %}
+            </select>
+            <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+        </div>
+    </div>
+</div>
+<br />
+<h3>Incoming packets</h3>
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12 network_chart" id="traffic_in_chart"></div>
+</div>
+<div class="row">
+    <div class="col-md-6 col-sm-6 col-xs-12 network_chart" id="top_ip_src_in_chart"></div>
+    <div class="col-md-6 col-sm-6 col-xs-12 network_chart" id="top_ip_dst_in_chart"></div>
+</div>
+<br />
+<div class="row justify-content-center">
+    <div class="col-md-3 col-sm-3 col-xs-12 pie_chart" id="action_in_chart"></div>
+    <div class="col-md-9 col-sm-9 col-xs-12 network_chart" id="ports_in_chart"></div>
+</div>
+<hr />
+<br />
+<h3>Outgoing packets</h3>
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12 network_chart" id="traffic_out_chart"></div>
+</div>
+<div class="row">
+    <div class="col-md-6 col-sm-6 col-xs-12 network_chart" id="top_ip_src_out_chart"></div>
+    <div class="col-md-6 col-sm-6 col-xs-12 network_chart" id="top_ip_dst_out_chart"></div>
+</div>
+<br />
+<div class="row justify-content-center">
+    <div class="col-md-3 col-sm-3 col-xs-12 pie_chart" id="action_out_chart"></div>
+    <div class="col-md-9 col-sm-9 col-xs-12 network_chart" id="ports_out_chart"></div>
+</div>
+
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static "plugins/jsonFrill/jsonFrill.css" %}" rel="stylesheet">
+    <link href="{% static "plugins/contextMenu/jquery.contextMenu.min.css" %}" rel="stylesheet">
+    <link href="{% static "plugins/queryBuilder/query-builder.default.min.css" %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'js/echarts3-all.min.js' %}"></script>
+    <script src="{% static 'js/report_pf.js' %}"></script>
+    <script src="{% static 'js/daterangepicker.js' %}"></script>
+    <script src="{% static 'js/dateformat.min.js' %}"></script>
+    <script src="{% static "plugins/contextMenu/jquery.contextMenu.min.js" %}"></script>
+    <script src="{% static "plugins/queryBuilder/query-builder.js" %}"></script>
+    <script src="{% static "plugins/queryBuilder/query-builder-els.js" %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+{% endblock %}

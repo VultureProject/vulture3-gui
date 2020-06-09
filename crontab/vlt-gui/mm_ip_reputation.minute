@@ -1,0 +1,137 @@
+#!/bin/sh
+
+# Get global variables in rc conf
+. /etc/rc.conf
+
+# If there is a proxy
+if [ "$http_proxy" != "" ]
+then
+    # Modify format of http(s)_proxy variables, for wget
+    export https_proxy="http://$http_proxy"
+    export http_proxy="http://$http_proxy"
+fi
+
+perl -e "$(/bin/cat << 'EOF')"
+# cpan
+# notest install MongoDB MaxMind::DB::Writer MaxMind::DB::Reader Math::Int64 Math::Int128 Digest::SHA1 Sereal::Encoder Moose MooseX::StrictConstructor MooseX::Params::Validate Net::SSLeay IO::Socket::SSL Params::Validate
+# default freeBSD install location: /usr/local/lib/perl5/site_perl/
+
+
+use MongoDB;
+use MaxMind::DB::Writer::Tree;
+use HTTP::Tiny;
+use File::stat;
+use File::Copy;
+use strict;
+use warnings;
+use DateTime;
+
+my $processes_id_str = `ps auxwww | grep "[m]m_ip_reputation.minute" | awk '{print \$2}'`;
+my @processes_id = split(/\n/, $processes_id_str);
+if (scalar(@processes_id) > 1) {
+    print "Another instance of this script is already running, stopping...\n";
+    exit;
+}
+
+my $mmdb_path = '/var/db/loganalyzer/ip-reputation.mmdb';
+
+if (-f $mmdb_path) {
+    my $mmdb_modified_time = (stat($mmdb_path))[0][9];
+    my $seconds_elapsed = time() - $mmdb_modified_time;
+    print "$seconds_elapsed seconds elapsed since last generation\n";
+    if ($seconds_elapsed < 24 * 60 * 60) {
+        print "Already updated in the past 24 hours, stopping...\n";
+        exit;
+    }
+}
+
+my $ht = HTTP::Tiny->new();
+
+# Connect to the localhost MongoDB instance
+my $client = MongoDB::MongoClient->new(host => '127.0.0.1:9091',
+    ssl => {
+        SSL_ca_file   => "/var/db/mongodb/ca.pem",
+        SSL_cert_file => "/var/db/mongodb/mongod.pem",
+        SSL_verifycn_scheme => 'none'
+    });
+my $db = $client->get_database('vulture');
+# See https://docs.mongodb.com/manual/reference/command/isMaster/ for help
+my $is_master = $db->run_command(['isMaster' => 1]);
+
+# If the current node is not the master : connect to
+if( !$is_master->{'ismaster'} ) {
+    # Get the primary of this replicaset
+    $client = MongoDB::MongoClient->new(host => $is_master->{"primary"},
+        ssl => {
+            SSL_ca_file   => "/var/db/mongodb/ca.pem",
+            SSL_cert_file => "/var/db/mongodb/mongod.pem",
+            SSL_verifycn_scheme => 'none'
+        }
+    );
+}
+
+my $collection = $client->ns('vulture.cluster');
+my $data = $collection->find_one();
+my @uris = @{$data->{'system_settings'}->{'loganalyser_settings'}->{'loganalyser_rules'}};
+
+my %types = (reputation  => [ 'array', 'utf8_string' ]);
+
+my $tree = MaxMind::DB::Writer::Tree->new(
+    ip_version            => 4,
+    record_size           => 32,
+    database_type         => 'IP-reputation',
+    languages             => ['en'],
+    description           => { en => 'IP reputation DB' },
+    map_key_type_callback => sub { $types{ $_[0] } },
+    merge_strategy        => 'recurse'
+);
+
+my $url_index = 1;
+my $ip_count;
+foreach my $uri_inf (@uris) {
+    my $response = $ht->get($uri_inf->{'url'});
+    if ($response->{success}) {
+        print "$uri_inf->{'url'} downloaded (", length $response->{content}, " bytes received)\n";
+        my $html = $response->{content};
+
+        my @ips = ($html =~ m/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(?:\/\d{1,2})?)/g);
+        for my $ip (@ips) {
+            if (index($ip, '/') == -1) {
+                $ip .= '/32';
+            }
+
+            my @reputation = split(/,/, $uri_inf->{'tags'});
+            #print $ip;
+            eval {
+                $tree->insert_network($ip, { reputation => \@reputation });
+            };
+            warn $@ if $@;
+            $ip_count++;
+        }
+        print 'processed ' . $url_index . ' / ' . scalar(@uris) . "\t$ip_count IP\n";
+        $url_index++;
+    } else {
+       #print "Error downloading $uri_inf->{'url'}: $response->{status} $response->{reason} $response->{content}\n";
+       print "Error downloading $uri_inf->{'url'}: $response->{status} $response->{reason} \n";
+       $collection = $client->ns('logs.vulture_logs');
+       my $message = "The following URL can't be downloaded: " . $uri_inf->{'url'}.". Error code was: ".$response->{status};
+       $collection->insert_one({
+            "log_name"  => "reputation",
+            "filename"  => "mm_ip_reputatiopn.minute",
+            "time"      => DateTime->now,
+            "log_level" => "ERROR",
+            "message"   => $message
+       });
+    }
+}
+
+
+open my $fh, '>:raw', $mmdb_path . ".tmp";
+$tree->write_tree($fh);
+move($mmdb_path . ".tmp", $mmdb_path);
+my $mmdb_size = -s $mmdb_path;
+print "$mmdb_path built ($mmdb_size bytes)\n";
+
+system("sudo -u vlt-sys sudo service vulture reload")
+
+EOF

@@ -1,0 +1,443 @@
+LOG_SETTINGS = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s %(module)s:%(lineno)d [%(levelname)s] %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+        'diagnostic': {
+            'format': '%(asctime)s [%(levelname)s] %(node_name)s <%(test_module)s> %(test_name)s: %(message)s %(traceback)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'database': {
+            'level': 'DEBUG',
+            'class': 'vulture_toolkit.log.log_utils.DatabaseHandler',
+            'type_logs': 'vulture',
+        },
+        'database_diagnostic': {
+            'level': 'DEBUG',
+            'class': 'vulture_toolkit.log.log_utils.DatabaseHandler',
+            'type_logs': 'diagnostic',
+        },
+        'file_gui_authentication': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/gui_authentication.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_services_events': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/services_events.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_mongodb_events': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/mongodb_events.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'debug': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/debug.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_listeners_events': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/listeners_events.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_local_listeners_events': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/local_listeners_events.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_api_events': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/api_events.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_cluster_events': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/cluster_events.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_bootstrap': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'DEBUG',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/bootstrap.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_supervision_api': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/supervision_api.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_auth_backends': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/auth_backends.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_modsec': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/modsec.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_redis_events': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/redis_events.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_diagnostic': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'DEBUG',
+            'formatter': 'diagnostic',
+            'filename': '/var/log/Vulture/gui/diagnostic.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+    },
+    'loggers': {
+        'gui_authentication': {
+            'handlers': ['file_gui_authentication', 'database'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'portal_authentication': {
+            'handlers':['file_gui_authentication', 'database'],
+            'propagate': True,
+            'level':'INFO',
+        },
+        'redis_events': {
+            'handlers': ['file_redis_events', 'database'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'services_events': {
+            'handlers': ['file_services_events', 'database'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'mongodb_events': {
+            'handlers': ['file_mongodb_events'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'debug': {
+            'handlers': ['debug', 'database'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'listeners': {
+            'handlers': ['file_listeners_events', 'database'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'local_listeners': {
+            'handlers': ['file_local_listeners_events', 'database'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'api': {
+            'handlers': ['file_api_events', 'database'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'cluster': {
+            'handlers': ['file_cluster_events', 'database'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'bootstrap': {
+            'handlers': ['file_bootstrap', 'database'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+        'supervision_api': {
+            'handlers': ['file_supervision_api', 'database'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'auth_backends': {
+            'handlers': ['file_auth_backends', 'database'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'modsec': {
+            'handlers': ['file_modsec', 'database'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'diagnostic': {
+            'handlers': ['file_diagnostic', 'database_diagnostic'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+    }
+}
+
+
+LOG_SETTINGS_FALLBACK = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s %(module)s:%(lineno)d [%(levelname)s] %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+        'diagnostic': {
+            'format': '%(asctime)s [%(levelname)s] %(node_name)s <%(test_module)s> %(test_name)s: %(message)s %(traceback)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file_gui_authentication': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/gui_authentication.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_services_events': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/services_events.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_mongodb_events': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/mongodb_events.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'debug': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/debug.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_listeners_events': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/listeners_events.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_local_listeners_events': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/local_listeners_events.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_api_events': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/api_events.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_cluster_events': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/cluster_events.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_bootstrap': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'DEBUG',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/bootstrap.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_supervision_api': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/supervision_api.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_auth_backends': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/auth_backends.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_modsec': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'INFO',
+            'formatter': 'verbose',
+            'filename': '/var/log/Vulture/gui/modsec.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+        'file_diagnostic': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'DEBUG',
+            'formatter': 'diagnostic',
+            'filename': '/var/log/Vulture/gui/diagnostic.log',
+            'mode': 'a',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+        },
+    },
+    'loggers': {
+        'gui_authentication': {
+            'handlers': ['file_gui_authentication'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'services_events': {
+            'handlers': ['file_services_events'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'mongodb_events': {
+            'handlers': ['file_mongodb_events'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'debug': {
+            'handlers': ['debug'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'listeners': {
+            'handlers': ['file_listeners_events'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'local_listeners': {
+            'handlers': ['file_local_listeners_events'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'api': {
+            'handlers': ['file_api_events'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'cluster': {
+            'handlers': ['file_cluster_events'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'bootstrap': {
+            'handlers': ['file_bootstrap'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+        'supervision_api': {
+            'handlers': ['file_supervision_api'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'auth_backends': {
+            'handlers': ['file_auth_backends'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'modsec': {
+            'handlers': ['file_modsec'],
+            'propagate': True,
+            'level': 'INFO',
+        },
+        'diagnostic': {
+            'handlers': ['file_diagnostic'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+    }
+}

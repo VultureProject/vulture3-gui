@@ -1,0 +1,179 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-flask"></i>&nbsp;{% trans "Learning Dataset" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <button id="remove_logs" class="btn btn-danger" type="button">{% trans "Remove selected" %}</button>
+        <div class="dataset" id="{{datasets}}"></div>
+        <table id="table_dataset" data-name="security" cellspacing="0" class="table table-bordered table-striped table-hover table-heading table-datatable table_logs compact">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="checkall"/></th>
+                    <th>{% trans "Date" %}</th>
+                    <th>{% trans "Src IP" %}</th>
+                    <th>{% trans "Method" %}</th>
+                    <th>{% trans "HTTP code" %}</th>
+                    <th>{% trans "URI" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'plugins/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'plugins/datatables/dataTables.bootstrap.js' %}"></script>
+    
+{% endblock %}
+
+{% block jquery_code  %}
+
+    /// DATATABLE settings
+    columns     = ['time', 'src_ip', 'response_code', 'http_method', 'requested_uri'];
+    columns_def = [
+        {'data': 'check', 'name': 'check', 'defaultContent': "", 'aTargets': [0], 'sWidth': "2%", "sClass": "center", "bSortable": false},
+        {'data': 'time', 'name': 'time', 'defaultContent': "", 'aTargets': [1], 'sWidth': "8%"},
+        {'data': 'src_ip', 'name': 'src_ip', 'defaultContent': "", 'aTargets': [2], 'sWidth': "5%"},
+        {'data': 'http_method', 'name': 'http_method', 'defaultContent': "", 'aTargets': [3], 'sWidth': "2.5%"},
+        {'data': 'response_code', 'name': 'response_code', 'defaultContent': "", 'defaultContent': "", 'aTargets': [4], 'sWidth': "2.5%"},
+        {'data': 'requested_uri', 'name': 'requested_uri', 'defaultContent': "", 'aTargets': [5], 'sWidth': "80%"},
+        {'data': 'bytes_received', 'name': 'bytes_received', 'defaultContent': ""},
+        {'data': 'bytes_sent', 'name': 'bytes_sent', 'defaultContent': ""},
+        {'data': 'time_elapsed', 'name': 'time_elapsed', 'defaultContent': ""},
+        {'data': 'user', 'name': 'user', 'defaultContent': "", 'sWidth': "10%"},
+        {'data': 'requested_uri', 'name': 'requested_uri', 'defaultContent': "", 'sWidth': "63%"},
+        {'data': 'http_code', 'name': 'http_code', 'defaultContent': "", 'sWidth': "2.5%"},
+        {'data': 'size', 'name': 'size', 'defaultContent': ""},
+        {'data': 'referer', 'name': 'referer', 'defaultContent': ""},
+        {'data': 'user_agent', 'name': 'user_agent', 'defaultContent': ""},
+
+        {'data': 'incoming_protocol', 'name': 'incoming_protocol'},
+        {'data': 'owasp_crs', 'name': 'owasp_crs'},
+        {'data': "incoming_protocol", 'name': 'incoming_protocol'},
+        {'data': "request_headers.host", 'name': 'request_headers.host'},
+        {'data': "request_headers.User-Agent", 'name': 'request_headers.User-Agent'},
+        {'data': "request_headers.Accept", 'name': 'request_headers.Accept'},
+        {'data': "request_headers.Accept-Language", 'name': 'request_headers.Accept-Language'},
+        {'data': "request_headers.Accept-Encoding", 'name': 'request_headers.Accept-Encoding'},
+        {'data': "request_headers.Cookie", 'name': 'request_headers.Cookie'},
+        {'data': "request_headers.Connection", 'name': 'request_headers.Connection'},
+        {'data': "request_headers.Pragma", 'name': 'request_headers.Pragma'},
+        {'data': "request_headers.Cache-Control", 'name': 'request_headers.Cache-Control'},
+        {'data': "server_protocol", 'name': 'server_protocol'},
+        {'data': "response_status", 'name': 'response_status'},
+        {'data': "response_headers.Last-Modified", 'name': 'response_headers.Last-Modified'},
+        {'data': "response_headers.ETag", 'name': 'response_headers.ETag'},
+        {'data': "response_headers.Accept-Ranges", 'name': 'response_headers.Accept-Ranges'},
+        {'data': "response_headers.Content-Length", 'name': 'response_headers.Content-Length'},
+        {'data': "response_headers.Content-Type", 'name': 'response_headers.Content-Type'},
+        {'data': "response_headers.Content-Security-Policy", 'name': 'response_headers.Content-Security-Policy'},
+        {'data': "response_headers.X-Frame-Options", 'name': 'response_headers.X-Frame-Options'},
+        {'data': "response_headers.X-Content-Type-Options", 'name': 'response_headers.X-Content-Type-Options'},
+        {'data': "response_headers.X-XSS-Protection", 'name': 'response_headers.X-XSS-Protection'},
+        {'data': "response_headers.Keep-Alive", 'name': 'response_headers.Keep-Alive'},
+        {'data': "response_headers.Connection", 'name': 'response_headers.Connection'},
+        {'data': "auditLogTrailer.Apache-Handler", 'name': 'auditLogTrailer.Apache-Handler'},
+        {'data': "auditLogTrailer.Stopwatch", 'name': 'auditLogTrailer.Stopwatch'},
+        {'data': "auditLogTrailer.Stopwatch2", 'name': 'auditLogTrailer.Stopwatch2'},
+        {'data': "auditLogTrailer.Producer", 'name': 'auditLogTrailer.Producer'},
+        {'data': "auditLogTrailer.Server", 'name': 'auditLogTrailer.Server'},
+        {'data': "auditLogTrailer.Engine-Mode", 'name': 'auditLogTrailer.Engine-Mode'},
+        {'data': "event_timestamp", 'name': 'event_timestamp'},
+        {'data': "response_headers.Set-Cookie", 'name': 'response_headers.Set-Cookie'},
+        {'data': "response_headers.Location", 'name': 'response_headers.Location'},
+    ]
+
+    var table;
+
+    function init_table(){
+        settings = {
+            "sDom": '<p<"top"i>t<"bottom"lp>',
+            'sPaginationType': 'bootstrap',
+            "oLanguage": {
+                "sLengthMenu": '_MENU_',
+                "oPaginate":{
+                    "sNext": '',
+                    "sPrevious": ''
+                }
+            },
+            "bAutoWidth"    : false,
+            "aoColumnDefs"  : columns_def,
+            "bServerSide"   : true,
+            "bfilter"       : false,
+            'bSort'         : false,
+            'iDisplayLength': 20,
+            "aLengthMenu"   : [[25, 50, 100], [25, 50, 100]],
+            "bProcessing"   : false,
+            'aaSorting'     : [[1, 'desc']],
+            'sAjaxSource'   : '/dataset/get',
+            "fnServerData": function(sSource, aoData, fnCallback){
+                // Add several data
+                aoData.push({'name': 'dataset_id', 'value': $('.dataset').attr('id')});
+                aoData.push({'name': 'columns', 'value': JSON.stringify(columns)});
+
+                $.ajax({
+                    "type"    : "POST",
+                    "url"     : sSource,
+                    "data"    : aoData,
+                    "success" : fnCallback
+                })
+            }
+        }
+
+        table = $('#table_dataset').dataTable(settings);
+    }
+
+    $('#checkall').on('change', function(){
+        if ($(this).is(':checked')){
+            $('.select_logs').prop('checked', true);
+        } else {
+            $('.select_logs').prop('checked', false);
+        }
+    });
+
+
+    $('#remove_logs').on('click', function(){
+        var dataset_id = $('.dataset').attr('id');
+        var to_remove = [];
+        $('.select_logs').each(function(){
+            if ($(this).is(':checked'))
+                to_remove.push($(this).data('id'))
+        });
+
+        $.post(
+            '/dataset/logs/remove' ,
+            {
+                'dataset_id': dataset_id,
+                'to_remove' : JSON.stringify(to_remove)
+            },
+
+            function(data){
+                if (data['status'] === true)
+                    table.fnDraw();
+            }
+        )
+    });
+
+
+
+    init_table();
+    table.fnDraw();
+   
+{% endblock %}

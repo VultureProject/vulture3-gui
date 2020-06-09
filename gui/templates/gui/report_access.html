@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-bar-chart"></i>&nbsp;{% trans "Report / Access" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="col-sm-12 col-lg-3">
+            <label class="control-label">{% trans "Applications" %}</label>&nbsp;&nbsp;
+            <div class="btn-group btn-group-xs">
+                <button id="all_apps" class="btn btn-default">{% trans "All" %}</button>
+                <button id="no_apps" class="btn btn-danger"><i class="fa fa-times"></i></button>
+            </div>
+            <select id="app_select" multiple="multiple" class="reload_map" style="margin-top:5px;">
+                    {% for app in apps %}
+                        <option value="{{ app.id }}">{{ app.name }}</option>
+                    {% endfor %}
+                </select>
+        </div>
+        <div class="col-sm-12 col-lg-4">
+            <label class="control-label">{% trans "Date" %}</label>&nbsp;&nbsp;
+            <div>
+                <input class="report_date_input" type="text" name="daterange" placeholder="Select a Date"/>
+                <input id="daterange_input" type="hidden" />
+                <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
+            </div>
+        </div>
+
+    </div>
+</div>
+<br/>
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12 radar_chart" id="request_count"></div>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-3 col-sm-6 col-xs-12 pie_chart" id="http_code"></div>
+    <div class="col-md-3 col-sm-6 col-xs-12 pie_chart" id="http_method"></div>
+    <div class="col-md-3 col-sm-6 col-xs-12 pie_chart" id="browser_UA"></div>
+    <div class="col-md-3 col-sm-6 col-xs-12 pie_chart" id="os_UA"></div>
+</div>
+
+<div class="row row_table_logs justify-content-center" id="row_table_static_requests" style="display:none;">
+    <h2>Traffic per URL</h2>
+    <div id="div_access" class="col-xs-12">
+        <div class="resize_div">
+            <a class="resize-font" href="#" data-type="smaller"><i class='fa fa-minus-square'></i></a>
+            <a class="resize-font" href="#" data-type="origin"><i class='fa fa-dot-circle-o'></i></a>
+            <a class="resize-font" href="#" data-type="bigger"><i class='fa fa-plus-square'></i></a>
+        </div>
+        <table id="table_static_requests" data-name="static_requests" cellspacing="0" class="table table display table-bordered table-striped table-hover table-heading table-datatable table_static_requests">
+            <thead>
+                <tr>
+                    <th>#</a></th>
+                    <th>{% trans "URI" %}</th>
+                    <th>{% trans "App Name" %}</th>
+                    <th>{% trans "Nb of hits" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="row justify-content-center">
+        <div class="col-md-6 col-sm-12 col-xs-12 network_chart" id="average_breceived"></div>
+        <div class="col-md-6 col-sm-12 col-xs-12 network_chart" id="average_bsent"></div>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-12 col-sm-12 col-xs-12 network_chart" id="average_time"></div>
+</div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+    <script src="{% static "plugins/datatables/dataTables.bootstrap.js" %}"></script>
+    <script src="{% static 'js/echarts3-all.min.js' %}"></script>
+    <script src="{% static 'js/report_access.js' %}"></script>
+    <script src="{% static 'js/daterangepicker.js' %}"></script>
+    <script src="{% static 'js/dateformat.min.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-cloud"></i>&nbsp;{% trans "ModSec -> Edit" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form class="form-horizontal bootstrap-validator-form" action="/firewall/modsec_rules/edit/{% if object_id %}{{object_id}}{% endif %}" method="post" novalidate="novalidate">
+            <input type="hidden" name="type_rule" value="{{modsec_rulesset.type_rule}}">
+            {% csrf_token %}
+            <div class="x_panel">
+              <div class="x_title">
+                <h2><i class="fa fa-cloud"></i>&nbsp;&nbsp;
+                    {% if modsec_rulesset.name %} {% trans "Change settings for Rules Set " %} {{modsec_rulesset.type_rule}} "{{modsec_rulesset.name}}" {% else %} {% trans "New Rules Set" %} {% endif %}
+                </h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a href="/firewall/{{modsec_rulesset.type_rule}}/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                    <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">{% trans "Friendly name" %}</label>
+                        <div class="col-sm-5">
+                        {{form.name}}
+                        {{form.name.errors}}
+                        </div>
+                </div>
+                <div class="form-group">
+                    <br />
+
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">{% trans "Activated Rules Files" %}</label>
+                        <div class="col-sm-10">
+
+                             <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="crs_list">
+                                <thead>
+                                    <tr>
+                                        <th class="col-md-1">{% trans "Activate" %}</th>
+                                        <th>{% trans "Added on" %}</th>
+                                        <th>{% trans "Rules file" %}</th>
+                                        <th>{% trans "Action" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for rule in rules_list %}
+                                        <tr>
+                                            <td class="text-center">{% if rule.is_enabled %}<input type="checkbox" name="rule_{{ rule.id }}" checked>{% else %}<input type="checkbox" name="rule_{{ rule.id }}">{% endif %}</td>
+                                            <td>{{rule.date_rule}}</td>
+                                            <td><button type="button" class="editfile" data-toggle="modal" data-target="#myModal" id="{{ rule.id }}"><span class="fa fa-edit"></span></button>{{ rule.rule_content|join:"<br/>" }} </td>
+                                            <td><a class="action_button" style="color:#fff;" href="/firewall/modsec_rules/delete/{{rule.id}}"/><i class="fa fa-trash fa-2x"></i></a></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                             </table>
+                        </div>
+                </div>
+              </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal fade " id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog" style="width:80%;">
+            <div class="modal-content" >
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Modification of file "<span id="file_name"></span>"</h4>
+                </div>
+                <div class="modal-body" >
+                    <div class="form-group">
+                        <div class="col-sm-12"><textarea class="form-control has-popover" data-container="body" name="content" id="file_content" style="height: 600px;"></textarea></div>
+                        <button class="btn-cancel" data-dismiss="modal">{% trans "CANCEL" %}</button>
+                        <button id="save_file" class="btn-save" data-dismiss="modal">{% trans "SAVE" %}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block jquery_code  %}
+
+    $('#id_name').attr('readonly', 'readonly');
+
+
+    var rule_id = 0;
+
+    function editfile () {
+        rule_id = this.id;
+        $.ajax({
+              type: "GET",
+              url: "/firewall/modsec_rules/editfile/" + rule_id,
+              cache: false,
+              success: (function(response)
+              {
+                    $("#file_name").text(response.name);
+                    $("#file_content").val(response.content);
+              })
+         });
+    }
+
+    function savefile() {
+        var c = $("#file_content").val();
+        $.ajax({
+              type: "POST",
+              url: "/firewall/modsec_rules/editfile/" + rule_id,
+              cache: false,
+              data: JSON.stringify({content:c}),
+              dataType: "json",
+              contentType: "application/json"
+         });
+    }
+    $(".editfile").bind("click", editfile);
+    $("#save_file").bind("click", savefile);
+
+{% endblock %}
+

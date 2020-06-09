@@ -1,0 +1,217 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<form id="kerberos_form" enctype="multipart/form-data" class="form-horizontal bootstrap-validator-form" action="/repository/kerberos/edit/{% if object_id %}{{object_id}}{% endif %}" method="post" novalidate="novalidate">
+			{% csrf_token %}
+			<div class="x_panel">
+	          <div class="x_title">
+	            <h2><i class="fa fa-database"></i>&nbsp;{% trans "Kerberos -> Edit" %} {% if form.instance.repo_name %}({{ form.instance.repo_name }}) {% endif %}</h2>
+	            <ul class="nav navbar-right panel_toolbox">
+	            	<li><a href="/repository/kerberos/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+	                <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+	            </ul>
+	            <div class="clearfix"></div>
+	          </div>
+	          <div class="x_content">
+	            <div class="" role="tabpanel" data-example-id="togglable-tabs">
+	              <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+	                <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Connection settings" %}</a>
+	                </li>
+	              </ul>
+	              <div id="myTabContent" class="tab-content">
+	                <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+		                <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.repo_name.label }}</label>
+                                <div class="col-sm-5">
+                                {{form.repo_name}}
+                                {{form.repo_name.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.realm.label }}</label>
+                                <div class="col-sm-5">
+                                {{form.realm}}
+                                {{form.realm.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.domain_realm.label }}</label>
+                                <div class="col-sm-5">
+                                {{form.domain_realm}}
+                                {{form.domain_realm.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.kdc.label }}</label>
+                                <div class="col-sm-5">
+                                {{form.kdc}}
+                                {{form.kdc.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.admin_server.label }}</label>
+                                <div class="col-sm-5">
+                                {{form.admin_server}}
+                                {{form.admin_server.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.krb5_service.label }}</label>
+                                <div class="col-sm-1">
+                                    <input value="HTTP/" type="text" class="form-control" disabled="">
+                                </div>
+                                <div class="col-sm-2">
+                                    {{form.krb5_service}}
+                                    {{form.krb5_service.errors}}
+                                </div>
+                                <div class="col-sm-2">
+                                    <input id="service_realm" type="text" class="form-control" disabled="">
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.keytab.label }}</label>
+                            <div class="col-sm-5">
+                                <input class="form-control" data-container="body" data-content="Keytab of the service used to contact KDC (base64 encoded)." data-placement="right" id="id_keytab2" name="keytab2" type="file" />
+                                {{form.keytab.errors}}
+                            </div>
+                        </div>
+		                <div class="form-group">
+                            <div class="col-sm-12" style="text-align:center;">
+                                <button id="user_search_test" class="btn-test"><span>{% trans "Test connection" %}</span></button>
+                            </div>
+                        </div>
+					  </div>
+	                </div>
+	              </div>
+	            </div>
+
+	          </div>
+	        </div>
+	    </form>
+	</div>
+    <div id="modal_test_user_search" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">{% trans "User authentication test" %}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <label class="col-sm-6 control-label">{% trans "Username" %}</label>
+                            <div class="col-sm-6 form-group">
+                            <input type="text" name="test_username" id="test_username" data-placement="right" container="body" class="form-control has-popover" data-original-title="" title="">
+                            </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-sm-6 control-label">{% trans "Password" %}</label>
+                            <div class="col-sm-6 form-group">
+                            <input type="password" name="test_password" id="test_password" data-placement="right" container="body" class="form-control has-popover" data-original-title="" title="">
+                            </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <p id="user_search_test_msg" class="test_user"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="button" id="btn_send_user_search" class="btn btn-primary">{% trans "Test credentials" %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+	<div id="modal_test_keytab" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">{% trans "Importing keytab result" %}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                            <div class="col-sm-12">
+                            <p id="keytab_test_msg"></p>
+                            </div>
+                    </div>
+                    <br />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Close" %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+
+{% endblock %}
+
+{% block jquery_code  %}
+    $('#service_realm').val( "@"+$('#id_realm').val() );
+
+    $("#id_kdc").tagEditor({
+        initialTags: [{{kdc|safe}}],
+        delimiter: ',',
+        forceLowercase: false,
+        placeholder: 'Enter the kdc(s list) here',
+    });
+
+    /*User search test*/
+    $('#id_realm').on("input", function(e){
+        $('#service_realm').val( "@"+$('#id_realm').val() );
+        e.preventDefault();
+    });
+
+    /*User search test*/
+    $('#user_search_test').on("click", function(e){
+        $('.test_user').html('');
+        $('.errorlist').remove();
+        $("#modal_test_user_search").modal('show');
+        e.preventDefault()
+    });
+
+    $('#btn_send_user_search').on("click", function(e){
+        $('.test_user').html('');
+        username = $('#test_username').val();
+        password = $('#test_password').val();
+        url = "/repository/kerberos/user_search_test/";
+        form_data = $('#kerberos_form').serializeArray();
+        var indexed_data = {};
+        $.map(form_data, function(n, i){
+            indexed_data[n['name']] = n['value'];
+        });
+        indexed_data['username'] = username;
+        indexed_data['password'] = password;
+        indexed_data['keytab'] = $('#id_keytab2').val();
+        $.post(url, indexed_data, function(data){
+            status = data['status'];
+            handle_form_errors(data);
+            if(status == 'true'){
+                $('#user_search_test_msg').html('<b style="color:green;">{% trans "Successful authentication" %}</b>');
+                $('#user_search_test_msg').append("<br/><pre>"+data['data']+"</pre>");
+            }
+            else{
+                reason = data['reason'];
+                $('#user_search_test_msg').html("<b style='color:red;'>{% trans 'Unable to authenticate user, reason: '%}" + reason + "</b>");
+            }
+
+        });
+    });
+
+
+{% endblock %}
