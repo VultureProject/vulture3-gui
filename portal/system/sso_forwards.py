@@ -404,9 +404,10 @@ class SSOForwardBASIC(SSOForward):
 
         #### POSSIBILITY OF VERIFY CREDENTIALS => IF RESPONSE.STATUS_CODE == 401
         if not self.application.sso_forward_only_login:
-            logger.info(b"Authorization:Basic "+b64encode('{}:{}'.format(credentials['basic_username'], credentials['basic_password']).encode('utf8')))
+            #logger.debug(b"Sending header Authorization:Basic "+b64encode('{}:{}'.format(credentials['basic_username'], credentials['basic_password']).encode('utf8')))
             redis_session.setHeader(b"Authorization:Basic "+b64encode('{}:{}'.format(credentials['basic_username'],
-                                                                                     credentials['basic_password']).encode('utf8')))
+                                                                                     credentials['basic_password']).encode('utf8'))
+                                    + b"\r\n")
             logger.info("SSOForwardBASIC::authenticate: Basic infos successfully written in Redis session")
 
         return response
