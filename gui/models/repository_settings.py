@@ -97,8 +97,10 @@ class SSOProfile(DynamicDocument):
         """
         :return: Return the password in cleartext
         """
-        self.encrypted_value = to_decrypt
         aes = AESCipher(str(SECRET_KEY)+str(app_id)+str(backend_id)+str(login)+str(name))
+        if self.encrypted_name is not None and aes.key.hex() != self.encrypted_name:
+            return None
+        self.encrypted_value = to_decrypt
         self.encrypted_name = aes.key.hex()
         return aes.decrypt(self.encrypted_value)
 
