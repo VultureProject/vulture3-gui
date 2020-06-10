@@ -1,4 +1,4 @@
-#!/home/vlt-gui/env/bin/python2.7
+#!/home/vlt-gui/env/bin/python
 # coding:utf-8
 
 """This file is part of Vulture 3.
