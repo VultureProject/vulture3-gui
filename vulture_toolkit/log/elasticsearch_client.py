@@ -70,7 +70,7 @@ class ElasticSearchClient(BaseLog):
     def _prepare_index_name(self, type_log, start_date, end_date):
         """ Return every index name between two dates
         """
-        if (isinstance(start_date, str) and isinstance(end_date, str)) or (isinstance(start_date, unicode) and isinstance(end_date, unicode)):
+        if isinstance(start_date, str) and isinstance(end_date, str):
             start_date = parse(start_date)
             end_date   = parse(end_date)
 
