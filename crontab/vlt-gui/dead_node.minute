@@ -1,0 +1,47 @@
+#!/usr/bin/env /home/vlt-gui/env/bin/python
+"""This file is part of Vulture 3.
+
+Vulture 3 is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vulture 3 is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vulture 3.  If not, see http://www.gnu.org/licenses/.
+"""
+__author__ = "Jeremie Jourdin"
+__credits__ = []
+__license__ = "GPLv3"
+__version__ = "3.0.0"
+__maintainer__ = "Vulture Project"
+__email__ = "contact@vultureproject.org"
+__doc__ = ''
+
+import os
+import sys
+
+# Django setup part
+sys.path.append("/home/vlt-gui/vulture/")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", 'vulture.settings')
+
+import django
+django.setup()
+
+from gui.models.system_settings import Cluster
+cluster=Cluster.objects.get()
+local_node=cluster.get_current_node()
+local_status = local_node.is_up()
+
+if not local_status and local_node.is_dead is False:
+    local_node.is_dead=True
+    print("Local node #"+str(local_node.name)+" became dead.")
+    local_node.save()
+elif local_status and local_node.is_dead is True:
+    local_node.is_dead=False
+    print("Local node #"+str(local_node.name)+" became alive.")
+    local_node.save()

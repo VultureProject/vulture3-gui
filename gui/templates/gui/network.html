@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-globe"></i>&nbsp;{% trans "Listeners" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="interface_list">
+            <thead>
+                <tr>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Node(s)" %}</th>
+                    <th>{% trans "IP Address" %}</th>
+                    <th>{% trans "Netmask" %}</th>
+                    <th>{% trans "VHID" %}</th>
+                    <th>{% trans "Action" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for listener in listeners %}
+                <tr id="{{ listener.inet.id }}" >
+                    <td>
+                        {% if listener.inet.is_carp %}
+                        <span><i class="fa fa-star"></i></span>
+                        {% endif %}
+                        {% if listener.inet.is_gui %}
+                        <span><i class="fa fa-star-half-o"></i></span>
+                        {% endif %}
+                        {{listener.inet.alias}}
+                    </td>
+                    {% if listener.inet.is_carp %}
+                    <td>{% for intf in listener.intf %}{{intf.get_related_node.name}} ({{ intf.alias }})<br />{% endfor %}</td>
+                    {% else %}
+                        <td>{{listener.node.name}} ({{ listener.intf.alias }})</td>
+                    {% endif %}
+                    <td>{{listener.inet.ip}}</td>
+                    <td>{{listener.inet.prefixlen}}</td>
+                    <td>{% if listener.inet.is_carp %}{{listener.inet.carp_vhid}}{% endif %}</td>
+                    <td class="action">
+                            {% if not listener.inet.is_gui %}
+                                <a class="action_button"  href="/network/listeners/delete/{{listener.inet.id}}"><span><i class="fa fa-trash-o"></i></span></a>
+                            {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <span><i class="fa fa-star"></i> : {% trans "CARP listener" %}</span> <br />
+        <span><i class="fa fa-star-half-o"></i> : {% trans "IP Alias listener " %}</span>
+        <div class="add-group">
+            <a class="addlink addplus" href="/network/listeners/edit/">{% trans "Add an Entry" %} </a>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+
+    var intf_table = $('#interface_list').dataTable({
+        "dom": "<p<'searchbox'f><t>>",
+        "autoWidth": false,
+        "language": {
+            "search": "",
+            "lengthMenu": '_MENU_',
+            "pagingType": "bootstrap",
+            "paginate": {
+                "next": '<img src="{% static 'img/right.png' %}"/>',
+                "previous": '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+        fnCreatedRow: function(nRow, aData){
+            $(nRow).on('click', function(){
+                var id = $(nRow).attr('id');
+                if (id)
+                    location.href = "/network/listeners/edit/"+id;
+            })
+        }
+    });
+    
+{% endblock %}

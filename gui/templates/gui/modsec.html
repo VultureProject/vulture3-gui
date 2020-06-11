@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-cube"></i>&nbsp;{% trans "WAF Policy" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <p>{{ import_msg|safe }}</p>
+        <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="modsec_list">
+            <thead>
+                <tr>
+                    <th>{% trans "Name" %}</th>
+                    <th style="width:40px">{% trans "Action" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in policy_list %}
+                <tr id="{{ item.modsec.id }}">
+                    <td>{{item.modsec.name}}</td>
+                    <td class="action">
+                        <a class="action_button" href="/firewall/modsec/clone/{{item.modsec.id}}"><span><i class="fa fa-copy"></i></span></a>
+                        {% if item.is_delible %}
+                            <a class="action_button"  href="/firewall/modsec/delete/{{item.modsec.id}}"><span><i class="fa fa-trash-o"></i></span></a>
+                        {% else %}
+                            <a class="action_button"><span><i class="fa fa-trash-o disabled" data-toggle="tooltip" title="An application is using this policy"></i></span></a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="add-group">
+            <a class="addlink addplus" href="/firewall/modsec/edit/">{% trans "Add an Entry" %} </a>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+     $(".disabled").click(function(event) {
+        new PNotify({
+            title: 'Error: cannot delete this policy',
+            text: 'It is used by one or several applications.',
+            type: 'error',
+            styling: 'bootstrap3',
+            nonblock: {
+                nonblock: true
+            }
+        });
+    })
+
+    $('#modsec_list').DataTable({
+        "dom": "<p<'searchbox'f><t>>",
+        "autoWidth": false,
+        "language": {
+            "search": "",
+            "lengthMenu": '_MENU_',
+            "pagingType": "bootstrap",
+            "paginate": {
+                "next": '<img src="{% static 'img/right.png' %}"/>',
+                "previous": '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+        fnCreatedRow: function(nRow, aData){
+            $(nRow).on('click', function(){
+                var id = $(nRow).attr('id');
+                if (id)
+                    location.href = "/firewall/modsec/edit/"+id;
+            })
+        }
+    });
+
+    if( window.location.hash === "#reload" ) {
+        new PNotify({
+            title: 'Success',
+            text: '<a style="color:white; text-decoration: underline;" href="/application/">Please reload the applications</a>',
+            type: 'success',
+            styling: 'bootstrap3',
+            buttons: {
+                closer: true,
+                sticker: false
+            }
+        });
+    }
+{% endblock %}

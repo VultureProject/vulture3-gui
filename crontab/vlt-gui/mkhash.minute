@@ -1,0 +1,68 @@
+#!/home/vlt-gui/env/bin/python
+"""This file is part of Vulture 3.
+
+Vulture 3 is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Vulture 3 is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Vulture 3.  If not, see http://www.gnu.org/licenses/.
+"""
+__author__     = "Jérémie Jourdin"
+__credits__    = []
+__license__    = "GPLv3"
+__version__    = "3.0.0"
+__maintainer__ = "Vulture Project"
+__email__      = "contact@vultureproject.org"
+__doc__        = 'Update UA reputation IP list'
+
+import glob
+import hashlib
+import os
+import sys
+
+import redis
+
+redis = redis.StrictRedis(unix_socket_path='/var/db/redis/redis.sock', db=0, decode_responses=True)
+res = redis.execute_command('ROLE')
+if 'master' not in res:
+    sys.exit(0)
+
+# Abort if there is already a running importation process
+key=redis.get("ctx_ua_lock")
+if key is not None:
+    print("User-Agent importation already running, delete ctx_ua_lock if needed")
+    sys.exit(0)
+
+# Lock redis
+redis.set("ctx_ua_lock", "1")
+
+first=True
+for file in glob.glob ('/home/vlt-gui/vulture/vulture_toolkit/waf/ua/ua*.txt'):
+    category=os.path.basename(file).replace('.txt','')
+    with open (file,"r") as f:
+        for line in f:
+            m=hashlib.md5()
+            m.update(line.encode('utf8').rstrip())
+            k="col_ua:"+m.hexdigest()+":ua"
+
+            #Nothing to do if redis is already filled
+            if first:
+                key=redis.get(k)
+                if key is not None:
+                    redis.delete("ctx_ua_lock")
+                    sys.exit(0)
+                first=False
+
+            redis.set(k, category)
+
+        f.close()
+
+redis.delete("ctx_ua_lock")
+

@@ -1,0 +1,249 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<form class="form-horizontal bootstrap-validator-form" action="/system/ssl/edit/{% if object_id %}{{object_id}}{% endif %}" method="post" novalidate="novalidate">
+			{% csrf_token %}
+			<div class="x_panel">
+	          <div class="x_title">
+	            <h2><i class="fa fa-cog"></i>&nbsp;{% trans "SSL -> Edit" %}</h2>
+	            <ul class="nav navbar-right panel_toolbox">
+	            	<li><a href="/system/ssl/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+	                <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+	            </ul>
+	            <div class="clearfix"></div>
+	          </div>
+	          <div class="x_content">
+	            <div class="" role="tabpanel" data-example-id="togglable-tabs">
+	              <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+	                <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Ciphers" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Client Certificates" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content3" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "OCSP" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content4" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Advanced" %}</a>
+	                </li>
+	              </ul>
+	              <div id="myTabContent" class="tab-content">
+	                <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+	                   <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Friendly name" %}</label>
+                                <div class="col-sm-5">
+                                {{form.name}}
+                                {{form.name.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "SSL Crypto Engine" %}</label>
+                                <div class="col-sm-5">
+                                {{form.engine}}
+                                {{form.engine.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "X509 Certificate to use" %}</label>
+                                <div class="col-sm-5">
+                                {{form.certificate}}
+                                {{form.certificate.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Accepted protocols" %}</label>
+                                <div class="col-sm-5">
+                                {{form.protocols}}
+                                {{form.protocols.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Accepted ciphers" %}</label>
+                                <div class="col-sm-5">
+                                {{form.ciphers}}
+                                {{form.ciphers.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Honor Cipher Order" %}</label>
+                            <div class="col-sm-5">
+                                    <label>
+                                        {{form.honorcipherorder}}
+                                        {{form.honorcipherorder.errors}}
+                                    </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "CRL Verification" %}</label>
+                                <div class="col-sm-5">
+                                {{form.verify_crl}}
+                                {{form.verify_crl.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Enable HTTP Public Key Pinning" %}</label>
+                            <div class="col-sm-5">
+                                    <label>
+                                        {{form.hpkp_enable}}
+                                        {{form.hpkp_enable.errors}}
+                                    </label>
+                            </div>
+                        </div>
+                        <div class="form-group id_enabled">
+                            <label class="col-sm-4 control-label">{% trans "Extra information for 'Public-Key-Pins' header" %}</label>
+                            <div class="col-sm-5">
+                                    {{form.hpkp_other}}
+                                    {{form.hpkp_other.errors}}
+                            </div>
+                        </div>
+
+	                </div>
+	                <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+	                	<div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Client certificate is" %}</label>
+                            <div class="col-sm-5">
+                                {{form.verifyclient}}
+                                {{form.verifyclient.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group" id="accepted_ca">
+                            <label class="col-sm-4 control-label">{% trans "Accepted CA" %}</label>
+                            <div class="col-sm-5">
+                                {{form.accepted_ca}}
+                                {{form.accepted_ca.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group" id="redirect_no_cert">
+                            <label class="col-sm-4 control-label">{% trans "If no client certificate, redirect to " %}</label>
+                            <div class="col-sm-5">
+                                {{form.redirect_no_cert}}
+                                {{form.redirect_no_cert.errors}}
+                            </div>
+                        </div>
+	                </div>
+	                <div role="tabpanel" class="tab-pane fade" id="tab_content3" aria-labelledby="profile-tab">
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Enable OCSP stapling" %}</label>
+                                <div class="col-sm-5">
+                                    <div class="">
+                                        <label>
+                                            {{form.enable_ocsp_stapling}}
+                                            {{form.enable_ocsp_stapling.errors}}
+                                        </label>
+                                    </div>
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Enable OCSP responder verification" %}</label>
+                                <div class="col-sm-5">
+                                    <div class="">
+                                        <label>
+                                            {{form.ocsp_responder_enable}}
+                                            {{form.ocsp_responder_enable.errors}}
+                                        </label>
+                                    </div>
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Default OCSP responder" %}</label>
+                                <div class="col-sm-5">
+                                {{form.ocsp_responder_default}}
+                                {{form.ocsp_responder_default.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Override OCSP responder with default ?" %}</label>
+                                <div class="col-sm-5">
+                                    <div class="">
+                                        <label>
+                                            {{form.ocsp_responder_override}}
+                                            {{form.ocsp_responder_override.errors}}
+                                        </label>
+                                    </div>
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "OCSP responder timeout" %}</label>
+                                <div class="col-sm-5">
+                                {{form.ocsp_responder_timeout}}
+                                {{form.ocsp_responder_timeout.errors}}
+                                </div>
+                        </div>
+                    </div>
+                    <div role="tabpanel" class="tab-pane fade" id="tab_content4" aria-labelledby="profile-tab">    
+	                	<div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Custom mod_ssl directives for virtualhost context" %}</label>
+                            <div class="col-sm-5">
+                                {{form.ssl_options_vhost}}
+                                {{form.ssl_options_vhost.errors}}
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Custom mod_ssl directives for application context" %}</label>
+                            <div class="col-sm-5">
+                                {{form.ssl_options_app}}
+                                {{form.ssl_options_app.errors}}
+                            </div>
+                        </div>
+	                </div>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	    </form>
+	</div>
+    	
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+
+{% endblock %}
+
+{% block jquery_code  %}
+
+
+    $('#id_hpkp_enable').on('change', toggleHPKP);
+    $("#id_hpkp_enable").trigger("change");
+    function toggleHPKP () {
+        var enable = $(this);
+        if (enable.is(":checked")) {
+             $('.id_enabled').show();
+        }
+        else {
+            $('.id_enabled').hide();
+        }
+    }
+
+    $('#id_verifyclient').on('change', toggleVerifyClient);
+    $("#id_verifyclient").trigger("change");
+
+    function toggleVerifyClient () {
+        var verify = $(this);
+        console.log(verify.val())
+        if (verify.val() === "none") {
+            $("#redirect_no_cert").css("display", "none");
+            $("#accepted_ca").css("display", "none");
+        }
+        else if (verify.val() === "optional") {
+            $("#redirect_no_cert").css("display", "block");
+            $("#accepted_ca").css("display", "block");
+        }
+        else if (verify.val() === "require") {
+            $("#redirect_no_cert").css("display", "block");
+            $("#accepted_ca").css("display", "block");
+        }
+        else if (verify.val() === "optional_no_ca") {
+            $("#redirect_no_cert").css("display", "block");
+            $("#accepted_ca").css("display", "none");
+        }
+    }
+
+{% endblock %}

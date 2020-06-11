@@ -1,0 +1,188 @@
+#!/home/vlt-gui/env/bin/python
+#-*- coding: utf-8 -*-
+
+import os
+import re
+import sys
+import time
+
+import requests
+
+
+#from gui.models.system_settings import Cluster
+#from gui.models.application_settings import Application
+
+
+class Maltrail:
+    def __str__(self):
+        return "ctx_tags"
+
+    def __init__(self):
+        self.maltrail_path_file     = "/var/db/loganalyzer/maltrail.csv"
+        self.maltrail_ip_list       = []
+        self.cluster                = Cluster.objects.get()
+        self.maltrail_ip_list_mongo = self.cluster.system_settings.loganalyser_settings.loganalyser_rules
+
+
+    def status(self):
+        res = self.redis_cli.execute_command('ROLE')
+        if 'master' in res:
+            return True
+        return False
+
+
+    def fetch(self):
+        total_count = 0
+        data        = {}
+
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.94 Safari/537.36'}
+
+        pattern=re.compile ('([0-9]+(?:\.[0-9]+){3})/?([0-9]{2})?')
+        for database in self.maltrail_ip_list_mongo:
+            if database['tags'] == "":
+                database['tags'] = "Unknown"
+
+            tags = database['tags'].split(',')
+            try:
+                count = 0
+                req = requests.get(database['url'], stream=True, headers=headers, timeout=5, proxies=self.__get_proxy_conf())
+                #First process file and build a list of CIDR
+                for line in req.iter_lines():
+                    m=re.match(pattern, line)
+                    if m:
+                        ip=m.group(1).rstrip()
+                        netmask=None
+                        try:
+                            netmask=m.group(2).rstrip()
+                        except:
+                            pass
+
+                        if netmask and int(netmask) > 32:
+                            continue
+
+                        if netmask:
+                            net = ip+'/'+netmask
+                        else:
+                            net = ip+'/32'
+
+                        data.setdefault(net, set()).update(tags)
+                        count += 1
+                print("%6s  %s" % (count, database['description']))
+                total_count += count
+            except Exception, e:
+                print("error with database {}: {} ".format(database['description'],str(e)))
+
+        print("TOTAL IP COUNT : %d" % total_count)
+        print("TOTAL IP UNIQUE COUNT : %d" % len(data))
+        return data
+
+
+    def import_file(self):
+        print("IMPORT FILE")
+        data = {}
+        with open(self.maltrail_path_file, "r") as f:
+            for line in f:
+                line_split = line.split(",")
+                data[line_split[0]] = [tag.replace("\n", "") for tag in line_split[1:]]
+        return data
+
+
+    def export_file(self, data):
+        print("EXPORT FILE")
+        with open(self.maltrail_path_file, "wb") as f:
+            for ip in data:
+                f.write("%s,%s\n" % (ip, ",".join(data[ip])))
+
+
+    def export_redis(self, data):
+        print("EXPORT REDIS IP")
+        nb_entries=len (data)
+        self.redis_cli.set(str(self) + "_count", nb_entries)
+
+        # SORT KEYS BY SPECIFIC
+        ips=data.keys()
+        reputations = dict()
+        for ip in ips:
+            try:
+                reputations[str(ip).split('.')[0]+'.'][ip] = ','.join(data[ip])
+            except:
+                reputations[str(ip).split('.')[0]+'.'] = {ip: ','.join(data[ip])}
+        print "ETAPE 1 - OK"
+        for key, item in reputations.items():
+            self.redis_cli.hmset ('ctx_' + key, item)
+        print "ETAPE 2 - OK"
+
+
+    def maj_required_file(self):
+        if not os.path.isfile(self.maltrail_path_file) or abs(os.path.getmtime(self.maltrail_path_file) - time.time()) > 24 * 3600:
+            return True
+        return False
+
+
+    def maj_required_redis(self):
+        return not self.redis_cli.exists(str(self) + "_count")
+
+    def update(self, force=False):
+        if not self.maj_required_file() and not self.maj_required_redis() and not force:
+            print("No need to update")
+            return
+
+        if self.maj_required_file() or force:
+            data = self.fetch()
+            if len(data):
+                self.export_file(data)
+                self.export_redis(data)
+
+        elif self.maj_required_redis():
+            self.export_redis(self.import_file())
+
+
+    def __get_proxy_conf(self):
+        proxy = None
+
+        if os.path.exists("/etc/rc.conf"):
+            http_proxy  = None
+            https_proxy = None
+            ftp_proxy   = None
+
+            try:
+                tmp = open("/etc/rc.conf").read()
+                lst = re.findall('http_proxy="(.*)"', tmp)
+                if len(lst):
+                    http_proxy = lst[0]
+                    if http_proxy == "":
+                        http_proxy = lst[1]
+
+                lst = re.findall('https_proxy="(.*)"', tmp)
+                if len(lst):
+                    https_proxy = lst[0]
+                
+                lst = re.findall('ftp_proxy="(.*)"', tmp)
+                if len(lst):
+                    ftp_proxy = lst[0]
+
+                proxy = {
+                    "http" : http_proxy,
+                    "https": https_proxy,
+                    "ftp"  : ftp_proxy
+                }
+
+            except:
+                pass
+
+        return proxy
+
+
+if __name__ == '__main__':
+
+    m = Maltrail()
+    if m.status():
+        if len(sys.argv) > 1 and sys.argv[1] == '--force':
+            m.update(force=True)
+        elif len(sys.argv) == 1:
+            m.update()
+        else:
+            print("--force to force update")
+
+        m.redis_cli.delete("ctx_lock")

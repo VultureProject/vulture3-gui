@@ -1,0 +1,196 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-desktop"></i>&nbsp;{% trans "Nodes" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="node_list">
+            <thead>
+                <tr>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "System status" %}</th>
+                    <th>{% trans "GUI version" %}</th>
+                    <th>{% trans "Engine version" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for node in nodes %}
+                    <tr>
+                        <td> {{node.name}} </td>
+                        <td> {% if node.vulns.need_update %} 
+                            <a href="#" data-toggle="modal" data-target="#show_vulns" data-node="{{ node.name }}" data-id="{{ node.id }}">
+                                {% trans "Vulnerabilities found ! (click to show)" %} 
+                            </a>
+                        {% else %}
+                            {% trans "No problem found" %}
+                        {% endif %}
+                        </td>
+                        <td>{% if node.version.is_gui_up2date %}
+                            {{ node.version.gui_version }} ({% trans "This is the lastest available version" %})
+                            {% else %}
+                            {% trans "An update is available" %}
+                            -> <a href="#" data-toggle="modal" data-target= "#confirm_update" data-node="{{ node.name }}" data-type="{{ node.version.gui_version }}" data-version= "{{ node.version.gui_last_version }}" data-url="/cluster/update/{{ node.id }}/gui/" data-id="{{ node.id }}">{% trans "Upgrade" %}
+                            ({{ node.version.gui_version }} ->
+                            {{ node.version.gui_last_version }})</a>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if node.version.is_engine_up2date %}
+                            {{ node.version.engine_version }} ({% trans "This is the lastest available version" %})
+                            {% else %}
+                            {% trans "An update is available" %}
+                            -> <a href="#" data-toggle="modal" data-target= "#confirm_update" data-node="{{ node.name }}" data-type="{{ node.version.engine_version }}" data-version= "{{ node.version.engine_last_version }}" data-url="/cluster/update/{{ node.id }}/engine/" data-id="{{ node.id }}">{% trans "Upgrade" %}
+                            ({{ node.version.engine_version }} {% trans "to" %}
+                            {{ node.version.engine_last_version }})</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor  %}
+            </tbody>
+        </table>
+    </div>
+    <div class="modal" id="confirm_update" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" >
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">{% trans "Update confirmation" %}</h4>
+                </div>
+                <div class="modal-body" >
+                    <p id="modal_confirm_msg">{% trans "Please confirm update of " %}
+                        <b id="v_type"></b>{% trans " to " %}<b id="v_version"></b>
+                    {% trans " on node " %} <b id="v_node"></b>.<br/><br/>
+                        {% trans "If you press 'Confirm', this modal dialog will close and the update process will begin in background. After few seconds / minutes you will be redirected to this page." %} <br/><br/>
+                        {% trans "<b>Please check you have a valid backup (VM Snapshot) of the current Vulture Node.</b> You have been warned !" %}<br/><br/>
+                        {% trans "If any trouble when upgrade the GUI, visit <a href='https://www.vultureproject.org/support/'>https://www.vultureproject.org/support/</a> to check for known issues" %}
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" data-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="button" id="btn_confirm" class="btn btn-save">{% trans "Confirm" %}</button>
+                </div>
+             </div>
+        </div>
+    </div>
+
+    <div id="show_vulns" class="modal fade">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">{% trans "Vulnerabilities informations" %}</h4>
+                </div>
+                <div class="modal-body" id="vulns_body">
+                    <div class="row">
+                        <label class="col-sm-6 control-label">{% trans "Packets vulns :" %}</label>
+                            <div class="col-sm-12 form-group">
+                            <label class="col-sm-12 control-label" id="global_vulns" data-placement="right" container="body"></label>
+                            </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-sm-6 control-label">{% trans "Distrib vulns :" %}</label>
+                            <div class="col-sm-12 form-group">
+                            <label class="col-sm-12 control-label" id="distrib_vulns" data-placement="right" container="body"></label>
+                            </div>
+                    </div>
+                    <br/>
+                    <div class="row">
+                        <label class="col-sm-6 control-label">{% trans "Kernel vulns :" %}</label>
+                            <div class="col-sm-12 form-group">
+                            <label class="col-sm-12 control-label" id="kernel_vulns" data-placement="right" container="body"></label>
+                            </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+    $('#node_list').DataTable({
+        "dom": "<p<'searchbox'f><t>>",
+        "autoWidth": false,
+        "language": {
+            "search": "",
+            "lengthMenu": '_MENU_',
+            "pagingType": "bootstrap",
+            "paginate": {
+                "next": '<img src="{% static 'img/right.png' %}"/>',
+                "previous": '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+    });
+
+    $('#confirm_update').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var url = button.data('url');
+        var type = button.data('type');
+        var version = button.data('version');
+        var node = button.data('node');
+        var node_id = button.data('id');
+
+        var modal = $(this);
+        modal.find('#v_type').text(type);
+        modal.find('#v_version').text(version);
+        modal.find('#v_node').text(node);
+        $('#btn_confirm').on("click", function(e){
+            $('#img_'+node_id).show();
+            $.get(url, function(data){
+                document.location.href=('/cluster/update');
+            });
+            modal.modal('hide');
+        });
+    })
+
+
+    /* Vulnerabilities printing */
+    $('#show_vulns').on('show.bs.modal', function(e){
+        var button = $(e.relatedTarget);
+        var node_id = button.data('id');
+        console.log("id = "+node_id);
+        url = "/cluster/vulns/infos/"+node_id;
+
+        var modal = $(this);
+        $.get(url, function(data){
+            if( data['need_update'] == true ){
+                $('#global_vulns').html(data['global_vulns']);
+                $('#distrib_vulns').html(data['distrib_vulns']);
+                $('#kernel_vulns').html(data['kernel_vulns']);
+            }
+            else{
+                $('#global_vulns').html("None");
+                $('#distrib_vulns').html("None");
+                $('#kernel_vulns').html("None");
+            }
+        });
+    });
+
+
+{% endblock %}

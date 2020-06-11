@@ -1,0 +1,197 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form id="listener_edit_form" class="form-horizontal bootstrap-validator-form" action="/network/listeners/edit/{{form.initial.id}}" method="post" novalidate="novalidate">
+            {% csrf_token %}
+            <div class="x_panel">
+                  <div class="x_title">
+                    <h2><i class="fa fa-globe"></i>&nbsp;{% trans "Network Edit" %}&nbsp;&nbsp;<label class="label label-warning"><i class="fa fa-warning">&nbsp;&nbsp;</i>{% trans "Don't forget to reload the Packet Filter configuration on each Node" %}</label> -> <a target="_blank" href="/services/pf/">Packet filter</a></h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                        <li><a href="/network/listeners/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                        <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Name" %}</label>
+                        <div class="col-sm-5">
+                        {{form.alias}}
+                        {{form.alias.errors}}
+                        </div>
+                    </div>
+                  {% if not object_id %}
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Carp listener ?" %}</label>
+                        <div class="col-sm-5">
+                            <div class="">
+                                <label>
+                                    {{form.is_carp}}
+                                    {{form.is_carp.errors}}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                  {% endif %}
+                    <div class="form-group" id="device_selector">
+                        <label class="col-sm-4 control-label">{% trans "Device" %}</label>
+                        <div class="col-sm-5">
+                        {{form.device}}
+                        {{form.device.errors}}
+                        </div>
+                    </div>
+                      <div style="display:none;">
+                      {{form.is_carp}}
+                      </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "IP Address" %}</label>
+                        <div class="col-sm-5">
+                        {{form.ip}}
+                        {{form.ip.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Netmask" %}</label>
+                        <div class="col-sm-5">
+                        {{form.prefixlen}}
+                        {{form.prefixlen.errors}}
+                        </div>
+                    </div>
+                    <!--
+                    <div class="form-group carp_configuration">
+                        <label class="col-sm-4 control-label">{% trans "Priority" %}</label>
+                            <div class="col-sm-5">
+
+                            </div>
+                    </div>
+                    -->
+
+                    <div class="form-group carp_configuration">
+                        <label class="col-sm-4 control-label">{% trans "VHID" %}</label>
+                        <div class="col-sm-5">
+                        {{form.carp_vhid}}
+                        {{form.carp_vhid.errors}}
+                        </div>
+                    </div>
+
+                    <div class="form-group carp_configuration end_of_form">
+                        <label class="col-sm-4 control-label">{% trans "Select devices for CARP Cluster" %}</label>
+                        <div class="col-sm-5">
+                            <select multiple id="id_carp_devices">
+                                {% for node in nodes %}
+                                    <optgroup label="Node : {{ node.name }}"</optgroup>
+                                    {% for intf in node.interfaces %}
+                                        {% if intf.alias != 'if_lo0' %}
+                                            <option {% for carp_inet in carp_inets %} {% if node == carp_inet.node and intf == carp_inet.intf %} selected="selected" {% endif %}{% endfor %} value="{{ intf.id }}">{{ intf.alias }} (on node: {{ node.name }})</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    {% for inet in carp_inets %}
+                        <div id='{{ inet.intf.id }}' class='form-group carp_configuration'>
+                            <label class='col-sm-4 control-label'>Priority of {{ inet.intf.alias }} (on node: {{ inet.node.name }})</label>
+                            <div class='col-sm-5'>
+                                <input class='form-control has-popover' data-container='body' data-content='Priority of Listener' data-placement='right' id='id_{{ inet.intf.id }}' name='carp_priority_{{ inet.intf.id }}' type='number' value="{{ inet.inet.carp_priority }}"/>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+    if(typeof(String.prototype.trim) === "undefined"){
+        String.prototype.trim = function(){
+            return String(this).replace(/^\s+|\s+$/g, '');
+        };
+    }
+    
+    /* Device Selector */
+    $('#id_device').select2({
+        placeholder: "{% trans "Select a device" %}"
+    });
+
+
+    /* Carp Device Selector */
+
+    $('#id_carp_devices').select2({
+        placeholder: "{% trans "Select Carp device(s)" %}",
+    });
+
+    $('#id_carp_devices').on('select2:select', function(e){
+        $('.end_of_form').after(add_priority_selector(e.params.data));
+    })
+
+    $('#id_carp_devices').on('select2:unselect', function(e){
+        $('#'+e.params.data.id).remove();
+    })
+
+    $('#id_carp_devices').on("change", function(e) {
+        if (typeof e.added != 'undefined'){
+            $('.end_of_form').after(add_priority_selector(e.added));
+        }
+        if (typeof e.removed != 'undefined'){
+            $('#'+e.removed.id).remove();
+        }
+    })
+
+    /* Carp configuration */
+    if ($("#id_is_carp").is(":checked")){
+        $('.carp_configuration').show()
+        $('#device_selector').hide()
+    }else {
+        $('.carp_configuration').hide()
+        $('#device_selector').show()
+    }
+
+    $("#id_is_carp").change(function(){
+        if ($(this).is(":checked")){
+            $('.carp_configuration').show()
+            $('#device_selector').hide()
+        }
+        else {
+            $('.carp_configuration').hide()
+            $('#device_selector').show()
+        }
+    });
+
+    $("#id_carp_devices").select2("data", [
+        {% for inet in carp_inets %}
+        {id:"{{ inet.intf.id }}", text: "{{ inet.intf.alias }} (on node: {{ inet.node.name }})"},
+        {% endfor %}
+        ]
+    );
+
+    $('#id_carp_devices').trigger('change');
+
+
+{% endblock %}

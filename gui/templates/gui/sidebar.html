@@ -1,0 +1,115 @@
+{% load i18n %}
+<!-- sidebar menu -->
+<input type="hidden" id="view" value="{{ request.resolver_match.view_name }}"/>
+
+<div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+  <div class="menu_section">
+    <ul class="nav side-menu">
+      <li><a><i class="fa fa-tachometer"></i> {% trans "Status" %} <span class="fa fa-chevron-down"></span></a>
+        <ul class="nav child_menu">
+          <li><a data-id="monitor_general" href="/monitor/general/">{% trans "General" %}</a></li>
+          <li><a data-id="monitor_system" href="/monitor/system/">{% trans "System" %}</a></li>
+          <li><a data-id="monitor_network" href="/monitor/network/">{% trans "Network" %}</a></li>
+          <li><a data-id="monitor_users" href="/monitor/users/">{% trans "Users" %}</a></li>
+          <li><a data-id="monitor_diagnostic" href="/monitor/diagnostic/">{% trans "Diagnostic" %}</a></li>
+        </ul>
+      </li>
+
+      <li><a><i class="fa fa-bar-chart"></i> {% trans "Reporting" %} <span class="fa fa-chevron-down"></span></a>
+        <ul class="nav child_menu">
+          <li><a data-id="reporting_map" href="/reporting/map/">{% trans "Map" %}</a></li>
+          <li><a data-id="reporting_access" href="/reporting/access/">{% trans "Access" %}</a></li>
+          <li><a data-id="reporting_security" href="/reporting/security/">{% trans "Security" %}</a></li>
+          <li><a data-id="reporting_pf" href="/reporting/pf/">{% trans "Packet Filter" %}</a></li>
+        </ul>
+      </li>
+
+      {% if request.user.is_system_manager or request.user.is_administrator %}
+        <li><a><i class="fa fa-desktop"></i> {% trans "Vulture Management" %} <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+            <li><a data-id="cluster_settings" href="/cluster/">{% trans "Nodes" %}</a></li>
+            <li><a data-id="service_settings" href="/services/global/">{% trans "Services" %}</a></li>
+            <li><a data-id="agents_view" href="/agents/zabbix/">{% trans "Monitoring agents" %}</a></li>
+            <li><a data-id="cert_settings" href="/system/cert/">{% trans "PKI" %}</a></li>
+            <li><a data-id="user_settings" href="/system/users/">{% trans "Users" %}</a></li>
+            <li><a data-id="loganalyser_settings" href="/services/loganalyser/">{% trans "Reputation" %}</a></li>
+            <li><a data-id="status_logs" href="/logs/">{% trans "Log Viewer" %}</a></li>
+          </ul>
+        </li>
+        <li><a><i class="fa fa-database"></i> {% trans "Repository" %} <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+            <li><a data-id="repository_global" href="/repository/">{% trans "All" %}</a></li>
+            <li><a data-id="repository_ldap" href="/repository/ldap/">{% trans "LDAP/AD" %}</a></li>
+            <li><a data-id="repository_kerberos" href="/repository/kerberos/">{% trans "Kerberos" %}</a></li>
+            <li><a data-id="repository_radius" href="/repository/radius/">{% trans "Radius" %}</a></li>
+            <li><a data-id="repository_sql" href="/repository/sql/">{% trans "SQL" %}</a></li>
+            <li><a data-id="repository_syslog" href="/repository/syslog/">{% trans "Syslog" %}</a></li>
+            <li><a data-id="repository_mongodb" href="/repository/mongodb/">{% trans "MongoDB" %}</a></li>
+            <li><a data-id="sso profiles in mongodb" href="/repository/sso_profiles">{% trans "SSO Profiles" %}</a></li>
+            <li><a data-id="repository_elasticsearch" href="/repository/elasticsearch/">{% trans "ElasticSearch" %}</a></li>
+            <li><a data-id="repository_otp" href="/repository/otp/">{% trans "OTP" %}</a></li>
+          </ul>
+        </li>
+      {% endif %}
+
+      {% if request.user.is_system_manager or request.user.is_administrator or request.user.is_application_manager%}
+        <li><a><i class="fa fa-globe"></i> {% trans "Network" %} <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+            {% if request.user.is_system_manager or request.user.is_administrator %}
+              <li><a data-id="network_settings" href="/network/listeners/">{% trans "Listeners" %}</a></li>
+              <li><a data-id="loadbalancer_settings" href="/network/loadbalancer/">{% trans "Load Balancer" %}</a></li>
+              {% endif %}
+              {% if request.user.is_application_manager or request.user.is_administrator %}
+              <li><a data-id="rewrite_settings" href="/network/rewrite/">{%  trans "URL Rewriting" %}</a></li>
+              <li><a data-id="proxybalancer_settings" href="/network/proxybalancer/">{%  trans "Proxy Balancer" %}</a></li>
+              <li><a data-id="topology_settings" href="/network/topology/">{%  trans "Topology" %}</a></li>
+            {% endif %}
+          </ul>
+        </li>
+      {% endif %}
+
+      {% if request.user.is_application_manager or request.user.is_administrator %}
+        <li><a><i class="fa fa-cog"></i> {% trans "Configuration Profiles" %} <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+            <li><a data-id="modlog_settings" href="/system/log/">{% trans "Logs" %}</a></li>
+            <li><a data-id="modssl_settings" href="/system/ssl/">{% trans "TLS" %}</a></li>
+            <li><a data-id="worker_settings" href="/system/worker/">{% trans "Workers" %}</a></li>
+            <li><a data-id="modaccess_settings" href="/firewall/access/">{% trans "ACLs" %}</a></li>
+          </ul>
+        </li>
+
+      {% endif %}
+
+      {% if request.user.is_security_manager or request.user.is_administrator %}
+        <li><a><i class="fa fa-cloud"></i>{% trans "Web Firewall" %} <span class="fa fa-chevron-down"></span></a>
+          <ul class="nav child_menu">
+            <li><a data-id="waf_rules_settings" href="/firewall/modsec_rules/">{%  trans "WAF Ruleset" %}</a></li>
+            <li><a data-id="waf_settings" href="/firewall/modsec/">{%  trans "WAF Policy" %}</a></li>
+            <li><a data-id="virtual_patching" href="/firewall/virtualpatching/">{%  trans "Virtual Patching" %}</a></li>
+            <li><a data-id="dataset" href="/datasets/">{%  trans "Datasets" %}</a></li>
+            <li><a data-id="packetfilter" href="/services/pf/">{% trans "Packet Filter" %}</a></li>
+          </ul>
+        </li>
+      {% endif %}
+
+      {% if request.user.is_application_manager or request.user.is_security_manager or request.user.is_administrator %}
+      <li><a><i class="fa fa-cubes"></i>{% trans "Applications" %} <span class="fa fa-chevron-down"></span></a>
+        <ul class="nav child_menu">
+          <li><a data-id="application_settings" href="/application/">{%  trans "Applications" %}</a></li>
+          <li><a data-id="template_settings" href="/template/">{%  trans "Templates" %}</a></li>
+        </ul>
+      </li>
+      {% endif %}
+
+
+    </ul>
+  </div>
+</div>
+<!-- /sidebar menu -->
+
+<!-- /menu footer buttons -->
+<div class="sidebar-footer">
+  <span>
+    {{ request.META.SSL_SERVER_S_DN_CN|title|lower }}
+  </span>
+</div>

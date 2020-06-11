@@ -1,0 +1,116 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form id="otp_form" class="form-horizontal bootstrap-validator-form" action="/repository/otp/edit/{% if object_id %}{{object_id}}{% endif %}" autocomplete=off method="post" novalidate="novalidate">
+            {% csrf_token %}
+            <div class="x_panel">
+              <div class="x_title">
+                <h2><i class="fa fa-database"></i>&nbsp;{% trans "OTP -> Edit" %} {% if form.instance.repo_name %}({{ form.instance.repo_name }}) {% endif %}</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a href="/repository/otp/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                    <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">{{ form.repo_name.label }}</label>
+                        <div class="col-sm-5">
+                            {{form.repo_name}}
+                            {{form.repo_name.errors}}
+                        </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">{{ form.otp_type.label }}</label>
+                        <div class="col-sm-5">
+                            {{form.otp_type}}
+                            {{form.otp_type.errors}}
+                        </div>
+                </div>
+                <div class="form-group" id="div_mail_service">
+                    <label class="col-sm-4 control-label">{{ form.otp_mail_service.label }}</label>
+                        <div class="col-sm-5">
+                            {{form.otp_mail_service}}
+                            {{form.otp_mail_service.errors}}
+                        </div>
+                </div>
+                <div class="form-group" id="div_phone_service">
+                    <label class="col-sm-4 control-label">{{ form.otp_phone_service.label }}</label>
+                        <div class="col-sm-5">
+                            {{form.otp_phone_service}}
+                            {{form.otp_phone_service.errors}}
+                        </div>
+                </div>
+                <div class="form-group" id="div_api_key">
+                    <label class="col-sm-4 control-label">{{ form.api_key.label }}</label>
+                        <div class="col-sm-5">
+                            {{form.api_key}}
+                            {{form.api_key.errors}}
+                        </div>
+                </div>
+                <div class="form-group" id="div_key_length">
+                    <label class="col-sm-4 control-label">{{ form.key_length.label }}</label>
+                        <div class="col-sm-5">
+                            {{form.key_length}}
+                            {{form.key_length.errors}}
+                        </div>
+                </div>
+                <div class="form-group totp">
+                    <label class="col-sm-4 control-label">{{ form.otp_label.label }}</label>
+                        <div class="col-sm-5">
+                            {{form.otp_label}}
+                            {{form.otp_label.errors}}
+                        </div>
+                </div>
+              </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block jquery_code  %}
+
+    function show_hide_fields(otp_type) {
+        if( otp_type === 'email' ){
+            $('#div_api_key').hide();
+            $('#div_key_length').show();
+            $('#div_phone_service').hide();
+            $('#div_mail_service').show();
+        } else if( (otp_type === 'phone') || (otp_type === 'onetouch') ){
+            $('#div_api_key').show();
+            $('#div_key_length').hide();
+            $('#div_phone_service').show();
+            $('#div_mail_service').hide();
+        } else {
+            $('#div_api_key').hide();
+            $('#div_key_length').hide();
+            $('#div_phone_service').hide();
+            $('#div_mail_service').hide();
+        }
+        if( otp_type === 'totp' )
+          $('.totp').show();
+        else
+          $('.totp').hide();
+    }
+
+
+    $('#id_otp_type').on('change', function(){
+      show_hide_fields($(this).val());
+    });
+    $('#id_otp_type').trigger('change');
+
+
+    $('#id_otp_type').select2();
+
+
+{% endblock %}
+

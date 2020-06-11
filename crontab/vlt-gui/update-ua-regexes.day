@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# Get global variables in rc conf
+. /etc/rc.conf
+
+# If there is a proxy
+if [ "$http_proxy" != "" ]
+then
+    # Modify format of http(s)_proxy variables, for wget
+    export https_proxy="http://$http_proxy"
+    export http_proxy="http://$http_proxy"
+fi
+
+if [ ! -d "/var/db/useragent" ]; then
+    echo "/var/db/useragent folder not found"
+    exit 1
+fi
+
+/usr/local/bin/wget -q --no-check-certificate https://raw.githubusercontent.com/ua-parser/uap-core/master/regexes.yaml -O /var/db/useragent/regexes.yaml.tmp && mv /var/db/useragent/regexes.yaml.tmp /var/db/useragent/regexes.yaml
+/usr/sbin/chown vlt-gui:vlt-gui /var/db/useragent/regexes.yaml
+/bin/chmod 644 /var/db/useragent/regexes.yaml
+
+if [ -f /var/db/useragent/regexes.yaml.tmp ]; then
+    /bin/rm /var/db/useragent/regexes.yaml.tmp
+fi

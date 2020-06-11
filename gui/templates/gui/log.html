@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-cog"></i>&nbsp;{% trans "Log Profiles" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="log_list">
+            <thead>
+                <tr>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Buffered" %}</th>
+                    <th>{% trans "Repository" %}</th>
+                    <th>{% trans "Syslog forwarder" %}</th>
+                    <th>{% trans "Action" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for log in logs %}
+                <tr id="{{ log.id }}">
+                    <td>{{log.name}}</td>
+                    <td>{{log.buffered}}</td>
+                    <td>{{log.repository}}</td>
+                    <td>{% if log.syslog_repository %} <span class="listener_running">{% trans "enable" %}{% else %}<span class="listener_stopped">{% trans "disable" %}{% endif %}</span></td>
+                    <td class="action">
+                        {% if log.is_deletable %}
+                        <a class="has-popover action_button" data-content="{% trans "Delete this log profile (Note: You can't delete an used log profile)" %}" href="/system/log/delete/{{log.id}}"><span><i class="fa fa-trash-o"></i></span></a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="add-group">
+            <a class="addlink addplus" href="/system/log/edit/">{% trans "Add an Entry" %} </a>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+    $('#log_list').DataTable({
+        "dom": "<p<'searchbox'f><t>>",
+        "autoWidth": false,
+        "language": {
+            "search": "",
+            "lengthMenu": '_MENU_',
+            "pagingType": "bootstrap",
+            "paginate": {
+                "next": '<img src="{% static 'img/right.png' %}"/>',
+                "previous": '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+        fnCreatedRow: function(nRow, aData){
+            $(nRow).on('click', function(){
+                var id = $(nRow).attr('id');
+                if (id)
+                    location.href = "/system/log/edit/"+id;
+            })
+        }
+    });
+{% endblock %}

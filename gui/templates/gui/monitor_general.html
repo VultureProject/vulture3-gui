@@ -1,0 +1,323 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+{% load tags_utils %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-dashboard"></i>&nbsp;{% trans "Status / General" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+  {% for values in results %}
+    <div class="col-md-12 col-sm-12 col-xs-12">
+      <div class="x_panel">
+        <div class="x_title">
+          <h2>{% trans "Node" %}: <b>{{ values.node.name|title|upper }}</b> (Last check: {{ values.process_date }})</h2>
+          <ul class="nav navbar-right">
+            <li>
+              <h2 id="boot_{{ values.node.id }}"></h2>
+            </li>
+          </ul>
+          <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+          <div class="col-md-12 col-sm-12">
+            <div class="col-md-4 col-sm-4 title_stats_count">
+              <span class="count_top">
+                <i class="fa fa-gear"></i>
+                {% trans "Services Status" %} <br/>
+              </span>
+
+              {% for service, status in values.process.items %}
+                {%  if 'Service ' in service %}
+                  {% if status == 'DOWN' %}
+                    {% if 'mongod' in service or 'rsyslogd' in service or 'pf' in service or 'redis' in service or 'ntpd' in service %}
+                      <div class="service_status col-md-6">{{ service | search:'Service '|replace:'' }}:</div><div class="service_status col-md-6"><span class="red">stopped</span></div>
+                    {% else %}
+                      <div class="service_status col-md-6">{{ service | search:'Service '|replace:'' }}:</div><div class="service_status col-md-6"><span class="grey">stopped</span></div>
+                    {% endif %}
+                  {% elif status == 'UP' %}
+                    <div class="service_status col-md-6">{{ service | search:'Service '|replace:'' }}:</div><div class="service_status col-md-6"><span class="green">running</span></div>
+                  {% elif status == 'Error' %}
+                    <div class="service_status col-md-6">{{ service | search:'Service '|replace:'' }}:</div><div class="service_status col-md-6"><span class="red">error</span></div>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+
+            </div>
+            <div class="col-md-4 col-sm-4 title_stats_count">
+              <span class="count_top">
+                <i class="fa fa-gear"></i>
+                {% trans "Application Status" %}<br/>
+              </span>
+              {% for service, status in values.process.items %}
+                {%  if 'Running' in service  %}
+                  <span class="count col-md-6 col-sm-6">
+                    {{ service }}
+                  </span>
+                  <div class="count col-md-6 col-sm-6">{{ status }}</div>
+                {% endif %}
+              {% endfor %}
+
+              <br/><br/><span class="count_top">
+              <i class="fa fa-gear"></i>
+              {% trans "System Load" %}<br/>
+            </span>
+              <div class="vlt_charts col-md-12 col-sm-12" id="cpu_{{ values.node.id }}"></div>
+              <div class="vlt_charts col-md-12 col-sm-12" id="mem_{{ values.node.id }}"></div>
+              <div class="vlt_charts col-md-12 col-sm-12" id="swap_{{ values.node.id }}"></div>
+            </div>
+            <div class="col-md-4 col-sm-4 title_stats_count">
+              <span class="count_top">
+                <i class="fa fa-user"></i>
+                {% trans "Redis entries" %}<br/>
+              </span>
+              {% for service, status in values.process.items %}
+                {%  if 'Service ' not in service and 'Running' not in service %}
+                  <div class="count">
+                    <span class="col-md-6 col-sm-6">{{ service }} :</span><span class="col-md-6 col-sm-6">{{ status }}</span>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+  </div>
+
+{% endblock %}
+
+{% block css_include %}
+  <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+  <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+  <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+  <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+  <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+  <script src="{% static 'js/echarts3-all.min.js' %}"></script>
+  <script src="{% static 'js/moment.min.js' %}" ></script>
+	<script src="{% static 'js/daterangepicker.js' %}" ></script>
+{% endblock %}
+
+{% block jquery_code  %}
+    var graphColor = {
+        normal: {
+            color: function (params){
+                var value = params.data.value;
+                if (value <= 40) {
+                    return 'rgba(97,170,0,1)';
+                }
+                else if (value <=75) {
+                    return 'rgba(255,99,0,1)';
+                }
+                else {
+                    return 'rgba(209,0,27,1)';
+                }
+            },
+        label : {
+            show: true,
+            position: 'inside',
+            formatter: function (params) {
+                return params.data.value + '%';
+                }
+            }
+        }
+    }
+
+    var option_cpu = {
+        grid: {
+            borderWidth: 0,
+            width: '100%',
+            height: '20px',
+            x:50,
+            y:0,
+            x2: '100%',
+            y2: '100%',
+        },
+        xAxis : [
+            {
+                type : 'value',
+                show: false,
+                min: 0,
+                max: 100,
+                boundaryGap : [0, 0.01],
+                axisTick : {show: false},
+            },
+        ],
+        yAxis : [
+        {
+            type : 'category',
+            data : ['CPU'],
+            axisTick : {show: false},
+
+        }
+        ],
+        series : [
+            {
+                name:'cpu',
+                type:'bar',
+                itemStyle : graphColor,
+                data:["CPU"],
+            }
+        ]
+    };
+
+    var option_mem = {
+        grid: {
+            borderWidth: 0,
+            width: '100%',
+            height: '20px',
+            x:50,
+            y:0,
+            x2: '100%',
+            y2: '100%',
+        },
+        xAxis : [
+            {
+                type : 'value',
+                show: false,
+                min: 0,
+                max: 100,
+                boundaryGap : [0, 0.01],
+                axisTick : {show: false},
+            },
+        ],
+        yAxis : [
+        {
+            type : 'category',
+            show: true,
+            data : ['RAM'],
+            axisTick : {show: false},
+        }
+        ],
+        series : [
+            {
+                name:'mem',
+                type:'bar',
+                itemStyle : graphColor,
+                data:['MEM'],
+            },
+        ]
+    };
+
+    var option_swap = {
+        grid: {
+            borderWidth: 0,
+            width: '100%',
+            height: '20px',
+            x:50,
+            y:0,
+            x2: '100%',
+            y2: '100%',
+            //backgroundColor:'blue'
+
+        },
+        xAxis : [
+            {
+                type : 'value',
+                show: false,
+                min: 0,
+                max: 100,
+                boundaryGap : [0, 0.01],
+                axisTick : {show: false},
+            },
+        ],
+        yAxis : [
+        {
+            type : 'category',
+            show: true,
+            data : ['SWAP'],
+            axisTick : {show: false},
+
+        }
+        ],
+        series : [
+            {
+                name:'swap',
+                type:'bar',
+                itemStyle : graphColor,
+                data:['SWAP'],
+            }
+        ]
+    };
+
+
+    var nodes       = JSON.parse('{{ nodes|safe }}');
+    var charts_cpu  = {};
+    var charts_mem  = {};
+    var charts_swap = {};
+
+
+    for (var i in nodes){
+        charts_cpu[nodes[i]]  = echarts.init(document.getElementById("cpu_"+nodes[i]));
+        charts_cpu[nodes[i]].setOption(option_cpu);
+        charts_mem[nodes[i]]  = echarts.init(document.getElementById("mem_"+nodes[i]))
+        charts_mem[nodes[i]].setOption(option_mem);
+        charts_swap[nodes[i]] = echarts.init(document.getElementById("swap_"+nodes[i]))
+        charts_swap[nodes[i]].setOption(option_swap);
+    }
+
+    function realtime(first){
+        $.post(
+            '/monitor/realtime/',
+            {},
+
+            function(response){
+                if (typeof(response) === 'string'){
+                    window.location.href = window.location.href;
+                    return;
+                }
+
+                $.each(response, function(node, values){
+                    if (!values){
+                        if (first){
+                            new PNotify({
+                                title: 'Error',
+                                text: '{% trans "An error occured while fetching data of node " %}' + node,
+                                type: 'error',
+                                styling: 'bootstrap3',
+                                nonblock: {
+                                    nonblock: true
+                                }
+                            });
+                        }
+                    } else {
+
+                        $('#boot_'+values['node']).html("Uptime: <b>"+values['boot']+"</b>");
+                        option_cpu.series[0].name    = 'cpu';
+                        option_cpu.series[0].data[0] = {'value': parseFloat(values['cpu']), 'name': 'CPU'};
+                        charts_cpu[values['node']].setOption(option_cpu, true);
+
+                        option_mem.series[0].name    = 'mem';
+                        option_mem.series[0].data[0] = {'value': parseFloat(values['mem']), 'name': 'Memory'};
+                        charts_mem[values['node']].setOption(option_mem, true);
+
+                        option_swap.series[0].name    = 'swap';
+                        option_swap.series[0].data[0] = {'value': parseFloat(values['swap']), 'name': 'SWAP'};
+                        charts_swap[values['node']].setOption(option_swap, true);
+                    }
+                })
+
+                setTimeout(function(){
+                    realtime(false);
+                }, 1000);
+            }
+        )
+    }
+
+    realtime(true);
+
+{% endblock %}

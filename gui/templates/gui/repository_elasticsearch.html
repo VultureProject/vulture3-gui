@@ -1,0 +1,227 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<form id="elasticsearch_form" class="form-horizontal bootstrap-validator-form" action="/repository/elasticsearch/edit/{% if object_id %}{{object_id}}{% endif %}" method="post" novalidate="novalidate">
+			{% csrf_token %}
+			<div class="x_panel">
+	          <div class="x_title">
+	            <h2><i class="fa fa-database"></i>&nbsp;{% trans "ElasticSearch -> Edit" %} {% if form.instance.repo_name %}({{ form.instance.repo_name }}) {% endif %}</h2>
+	            <ul class="nav navbar-right panel_toolbox">
+	            	<li><a href="/repository/elasticsearch/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+	                <li><button id="save" class="btn-save" type="submit" {% if not object_id %}disabled style="display:none;"{% endif %}>{% trans "SAVE" %}</button></li>
+	            </ul>
+	            <div class="clearfix"></div>
+	          </div>
+	          <div class="x_content">
+	            <div class="" role="tabpanel" data-example-id="togglable-tabs">
+	              <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+	                <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Connection settings" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Data settings" %}</a>
+	                </li>
+	              </ul>
+	              <div id="myTabContent" class="tab-content">
+	                <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+		                <div class="form-group">
+	                        <label class="col-sm-4 control-label">{{ form.repo_name.label }}</label>
+	                            <div class="col-sm-5">
+		                            {{form.repo_name}}
+		                            {{form.repo_name.errors}}
+	                            </div>
+	                    </div>
+	                    <div class="form-group">
+	                        <label class="col-sm-4 control-label">{{ form.es_host.label }}</label>
+	                            <div class="col-sm-5">
+		                            {{form.es_host}}
+		                            {{form.es_host.errors}}
+	                            </div>
+	                    </div>
+	                    <div class="form-group">
+	                        <label class="col-sm-4 control-label">{{ form.es_user.label }}</label>
+	                            <div class="col-sm-5">
+		                            {{form.es_user}}
+		                            {{form.es_user.errors}}
+	                            </div>
+	                    </div>
+	                    <div class="form-group">
+	                        <label class="col-sm-4 control-label">{{ form.es_password.label }}</label>
+	                            <div class="col-sm-5">
+		                            {{form.es_password}}
+		                            {{form.es_password.errors}}
+	                            </div>
+	                    </div>
+	                </div>
+	                <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+	                  	<div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.es_dateformat.label }}</label>
+                                <div class="col-sm-5">
+	                                {{form.es_dateformat}}
+	                                {{form.es_dateformat.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.es_access_index_name.label }}</label>
+                                <div class="col-sm-5">
+	                                {{form.es_access_index_name}}
+	                                {{form.es_access_index_name.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.es_access_type_name.label }}</label>
+                                <div class="col-sm-5">
+	                                {{form.es_access_type_name}}
+	                                {{form.es_access_type_name.errors}}
+                                </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.es_packetfilter_index_name.label }}</label>
+                                <div class="col-sm-5">
+	                                {{form.es_packetfilter_index_name}}
+	                                {{form.es_packetfilter_index_name.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.es_packetfilter_type_name.label }}</label>
+                                <div class="col-sm-5">
+	                                {{form.es_packetfilter_type_name}}
+	                                {{form.es_packetfilter_type_name.errors}}
+                                </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.es_diagnostic_index_name.label }}</label>
+                                <div class="col-sm-5">
+	                                {{form.es_diagnostic_index_name}}
+	                                {{form.es_diagnostic_index_name.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.es_diagnostic_type_name.label }}</label>
+                                <div class="col-sm-5">
+	                                {{form.es_diagnostic_type_name}}
+	                                {{form.es_diagnostic_type_name.errors}}
+                                </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.es_vulturelogs_index_name.label }}</label>
+                                <div class="col-sm-5">
+	                                {{form.es_vulturelogs_index_name}}
+	                                {{form.es_vulturelogs_index_name.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.es_vulturelogs_type_name.label }}</label>
+                                <div class="col-sm-5">
+	                                {{form.es_vulturelogs_type_name}}
+	                                {{form.es_vulturelogs_type_name.errors}}
+                                </div>
+                        </div>
+	                </div>
+	              </div>
+	              <div class="form-group">
+					<div class="col-sm-12" style="text-align:center;">
+					<button id="connection_test" class="btn-test"><span>{% trans "Test ElasticSearch connection (required for saving)" %}</span></button>
+					</div>
+				  </div>
+	            </div>
+
+	          </div>
+	        </div>
+	    </form>
+	</div>
+	<div id="modal_test_connection" class="modal fade">
+	    <div class="modal-dialog">
+	        <div class="modal-content">
+	            <div class="modal-header">
+	                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	                <h4 class="modal-title">{% trans "Connection test result" %}</h4>
+	            </div>
+	            <div class="modal-body">
+	                <div class="row">
+	                        <div class="col-sm-12">
+	                        <p id="connection_test_msg"></p>
+	                        </div>
+	                </div>
+	                <br />
+	            </div>
+	            <div class="modal-footer">
+	                <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Close" %}</button>
+	            </div>
+	        </div>
+	    </div>
+	</div>
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+
+{% endblock %}
+
+{% block jquery_code  %}
+
+/* Data Repo Authentication repo switch*/
+repo_type = $("#id_repo_type").val();
+if(repo_type == 'auth'){
+    $('#ui-id-2').show();
+    $('#ui-id-3').hide();
+}
+else if(repo_type == 'data'){
+    $('#ui-id-2').hide();
+    $('#ui-id-3').show();
+}
+
+
+$("#id_repo_type").on("change", function(e){
+    repo_type = $("#id_repo_type").val();
+    if(repo_type == 'auth'){
+        $('#ui-id-2').show();
+        $('#ui-id-3').hide();
+    }
+    else if(repo_type == 'data'){
+        $('#ui-id-2').hide();
+        $('#ui-id-3').show();
+    }
+});
+
+$('#connection_test').on('click', function(e){
+    e.preventDefault()
+    url = "/repository/elasticsearch/connection_test/";
+    form_data = $('#elasticsearch_form').serializeArray();
+    var indexed_data = {};
+    $.map(form_data, function(n, i){
+        indexed_data[n['name']] = n['value'];
+    });
+
+    $.post(
+        url, 
+        indexed_data,
+        function(data){
+            $("#modal_test_connection").modal('show');
+            handle_form_errors(data);
+            if(data['status'] === true){
+                $('#connection_test_msg').html('<b>{% trans "Successful connection" %}</b>');
+                $('#connection_test_msg').append("<br/><pre>"+data['data']+"</pre>");
+                $(".btn-save").removeAttr('disabled');
+                $(".btn-save").removeAttr('style');
+            }
+            else{
+                reason = data['reason'];
+                $('#connection_test_msg').html("<b>{% trans 'Unable to connect to ElasticSearch server, reason: '%}" + reason + "</b>");
+            }
+        }
+    );
+})
+
+{% endblock %}

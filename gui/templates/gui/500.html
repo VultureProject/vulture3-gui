@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <h1 class="error-number">404</h1>
+        <h2>An error has occured.</h2>
+        <h3>Please check the troubleshooting documentation <a target="_blank" href="https://www.vultureproject.org/doc/troubleshooting/troubleshooting.html">here</a></h3>
+        <p><a href="mailto:support@vultureproject.org">Report this?</a></p>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+{% endblock %}
+
+{% block js_include %}
+{% endblock %}
+
+{% block jquery_code  %}
+    
+{% endblock %}

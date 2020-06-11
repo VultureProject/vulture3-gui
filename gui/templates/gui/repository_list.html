@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-database"></i>&nbsp;&nbsp;{{ repository_name }}</h3></li>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <table class="table table-striped table-bordered table-hover dt-responsive nowrap table-datatable" id="repo_datatable">
+            <thead>
+                <tr>
+                    <th>{% trans "Repository name" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for repository in repositories %}
+                {% if not repository.is_internal %}
+                <tr id="{{ repository.id }}" name="{{ repository.type_uri }}">
+                {% else %}
+                <tr>
+                {% endif %}
+                    <td> {{repository}} </td>
+                    <td class="action">
+                        {% if not repository.is_internal %}
+                        <a class="btn action_button" href="/repository/{{ repository.type_uri }}/clone/{{repository.id}}"><span><i class="fa fa-copy"></i></span></a>
+                        <a class="btn action_button" href="/repository/{{ repository.type_uri }}/delete/{{repository.id}}"><span><i class="fa fa-trash-o"></i></span></a>
+                        {%  else %}<a class="btn action_button" href="/repository/sso_profiles"><span><i class="fa fa-users"></i></span></a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor  %}
+            </tbody>
+        </table>
+        {% if not global %}
+            <div class="add-group">
+                <a class="addlink addplus" href="./edit/" type="button">{% trans "Add an Entry" %}</a>
+            </div>
+        {% endif %}
+    </div>
+
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+    $('#repo_datatable').DataTable({
+        "dom": "<p<'searchbox'f><t>>",
+        "autoWidth": false,
+        "language": {
+            "search": "",
+            "lengthMenu": '_MENU_',
+            "pagingType": "bootstrap",
+            "paginate": {
+                "next": '<img src="{% static 'img/right.png' %}"/>',
+                "previous": '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+        fnCreatedRow: function(nRow, aData){
+            $(nRow).on('click', function(){
+                var id = $(nRow).attr('id');
+                var type = $(nRow).attr('name');
+                if (id)
+                    location.href = "/repository/" + type + "/edit/"+id;
+            })
+        }
+    });
+{% endblock %}

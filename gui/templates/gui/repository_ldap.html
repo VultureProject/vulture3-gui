@@ -1,0 +1,549 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<form id="ldap_form" class="form-horizontal bootstrap-validator-form" action="/repository/ldap/edit/{% if object_id %}{{object_id}}{% endif %}" autocomplete=off method="post" novalidate="novalidate">
+			{% csrf_token %}
+			<div class="x_panel">
+	          <div class="x_title">
+	            <h2><i class="fa fa-database"></i>&nbsp;{% trans "LDAP -> Edit" %} {% if form.instance.repo_name %}({{ form.instance.repo_name }}) {% endif %}</h2>
+	            <ul class="nav navbar-right panel_toolbox">
+	            	<li><a href="/repository/ldap/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+	                <li><button id="save" class="btn-save" type="submit" {% if not object_id %}disabled style="display:none;"{% endif %}>{% trans "SAVE" %}</button></li>
+	            </ul>
+	            <div class="clearfix"></div>
+	          </div>
+	          <div class="x_content">
+	            <div class="" role="tabpanel" data-example-id="togglable-tabs">
+	              <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+	                <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Connection settings" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "User settings" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content3" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Group settings" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="#tab_content4" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Oauth2 settings" %}</a>
+	                </li>
+	              </ul>
+	              <div id="myTabContent" class="tab-content">
+	                <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+	                	<div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.repo_name.label }}</label>
+                                <div class="col-sm-5">
+                                {{form.repo_name}}
+                                {{form.repo_name.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.ldap_host.label }}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_host}}
+                                {{form.ldap_host.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.ldap_port.label }}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_port}}
+                                {{form.ldap_port.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.ldap_protocol.label }}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_protocol}}
+                                {{form.ldap_protocol.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{form.ldap_encryption_scheme.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_encryption_scheme}}
+                                {{form.ldap_encryption_scheme.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group service_account">
+                            <label class="col-sm-4 control-label">{{form.ldap_connection_dn.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_connection_dn}}
+                                {{form.ldap_connection_dn.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group service_account">
+                            <label class="col-sm-4 control-label">{{form.ldap_password.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_password}}
+                                {{form.ldap_password.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group service_account">
+                            <label class="col-sm-4 control-label">{{form.ldap_base_dn.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_base_dn}}
+                                {{form.ldap_base_dn.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-12" style="text-align:center;">
+                                <button id="connection_test" class="btn-test"><span>{% trans "Test LDAP connection (required for saving)" %}</span></button>
+                            </div>
+                        </div>	                 
+	                </div>
+	                <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+	                	<div class="form-group">
+                            <label class="col-sm-4 control-label">{{form.ldap_user_scope.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_user_scope}}
+                                {{form.ldap_user_scope.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{form.ldap_user_dn.label}}</label>
+                                <div class="col-sm-3">
+                                {{form.ldap_user_dn}}
+                                {{form.ldap_user_dn.errors}}
+                                </div>
+                                <div class="col-sm-2">
+                                    <input id="user_dn" type="text" class="form-control" disabled=""/>
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{form.ldap_user_attr.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_user_attr}}
+                                {{form.ldap_user_attr.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{form.ldap_user_filter.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_user_filter}}
+                                {{form.ldap_user_filter.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{form.ldap_user_account_locked_attr.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_user_account_locked_attr}}
+                                {{form.ldap_user_account_locked_attr.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{form.ldap_user_change_password_attr.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_user_change_password_attr}}
+                                {{form.ldap_user_change_password_attr.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{ form.ldap_user_groups_attr.label }}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_user_groups_attr}}
+                                {{form.ldap_user_groups_attr.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{form.ldap_user_mobile_attr.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_user_mobile_attr}}
+                                {{form.ldap_user_mobile_attr.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{form.ldap_user_email_attr.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_user_email_attr}}
+                                {{form.ldap_user_email_attr.errors}}
+                                </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-sm-12" style="text-align:center;">
+                                <button id="user_search_test" class="btn-test"><span>{% trans "Test User authentication settings" %}</span></button>
+                            </div>
+                        </div>                  	
+	                </div>
+	                <div role="tabpanel" class="tab-pane fade" id="tab_content3" aria-labelledby="profile-tab"> 
+	                	<div class="form-group">
+                            <label class="col-sm-4 control-label">{{form.ldap_group_scope.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_group_scope}}
+                                {{form.ldap_group_scope.errors}}
+                                </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{form.ldap_group_dn.label}}</label>
+                                <div class="col-sm-3">
+                                {{form.ldap_group_dn}}
+                                {{form.ldap_group_dn.errors}}
+                                </div>
+                                <div class="col-sm-2">
+                                    <input id="group_dn" type="text" class="form-control" disabled=""/>
+                                </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{form.ldap_group_attr.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_group_attr}}
+                                {{form.ldap_group_attr.errors}}
+                                </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{form.ldap_group_filter.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_group_filter}}
+                                {{form.ldap_group_filter.errors}}
+                                </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-4 control-label">{{form.ldap_group_member_attr.label}}</label>
+                                <div class="col-sm-5">
+                                {{form.ldap_group_member_attr}}
+                                {{form.ldap_group_member_attr.errors}}
+                                </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-12" style="text-align:center;">
+                                <button id="group_search_test" class="btn-test"><span>{% trans "Test group settings" %}</span></button>
+                            </div>
+                        </div>                 	
+	                </div>
+	                <div role="tabpanel" class="tab-pane fade" id="tab_content4" aria-labelledby="profile-tab">    
+	                	<div class="form-group">
+                            <label class="col-sm-4 control-label">{% trans "Enable Oauth2 scopes in token response" %}</label>
+                             <div class="col-sm-5">
+                                <div class="">
+                                    <label>
+                                        {{form.enable_oauth2}}
+                                        {{form.enable_oauth2.errors}}
+                                    </label>
+                                </div>
+                             </div>
+                           </div>
+                            <div class="attr_oauth">
+                                <label class="col-sm-4 control-label">{% trans "Get Oauth2 scopes from these columns" %}</label>
+                                <div class="col-sm-5">
+                                    {{form.oauth2_attributes}}
+                                    {{form.oauth2_attributes.errors}}
+                                </div>
+                            </div>
+                            <br /><br />
+                            <div class="attr_oauth">
+                                <label class="col-sm-4 control-label">{% trans "Form of returned values : " %}</label>
+                                <div class="col-sm-5">
+                                    {{form.oauth2_type_return}}
+                                    {{form.oauth2_type_return.errors}}
+                                </div>
+                            </div>
+                            <br /><br />
+                            <div class="attr_oauth">
+                                <label class="col-sm-4 control-label">{% trans "Place of returned token : " %}</label>
+                                <div class="col-sm-5">
+                                    {{form.oauth2_token_return}}
+                                    {{form.oauth2_token_return.errors}}
+                                </div>
+                            </div>
+                            <br /><br />
+                            <div class="attr_oauth">
+                                <label class="col-sm-4 control-label">{% trans "Token time to live : " %}</label>
+                                <div class="col-sm-5">
+                                    {{form.oauth2_token_ttl}}
+                                    {{form.oauth2_token_ttl.errors}}
+                                </div>
+                            </div>
+                        </div>              	
+	                </div>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	    </form>
+	</div>
+	<div id="modal_test_connection" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">{% trans "Connection test result" %}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <p id="connection_test_msg"></p>
+                        </div>
+                    </div>
+                    <br />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Close" %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal_test_user_search" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">{% trans "User authentication test" %}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <label class="col-sm-6 control-label">{% trans "Username" %}</label>
+                            <div class="col-sm-6 form-group">
+                            <input type="text" name="test_username" id="test_username" data-placement="right" container="body" class="form-control has-popover" data-original-title="" title="">
+                            </div>
+                    </div>
+                    <div class="row">
+                        <label class="col-sm-6 control-label">{% trans "Password" %}</label>
+                            <div class="col-sm-6 form-group">
+                            <input type="password" name="test_password" id="test_password" data-placement="right" container="body" class="form-control has-popover" data-original-title="" title="">
+                            </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <p id="user_search_test_msg" class="test_user"></p>
+                            <div id="user_phone" class="test_user"></div>
+                            <div id="user_email" class="test_user"></div>
+                            <div id="account_locked" class="test_user"></div>
+                            <div id="password_expired" class="test_user"></div>
+                            <div id="user_groups" class="test_user"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="button" id="btn_send_user_search" class="btn btn-primary">{% trans "Test credentials" %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal_test_group_search" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">{% trans "Group list test" %}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <label class="col-sm-6 control-label">{% trans "Group name" %}</label>
+                            <div class="col-sm-6 form-group">
+                            <input type="text" name="test_group" id="test_group" data-placement="right" container="body" class="form-control has-popover" data-original-title="" title="">
+                            </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div id="group_results" class="col-sm-12">
+                            <p id="group_search_test_msg" class="test_group"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" data-dismiss="modal">{% trans "Cancel" %}</button>
+                    <button type="button" id="btn_send_group_search" class="btn btn-save">{% trans "Search" %}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+
+{% endblock %}
+
+{% block jquery_code  %}
+
+    $('#id_ldap_encryption_scheme').on("change", function(e) {
+        if (this.value == 'ldaps'){
+            $('#id_ldap_port').val(636);
+        }
+        else {
+            if($('#id_ldap_port').val() == 636){
+                $('#id_ldap_port').val(389);
+            }
+        }
+    })
+
+    base_dn = $('#id_ldap_base_dn').val();
+    $('#user_dn').val(base_dn);
+    $('#group_dn').val(base_dn);
+
+    /* LDAP connection test */
+    $('#connection_test').on("click", function(e){
+        e.preventDefault()
+        url = "/repository/ldap/connection_test/";
+        form_data = $('#ldap_form').serializeArray();
+        var indexed_data = {};
+        $.map(form_data, function(n, i){
+            indexed_data[n['name']] = n['value'];
+        });
+        $.post(url, indexed_data, function(data){
+            console.log(data)
+            $("#modal_test_connection").modal('show');
+            status = data['status'];
+            handle_form_errors(data);
+            if(status == 'true'){
+                $('#connection_test_msg').html('<b>{% trans "Successful connection" %}</b>');
+                $(".btn-save").removeAttr('disabled');
+                $(".btn-save").removeAttr('style');
+            }
+            else{
+                reason = data['reason'];
+                $('#connection_test_msg').html("<b>{% trans 'Unable to connect to LDAP server, reason: '%}" + reason + "</b>");
+            }
+        });
+    });
+
+    $("[id^='id_ldap']").on("change", function(e){
+        $('#connection_test_msg').html("");
+        $('#user_search_test_msg').html("");
+        base_dn = $('#id_ldap_base_dn').val();
+        $('#user_dn').val(base_dn);
+        $('#group_dn').val(base_dn);
+    })
+
+    /*User search test*/
+    $('#user_search_test').on("click", function(e){
+        $('.test_user').html('');
+        $('.errorlist').remove();
+        $("#modal_test_user_search").modal('show');
+        e.preventDefault()
+    });
+
+    $('#btn_send_user_search').on("click", function(e){
+        $('.test_user').html('');
+        username = $('#test_username').val();
+        password = $('#test_password').val();
+        url = "/repository/ldap/user_search_test/";
+        form_data = $('#ldap_form').serializeArray();
+        var indexed_data = {};
+        $.map(form_data, function(n, i){
+            indexed_data[n['name']] = n['value'];
+        });
+        indexed_data['username'] = username;
+        indexed_data['password'] = password;
+        $.post(url, indexed_data, function(data){
+            status = data['status'];
+            handle_form_errors(data);
+            if(status == 'true'){
+                $('#user_search_test_msg').html('<b style="color:green;">{% trans "Successful connection" %}</b>');
+            }
+            else{
+                reason = data['reason'];
+                $('#user_search_test_msg').html("<b style='color:red;'>{% trans 'Unable to authenticate user, reason: '%}" + reason + "</b>");
+            }
+            if( data['warning'] ) {
+                $('#user_search_test_msg').html('<b style="color:green;">{% trans "Successful connection" %}</b></br><b style="color:orangered;">'+data['warning']+'</b>');
+            }
+            $('#user_phone').html('{% trans "Phone number" %}: '+ data['user_phone']);
+            $('#user_email').html('{% trans "Email address" %}: '+ data['user_email']);
+            $('#account_locked').html('{% trans "Account locked" %}: '+ data['account_locked']);
+            $('#password_expired').html('{% trans "Need change pass" %}: '+ data['password_expired']);
+            $('#user_groups').html('{% trans "User groups" %}:');
+            group_list = $('#user_groups');
+            var ul = $('<ul/>').appendTo(group_list);
+            $.each(data['user_groups'], function(i)
+            {
+                var li = $('<li/>').addClass('ui-menu-item').attr('role', 'menuitem').appendTo(ul);
+                var group = $('<span/>').text(data['user_groups'][i]).appendTo(li);
+            });
+        });
+    });
+
+
+    /*Group search test*/
+    $('#group_search_test').on("click", function(e){
+        $('.test_group').html('');
+        $("#modal_test_group_search").modal('show');
+        e.preventDefault()
+    });
+
+
+    $('#btn_send_group_search').on("click", function(e){
+        $('.test_group').html('');
+        group_name = $('#test_group').val();
+        url = "/repository/ldap/group_search_test/";
+        form_data = $('#ldap_form').serializeArray();
+        var indexed_data = {};
+        $.map(form_data, function(n, i){
+            indexed_data[n['name']] = n['value'];
+        });
+        indexed_data['group_name'] = group_name;
+        $.post(url, indexed_data, function(data){
+            status = data['status'];
+            handle_form_errors(data);
+            if(status == 'true'){
+                $('#group_search_test_msg').html('<b style="color:green;">{% trans "Successful query" %}</b>');
+            }
+            else{
+                reason = data['reason'];
+                $('#group_search_test_msg').html("<b style='color:red;'>{% trans 'Unable to execute query, reason: '%}" + reason + "</b>");
+            }
+            var groups = [];
+            if( data['groups'].length == 0 ) {
+                var dn_div = $('<div class="test_group">');
+                dn_div.html('{% trans "No result found, please make sure that your query is correct" %}');
+                $('#group_results').append(dn_div);
+            }
+            else {
+                groups = data['groups'];
+
+                for( group of groups ) {
+                    var dn = group['group_dn'];
+                    var members = group['group_members'];
+
+                    var dn_div = $('<div class="test_group">');
+                    dn_div.html('{% trans "Group DN" %}: ' + dn);
+                    $('#group_results').append(dn_div);
+
+                    var members_div = $('<div class="test_group">');
+                    members_div.html('{% trans "Group members" %}: ');
+                    var ul = $('<ul/>').appendTo(members_div);
+                    $.each(members, function(i)
+                    {
+                        var li = $('<li/>').addClass('ui-menu-item').attr('role', 'menuitem').appendTo(ul);
+                        $('<span/>').text(members[i]).appendTo(li);
+                    });
+                    $('#group_results').append(members_div);
+                }
+            }
+        });
+    });
+    $("#id_oauth2_attributes").tagEditor({
+        initialTags: [{{application.get_methods|safe}}],
+        delimiter: ',',
+        forceLowercase: false,
+        placeholder: 'Enter the Oauth2 attributes',
+    });
+
+    $("#id_enable_oauth2").bind("change", toggleAuth);
+    function toggleAuth() {
+        var auth=$(this);
+        if (auth.prop('checked')) {
+            $(".attr_oauth").css("visibility", "visible");
+        }
+        else {
+            $(".attr_oauth").css("visibility", "hidden");
+        }
+    }
+    $("#id_enable_oauth2").trigger("change");
+
+{% endblock %}

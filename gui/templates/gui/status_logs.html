@@ -1,0 +1,539 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-cloud"></i>&nbsp;{% trans "Log viewer" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+    <div class="modal fade" id="modal_config" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"><i class="fa fa-gear">&nbsp;&nbsp;</i>{% trans "Configuration" %}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+
+                    </div>
+                    <div class="row">
+                        <div id="div_other_config" class="panel">
+                            <div class="panel-header">
+                                <h4 class="panel-title"><a href="#" data-open='true' class='btn-open-panel' data-panel="other_config"><i class='fa fa-chevron-down'></i></a>&nbsp;&nbsp;<b>{% trans "General" %}:</b></h4>
+                            </div>
+                            <div class="panel-body" id="other_config">
+                                <div class="row">
+                                    <div class='col-sm-6'>
+                                        <div class='form-group'>
+                                            <span class='col-sm-8'>{% trans "Hide search modal when execute" %}:</span>
+                                            <div class='col-sm-4'>
+                                                <div class=''>
+                                                    <label>
+                                                        <input class='js-switch' id='hide_search_modal' type='checkbox'/>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class='col-sm-6'>
+                                        <div class='form-group'>
+                                            <span class='col-sm-8'>{% trans "Show detail on the right" %}:</span>
+                                            <div class='col-sm-4'>
+                                                <div class=''>
+                                                    <label>
+                                                        <input class='js-switch' id='show_detail_right' type='checkbox'/>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div id="div_column_display" class="panel">
+                            <div class="panel-header">
+                                <h4 class="panel-title"><a href="#" data-open='true' class="btn-open-panel" data-panel="column_display"><i class="fa fa-chevron-up"></i></a>&nbsp;&nbsp;<b>{% trans "Visible columns:" %}</b></h4>
+                            </div>
+                            <div class="panel-body" id="column_display"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="col-md-6">
+                        <div id="config_success" class="alert alert-success" role="alert">
+                            <p><i class="fa fa-check"></i>&nbsp;{% trans "Configuration saved." %}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-cancel" data-dismiss="modal" type="button">{% trans "CANCEL"  %}</button>
+                        <button id="btn-save-config" class="btn btn-save" type="submit">{% trans "SAVE" %}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal_search" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel"><i class="fa fa-search">&nbsp;&nbsp;</i>{% trans "Search" %}</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="panel-querybuilder">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label>{% trans "Saved query" %}:</label>
+                                <select class="form-control" id="query_builder_filter"></select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div id="alert_search_success" class="alert alert-success alert_search" role="alert"></div>
+                            <div id="alert_search_error" class="alert alert-danger alert_search" role="alert"></div>
+                        </div>
+                        <div class="row" style="margin-top:10px !important;">
+                            <div id="querybuilder"></div>
+                        </div>
+
+                        <div class="row">
+                            <textarea class="form-control preview_rules" readonly="readonly"></textarea>
+                        </div>
+
+                        <div class="row" id="save_filter">
+                            <div class="input-group">
+                              <span>{% trans "Search Name :"  %}</span>
+                              <input type="text" id="filter_name" class="form-control">
+                              <span class="input-group-btn">
+                                <button class="btn-search btn btn-default" id="btn-save-search" type="button"><i class="fa fa-save"></i></button>
+                                <button class="btn-search btn btn-default" id="btn-del-search" type="button"><i class="fa fa-trash"></i></button>
+                              </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-cancel" id="btn-reset" type="button">{% trans "Reset"  %}</button>
+                    <button class="btn btn-save" id="btn-execute" type="button">{% trans "Execute" %}</button>
+                </div>
+             </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal_wlbl_edit" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="row">
+                        <div class="col-sm-11">
+                            <h4 class="modal-title" id="myModalLabel">{% trans "WhiteList - BlackList - Edit" %}</h4>
+                        </div>
+                        <div class="col-sm-1">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding-bottom:0;">
+                    <div class="row">
+                        <table id="table_edit_bl" class="table table-striped table-bordered table-hover dt-responsive nowrap table-datatable">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Rule" %}</th>
+                                    <th>{% trans "Action" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer" id="update_rule" style="display:none;">
+                    <div class="row">
+                        <input type="hidden" id="id_rule"/>
+                        <textarea class="form-control" id="content_rule"></textarea>
+                    </div>
+                    <button class="btn-cancel" id="cancel_rule_btn" type="button">{% trans "CANCEL"  %}</button>
+                    <button id="update_rule_btn" class="btn-save" type="submit">{% trans "SAVE" %}</button>
+                </div>
+             </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal_wlbl" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <h4 class="modal-title" id="myModalLabel">{% trans "WhiteList - BlackList" %}</h4>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="col-sm-11">
+                                <div id="success_modal" class="alert alert-success alert-logs" role="alert"></div>
+                                <div id="error_modal" class="alert alert-danger alert-logs" role="alert"></div>
+                            </div>
+                            <div class="col-sm-1">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding-top:0;padding-bottom:0;">
+                    <input type="hidden" id="name_app"/>
+                    <input type="hidden" id="type_log"/>
+                    <div class="row">
+                    </div>
+                    <div class="row">
+                        <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                          <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                            <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Network" %}</a>
+                            </li>
+                            <li role="presentation" class=""><a href="#tab_content2" id="profile-tab" role="tab" data-toggle="tab" aria-expanded="false">{% trans "Request" %}</a>
+                            </li>
+                            <li role="presentation" class=""><a href="#tab_content4" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Request Data GET" %}</a>
+                            </li>
+                          </ul>
+                          <div id="myTabContent" class="tab-content">
+                            <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                                <fieldset class="col-sm-12">
+                                    <legend style="margin-bottom:0;" id="uri_legend">{% trans "Network" %}</legend>
+                                    <div class="form-group">
+                                        <div class="col-sm-12 ui-widget div_modal_wlbl">
+                                            <table id="table_network" class="table table-striped table-bordered table-hover dt-responsive nowrap table-datatable table_rule" data-id="network">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="td_enable"><input type="checkbox" class="enable_all_rule" data-id="network"/> &nbsp;{% trans "Active" %}</th>
+                                                        <th class="td_boolean">{% trans "Condition" %}</th>
+                                                        <th class="td_value">{% trans "Value" %}</th>
+                                                        <th class="td_control">{% trans "Control" %}</th>
+                                                        <th class="td_field">{% trans "Field" %}</th>
+                                                        <th></th>
+                                                        <th class="td_action">{% trans "Action" %}</th>
+                                                        <th class="td_delete"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                            <div role="tabpanel" class="tab-pane fade" id="tab_content2" aria-labelledby="profile-tab">
+                                <fieldset class="col-sm-12">
+                                    <legend style="margin-bottom:0;" id="data_legend">{% trans "Request" %}</legend>
+                                    <div class="form-group">
+                                        <div class="col-sm-12 ui-widget div_modal_wlbl">
+                                            <table id="table_request" class="table table-striped table-bordered table-hover dt-responsive nowrap table-datatable table_rule" data-id="request">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="td_enable"><input type="checkbox" class="enable_all_rule" data-id="request"/>&nbsp;{% trans "Active" %}</th>
+                                                        <th class="td_boolean">{% trans "Condition" %}</th>
+                                                        <th class="td_value">{% trans "Value" %}</th>
+                                                        <th class="td_control">{% trans "Control" %}</th>
+                                                        <th class="td_field">{% trans "Field" %}</th>
+                                                        <th></th>
+                                                        <th class="td_action">{% trans "Action" %}</th>
+                                                        <th class="td_delete"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                            <p style="text-align:right;margin-top:10px;">
+                                                <div class="add-group">
+                                                    <button class="addlink addplus addline" data-id="request" type="button">{% trans "Add an Entry" %}</button>
+                                                </div>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane fade" id="tab_content4" aria-labelledby="profile-tab">
+                                <fieldset class="col-sm-12">
+                                    <legend style="margin-bottom:0;" id="headers_legend">{% trans "Request Data GET" %}</legend>
+                                    <div class="form-group">
+                                        <div class="col-sm-12 ui-widget div_modal_wlbl">
+                                            <table id="table_request_data_get" class="table table-striped table-bordered table-hover dt-responsive nowrap table-datatable table_rule" data-id="data_get">
+                                                <thead>
+                                                    <tr>
+                                                        <th class="td_enable"><input type="checkbox" class="enable_all_rule" data-id="request_data_get"/>&nbsp;{% trans "Active" %}</th>
+                                                        <th class="td_boolean">{% trans "Condition" %}</th>
+                                                        <th class="td_value">{% trans "Value" %}</th>
+                                                        <th class="td_control">{% trans "Control" %}</th>
+                                                        <th class="td_field">{% trans "Field" %}</th>
+                                                        <th></th>
+                                                        <th class="td_action">{% trans "Action" %}</th>
+                                                        <th class="td_delete"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                            <p style="text-align:right;margin-top:10px;">
+                                                <div class="add-group">
+                                                    <button class="addlink addplus addline" data-id="request_data_get" type="button">{% trans "Add an Entry" %}</button>
+                                                </div>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+
+                          </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="margin-top:0px;padding-top:0;padding-bottom:0;">
+                    <div class="row" id="preview_div">
+                        <div class="col-sm-12 col-md-6">
+                            <h4>Blacklist</h4>
+                            <pre class="preview"><code id='preview_bl' name='preview'></code></pre>
+                        </div>
+                        <div class="col-sm-12 col-md-6">
+                            <h4>Whitelist</h4>
+                            <pre class="preview"><code id='preview_wl' name='preview'></code></pre>
+                        </div>
+                    </div>
+                    <div class="row" style="text-align:center;">
+                        <input type="button" class="btn btn-label-left btn-primary" id="add_rule" value="Add to Rules set">
+                    </div>
+                </div>
+             </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+
+        <input type="hidden" id="static_url" value="{% static 'img/flags/' %}"/>
+        <input type="hidden" id="logging_control" value="{{ logging_control }}"/>
+        <div class="row">
+            <div class="col-sm-12" id="navbarlogs">
+                <div class="input-group input-group-lg">
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" data-type="tooltip" title="{% trans "Search" %}" data-placement="bottom" data-toggle="modal" data-target="#modal_search" id="displaysearch" type="button"><i class="fa fa-search"></i></button>
+                    <button class="btn btn-default" title="{% trans "Real time" %}" data-placement="bottom" data-type="tooltip" id="real_time" data-active="false" type="button"><i id="spinner_ajax" class="fa fa-spinner fa-no-margin-right"></i></button>
+                    <button class="btn btn-default" title="{% trans "Configuration" %}" data-placement="bottom" data-type="tooltip" id="config" data-toggle="modal" data-target="#modal_config" type="button"><i class="fa fa-gear"></i></button>
+                    <button class="btn btn-default" title="{% trans "Select date" %}" data-placement="bottom" data-type="tooltip" id="reportrange_logs" type="button"></button>
+                  </span>
+                  <input type="text" class="form-control preview_rules" id="logs_preview_rule" readonly="readonly">
+                  <span class="input-group-btn">
+                    <button type="button" id="btn-export" class="btn btn-default" title="{% trans "Export to csv file" %}" data-placement="bottom" data-type="tooltip"><i class="fa fa-download"></i></button>
+                    <button type="button" id="btn-reset-2" class="btn btn-default" title="{% trans "Reset search" %}" data-placement="bottom" data-type="tooltip"><i class="fa fa-ban"></i></button>
+                    <button type="button" id="btn-execute-2" class="btn btn-default" title="{% trans "Execute search" %}" data-placement="bottom" data-type="tooltip"><i class="fa fa-bolt"></i></button>
+                  </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" id="data_logs">
+            <input type="hidden" id="data_pf" value="{{packet_filter}}"/>
+            <input type="hidden" id="repo_vulture" value="{{cluster.system_settings.global_settings.repository.type_uri}}"/>
+            <div class="col-sm-12 col-lg-2">
+                <span>{% trans "Data" %}</span>
+                <select id="data_select" class="reload_logs has-popover" data-container="body" data-content="Select an type of data" data-placement="bottom" style="margin-top:5px;">
+                    {% if apps|length %}
+                        <option value="waf">Web Application Firewall</option>
+                    {% endif %}
+                    <option value="vulture">Vulture Logs</option>
+                    <option value="diagnostic">Diagnostic Logs</option>
+                    {% if packet_filter|length %}
+                        <option value="packet_filter">Packet Filter</option>
+                    {% endif %}
+                </select>
+            </div>
+
+            {% if packet_filter|length %}
+                <div class="col-sm-12 col-lg-2 node_select_pf">
+                    <span>{% trans "Node" %}</span>
+                    <select id='node_select_pf' class='reload_logs has-popover' data-container="body" data-content="Select a node or the cluster" data-placement="bottom" style="margin-top:5px">
+                        {% for node in packet_filter %}
+                            <option value="{{node.id}}|{{node.repo}}">{{node.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+
+            <div class="col-sm-12 col-lg-2 waf_select">
+                <span>{% trans "Application" %}</span>
+                <select id="app_select" class="reload_logs has-popover" data-container="body" data-content="Select an application" data-placement="bottom" style="margin-top:5px;">
+                    {% for app in apps %}
+                        <option value="{{ app.app.id }}|{{app.repo}}|{{app.app.name}}">{{ app.app.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-sm-12 col-lg-4">
+                <button id="app_reload" type="button" class="btn btn-default" id="stopall">
+                <i class="fa fa-spinner"> </i>{% trans "Reload application" %}
+                </button>
+                <button id="pf_reload" type="button" class="btn btn-default" id="stopall">
+                    <i class="fa fa-spinner"> </i>{% trans "Reload packetfilter" %}
+                </button>
+                <button type="button" id="btn-add-dataset" class="btn btn-default" style="margin-top:21px;">
+                    <i class="fa fa-save"></i>&nbsp;{% trans "Create dataset" %}
+                </button>
+            </div>
+            <!-- <a id="app_reload" href="#"><span class="fa fa-refresh"> {% trans "Reload application" %}</span></a>
+            <a id="pf_reload" href="#"><span class="fa fa-refresh"> {% trans "Reload packetfilter" %}</span></a> -->
+        </div>
+
+        <div class="resize_div">
+            <a class="resize-font" href="#" data-type="smaller"><i class='fa fa-minus-square'></i></a>
+            <a class="resize-font" href="#" data-type="origin"><i class='fa fa-dot-circle-o'></i></a>
+            <a class="resize-font" href="#" data-type="bigger"><i class='fa fa-plus-square'></i></a>
+        </div>
+        <div class="row row_table_logs" id="row_table_logs_access" style="display:none;">
+            <div id="div_access" class="col-xs-12">
+                <table id="table_logs_access" data-name="access" cellspacing="0" class="table table-bordered table-striped table-hover table-heading table-datatable table_logs compact">
+                    <thead>
+                        <tr>
+                            <th>#</a></th>
+                            <th>{% trans "Date" %}</th>
+                            <th>{% trans "IP" %}</th>
+                            <th>{% trans "User" %}</th>
+                            <th>{% trans "Method" %}</th>
+                            <th>{% trans "URI" %}</th>
+                            <th>{% trans "HTTP code" %}</th>
+                            <th>{% trans "Size" %}</th>
+                            <th>{% trans "Referer" %}</th>
+                            <th>{% trans "User agent" %}</th>
+                            <th>{% trans "Bytes received" %}</th>
+                            <th>{% trans "Bytes sent" %}</th>
+                            <th>{% trans "Times elapsed" %}</th>
+                            <th>{% trans "Incoming protocol" %}</th>
+                            <th>{% trans "Tags" %}</th>
+                            <th>{% trans "Threshold" %}</th>
+                            <th>{% trans "Score" %}</th>
+                            <th>{% trans "Owasp top10" %}</th>
+                            <th>{% trans "Reasons" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div id="access_details_logs" class="col-sm-3">
+                <a class='close_detail'><i class='fa fa-times fa-2x'></i></a>
+                <div id="access_details_logs_data"></div>
+            </div>
+        </div>
+
+        <div class="row row_table_logs" id="row_table_logs_packet_filter" style="display:none;">
+            <div id="div_packet_filter" class="col-xs-12">
+                <table id="table_logs_packet_filter" data-name="packet_filter" cellspacing="0" class="table table-bordered table-striped table-hover table-heading table-datatable table_logs compact">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>{% trans "Date" %}</th>
+                            <th>{% trans "Src IP" %}</th>
+                            <th>{% trans "Src Port" %}</th>
+                            <th>{% trans "Dst IP" %}</th>
+                            <th>{% trans "Dst Port" %}</th>
+                            <th>{% trans "Action" %}</th>
+                            <th>{% trans "Direction" %}</th>
+                            <th>{% trans "Interface" %}</th>
+                            <th>{% trans "Info" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div id="packet_filter_details_logs" class="col-sm-3">
+                <a class='close_detail'><i class='fa fa-times fa-2x'></i></a>
+                <div id="packet_filter_details_logs_data"></div><br/>
+                <div id="packet_filter_details_logs_button"></div>
+            </div>
+        </div>
+
+        <div class="row row_table_logs" id="row_table_logs_vulture" style="display:none;">
+            <div id="div_vulture">
+                <table id="table_logs_vulture" data-name="vulture" cellspacing="0" class="table table-bordered table-striped table-hover table-heading table-datatable table_logs compact">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>{% trans "Log Level" %}</th>
+                            <th>{% trans "Date" %}</th>
+                            <th>{% trans "Log name" %}</th>
+                            <th>{% trans "Filename" %}</th>
+                            <th>{% trans "Message" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div id="vulture_details_logs" class="col-sm-3">
+                <a class='close_detail'><i class='fa fa-times fa-2x'></i></a>
+                <div id="vulture_details_logs_data"></div><br/>
+                <div id="vulture_details_logs_button"></div>
+            </div>
+        </div>
+
+        <div class="row row_table_logs" id="row_table_logs_diagnostic" style="display:none;">
+            <div id="div_diagnostic">
+                <table id="table_logs_diagnostic" data-name="diagnostic" cellspacing="0" class="table table-bordered table-striped table-hover table-heading table-datatable table_logs compact">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>{% trans "Log Level" %}</th>
+                            <th>{% trans "Node Name" %}</th>
+                            <th>{% trans "Module Name" %}</th>
+                            <th>{% trans "Traceback" %}</th>
+                            <th>{% trans "File name" %}</th>
+                            <th>{% trans "Test name" %}</th>
+                            <th>{% trans "Date" %}</th>
+                            <th>{% trans "Message" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div id="diagnostic_details_logs" class="col-sm-3">
+                <a class='close_detail'><i class='fa fa-times fa-2x'></i></a>
+                <div id="diagnostic_details_logs_data"></div><br/>
+                <div id="diagnostic_details_logs_button"></div>
+            </div>
+        </div>
+
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static "css/daterangepicker-bs3.css" %}" rel="stylesheet">
+    <link href="{% static "css/daterangepicker-vulture.css" %}" rel="stylesheet">
+    <link href="{% static "plugins/jsonFrill/jsonFrill.css" %}" rel="stylesheet">
+    <link href="{% static "plugins/contextMenu/jquery.contextMenu.min.css" %}" rel="stylesheet">
+    <link href="{% static "plugins/queryBuilder/query-builder.default.min.css" %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static "plugins/datatables/jquery.dataTables.min.js" %}"></script>
+    <script src="{% static "plugins/datatables/dataTables.bootstrap.js" %}"></script>
+    <script src="{% static "js/moment.min.js" %}"></script>
+    <script src="{% static "js/daterangepicker.js" %}"></script>
+    <script src="{% static "js/dateformat.min.js" %}"></script>
+    <script src="{% static "js/logs.js" %}"></script>
+    <script src="{% static "plugins/jsonFrill/jsonFrill.js" %}"></script>
+    <script src="{% static "plugins/contextMenu/jquery.contextMenu.min.js" %}"></script>
+    <script src="{% static "plugins/queryBuilder/query-builder.js" %}"></script>
+    <script src="{% static "plugins/queryBuilder/query-builder-els.js" %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+
+{% endblock %}

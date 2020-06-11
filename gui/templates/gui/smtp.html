@@ -1,0 +1,251 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load tags_utils %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<form class="form-horizontal bootstrap-validator-form" action="/services/smtp/{% if object_id %}{{object_id}}{% endif %}" id="smtp_form" method="post" novalidate="novalidate">
+			{% csrf_token %}
+			<div class="x_panel">
+        <div class="x_title">
+          <h2><i class="fa fa-desktop"></i>&nbsp;{% trans "Vulture Service Settings" %}</h2>
+          <ul class="nav navbar-right panel_toolbox">
+            <li><a href="/services/dns/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+            <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+          </ul>
+          <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+          <div class="" role="tabpanel" data-example-id="togglable-tabs">
+            <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+              <li role="presentation" class=""><a href="/services/global/">{% trans "Settings panel" %}</a>
+              </li>
+              <li role="presentation" class=""><a href="/services/dns/">{% trans "DNS" %}</a>
+              </li>
+              <li role="presentation" class=""><a href="/services/ntp/">{% trans "NTP" %}</a>
+              </li>
+              <li role="presentation" class="active"><a href="#">{% trans "SMTP" %}</a>
+              </li>
+              <li role="presentation" class=""><a href="/services/ssh/">{% trans "SSH" %}</a>
+              </li>
+              <li role="presentation" class=""><a href="/services/ipsec/">{% trans "IPSEC" %}</a>
+              </li>
+            </ul>
+          </div>
+
+          <fieldset class="col-sm-6">
+            <legend>{% trans  "SMTP Settings" %}</legend>
+            <div class="form-group">
+              <label class="col-sm-4 control-label"> {% trans "Configure SMTP Settings of" %}</label>
+              <div class="col-sm-5">
+                <select id="cluster_select" class="has-popover form-control" style="margin-top:5px;">
+                  <option value="" >{% trans "Vulture Cluster" %}</option>
+                  {% for node in cluster.members %}
+                    <option value="{{ node.id }}">Node {{ node.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            {% if object_id %}
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% trans "Get SMTP config from cluster" %}</label>
+                <div class="col-sm-5">
+                  <div class="toggle-switch toggle-switch-primary">
+                    <label>
+                      {{ form.cluster_based_conf }}
+                      <div class="toggle-switch-inner"></div>
+                      <div class="toggle-switch-switch"><i class="fa fa-check"></i></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+            <div class="form-group">
+              <label class="col-sm-4 control-label">{{ form.smtp_server.label }}</label>
+              <div class="col-sm-5">
+                {{form.smtp_server}}
+                {{form.smtp_server.errors}}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-4 control-label">{% trans "Domain name" %}</label>
+              <div class="col-sm-5">
+                {{form.domain_name}}
+                {{form.domain_name.errors}}
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-12" style="text-align:center;">
+                <button id="smtp_test" class="btn-test"><span>{% trans "Test SMTP configuration" %}</span></button>
+              </div>
+            </div>
+              <!--
+              <div class="form-group">
+              <label class="col-sm-4 control-label">{% trans "Origin name" %}</label>
+              <div class="col-sm-5">
+              {{form.origin_name}}
+              {{form.origin_name.errors}}
+              </div>
+              </div>
+              <div class="form-group">
+              <label class="col-sm-4 control-label">{% trans "Relay host" %}</label>
+              <div class="col-sm-5">
+              {{form.relay_host}}
+              {{form.relay_host.errors}}
+              </div>
+              </div>
+              -->
+            </fieldset>
+
+            <div class="col-sm-5">
+              <legend>{% trans "SMTP Status" %}</legend>
+              <div  class="col-sm-12">
+                <p>
+                  <b>
+                    {% for nodename, status in smtp_status.items %}
+                      {% if status.0 == 'UP' %}
+                        <img src="{% static "img/status_green.png" %}" class="img_responsive" />
+                      {% elif status.0 == 'NEED_UPDATE' or status.0 == 'WARNING' %}
+                        <img src="{% static "img/status_orange.png" %}" class="img_responsive" />
+                      {% else %}
+                        <img src="{% static "img/status_red.png" %}" class="img_responsive" />
+                      {% endif %}
+                      {% trans "SMTP service state is " %}{{ status|join:': ' }}{% trans " on " %}{{ nodename }}
+                      <br />
+                    {% endfor %}
+                  </b>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+	  </div>
+
+    <div class="modal fade" id="modal_test_smtp" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content" >
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">{% trans "Test SMTP Configuration" %}</h4>
+          </div>
+          <div class="modal-body" id="modal_test_smtp_body">
+            <div class="row">
+              <div class="col-sm-11">
+                <div id="success_smtp" class="alert alert-success alert-smtp" role="alert"><i class="fa fa-check"></i>&nbsp;&nbsp;{% trans "Sending email succeeded" %}</div>
+                <div id="error_smtp" class="alert alert-danger alert-smtp" role="alert"><i class="fa fa-times"></i>&nbsp;&nbsp;{% trans "Error when sending email: " %}</div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% trans "Recipient" %}</label>
+                <div class="col-sm-5">
+                  <input type="text" class="form-control" id="recipient"/>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="col-sm-12" style="text-align:center;">
+                  <button id="smtp_launch_test" class="btn-test"><span>{% trans "Test" %}</span></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+	
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+
+{% endblock %}
+
+{% block jquery_code %}
+
+    $('#smtp_test').click(function(e){
+        e.preventDefault();
+        $('.alert-smtp').hide();
+        $('#modal_test_smtp').modal('show');
+    })
+
+
+    $('#smtp_launch_test').click(function(){
+        $.post(
+            '/services/smtp/test/',
+            {
+                'cluster_based_conf': $('#cluster_select').val(),
+                'smtp_server'       : $('#id_smtp_server').val(),
+                'domain_name'       : $('#id_domain_name').val(),
+                'recipient'         : $('#recipient').val()
+            },
+
+            function(data){
+                if (data['status'] === true){
+                    $('#error_smtp').hide();
+                    $('#success_smtp').show();
+                    $('#save').show();
+                } else {
+                    $('#success_smtp').hide();
+                    $('#error_smtp').show();
+                    $('#error_smtp').append(data['error']);;
+                    $('#save').hide();
+                }
+            }
+        )
+    })
+
+    $('.link-tab').click(function(){
+      window.location.href = ($(this).attr('href'));
+    });
+
+    $('#cluster_select').bind("change", updateFields);
+    function updateFields () {
+        var id=$(this).val();
+        document.location.href= '/services/smtp/' + id;
+    }
+    /* Select current edited Node */
+    {% if object_id %}
+        $('#cluster_select option[value={{ object_id }}]').prop('selected', true);
+
+        /* Disable form fields and fill them with cluster values
+        if configuration is cluster based */
+        $("#id_cluster_based_conf").bind("change load", function(event){
+            if ($("#id_cluster_based_conf").is(":checked")){
+                $("input[name='domain_name']" ).prop('disabled', true);
+                $("input[name='smtp_server']" ).prop('disabled', true);
+                {% for field in cluster.system_settings.smtp_settings %}
+                    {% if cluster.system_settings.smtp_settings|key:field %}
+                    $("input[name='{{field}}']").val('{{cluster.system_settings.smtp_settings|key:field }}');
+                    {% endif %}
+                {% endfor %}
+            } else {
+                $("input[name='domain_name']" ).prop('disabled', false);
+                $("input[name='smtp_server']" ).prop('disabled', false);
+            }
+        });
+        $('#id_cluster_based_conf').trigger('load');
+    {% endif %}
+
+    if( "{{ popup }}" != "" ) {
+        new PNotify({
+            title: '{{ popup.0 }}',
+            text: '<a style="color:white; text-decoration: underline; font-weight: bold;">{{ popup.1 | linebreaks }}</a>',
+            {% if popup.0 == "UP" or popup.0 == "DOWN" %}type: 'success',{% else %}type: 'error',{% endif %}
+            styling: 'bootstrap3',
+            width: '500px',
+            buttons: {
+              closer: true,
+              sticker: false
+            }
+        });
+    }
+
+
+{% endblock %}

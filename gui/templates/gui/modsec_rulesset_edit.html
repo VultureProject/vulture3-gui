@@ -1,0 +1,363 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-cloud"></i>&nbsp;{% trans "ModSec -> Edit" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form class="form-horizontal bootstrap-validator-form" action="/firewall/modsec_rules/edit/{% if object_id %}{{object_id}}{% endif %}" method="post" novalidate="novalidate">
+            {% csrf_token %}
+            <input type="hidden" name="type_rule" value="custom"/>
+            <input type="hidden" name="is_enabled" value="1"/>
+            <div class="x_panel">
+              <div class="x_title">
+                <h2><i class="fa fa-cog"></i>&nbsp;&nbsp;
+                    {% if modsec_rulesset.name %} {% trans "Change settings for Rules Set " %} "{{modsec_rulesset.name}}" {% else %} {% trans "New Rules Set" %} {% endif %}
+                </h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li>
+                        {% if modsec_rulesset.type_rule == 'virtualpatching' %}
+                            <a href="/firewall/virtualpatching/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a>
+                        {% else %}
+                            <a href="/firewall/modsec_rules/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a>
+                        {% endif %}
+                    </li>
+                    <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">{% trans "Friendly name" %}</label>
+                        <div class="col-sm-5">
+                        {{form.name}}
+                        {{form.name.errors}}
+                        </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-12">
+                        <textarea class="form-control" rows="18" id="custom_rules" name="custom_rules">{{ custom_rules }}</textarea>
+                        <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">Launch ModSecurity Rule Builder</button>
+                    </div>
+                </div>
+              </div>
+            </div>
+        </form>
+    </div>
+
+
+    <div class="modal fade bs-example-modal-lg" id="myModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Vulture ModSecurity Rules Builder</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+
+                        <div class="form-group">
+                            <label class="col-sm-2">{% trans "Input to inspect" %}:</label>
+                            <div class="col-sm-4"><select class='col-sm-12' id="what_variables"><option>-- Choose An Input --</option></select></div>
+                            <div class="col-sm-6"><input type='text' class='form-control' id='variables' name='variables'/></div>
+                        </div><br/><br/>
+                        <div class="form-group">
+                            <label class="col-sm-1">{% trans "Control" %}:</label>
+                            <div class="col-sm-1"><select name="negate" id="negate"><option value="">{% trans "If" %}</option><option value="!">{% trans "If not" %}</option></select></div>
+                            <div class="col-sm-10">
+                                <select name="operator" id="operator">
+                                    <option value="beginsWith">The parameter string is found at the beginning of the input</option>
+                                    <option value="contains">The parameter string is found anywhere in the input</option>
+                                    <option value="containsWord">The parameter string (with word boundaries) is found anywhere in the input</option>
+                                    <option value="detectSQLi">SQL injection payload is found</option>
+                                    <option value="detectXSS">XSS injection is found</option>
+                                    <option value="endsWith">The parameter string is found at the end of the input</option>
+                                    <option value="fuzzyHash">fuzzyHash from file</option>
+                                    <option value="eq">Input is equal to</option>
+                                    <option value="ge">Input is greater than or equal to</option>
+                                    <option value="gt">Input is greater than</option>
+                                    <option value="le">Input is less or equal than</option>
+                                    <option value="lt">Input is less than</option>
+                                    <option value="validateUtf8Encoding">The input is a valid UTF-8 string</option>
+                                    <option value="inspectFile">Executes an external program for every variable in the target list</option>
+                                    <option value="rbl">Looks up the input value in the RBL given as parameter</option>
+                                    <option value="geoLookup">Performs a geolocation lookup using the IP address in input</option>
+                                    <option value="gsbLookup">Performs a local lookup of Google's Safe Browsing using URLs in input</option>
+                                    <option value="ipMatch">Performs a fast ipv4 or ipv6 match of REMOTE_ADDR variable data</option>
+                                    <option value="ipMatchFromFile">Performs a fast ipv4 or ipv6 match of REMOTE_ADDR variable, loading data from a file</option>
+                                    <option value="pm">Performs a case-insensitive match of the provided phrases against the desired input value</option>
+                                    <option value="pmFromFile">Performs a case-insensitive match of the provided phrases against the desired input value, with pattern in a file</option>
+                                    <option value="rsub">Performs regular expression data substitution in STREAM_INPUT_BODY or STREAM_OUTPUT_BODY</option>
+                                    <option value="rx">Performs a regular expression match of the pattern provided as parameter</option>
+                                    <option value="streq">Performs a string comparison and returns true if the parameter string is identical to the input string</option>
+                                    <option value="strmatch">Performs a string match of the provided word against the desired input value</option>
+                                    <option value="validateByteRange">Validates that the byte values used in input fall into the range specified by the operator parameter</option>
+                                    <option value="validateDTD">Validates the XML DOM tree against the supplied DTD</option>
+                                    <option value="validateHash">Validates REQUEST_URI that contains data protected by the hash engine</option>
+                                    <option value="validateSchema">Validates the XML DOM tree against the supplied XML Schema</option>
+                                    <option value="validateUrlEncoding">Validates the URL-encoded characters in the provided input string</option>
+                                    <option value="verifyCC">Detects credit card numbers in input</option>
+                                    <option value="verifyCPF">Detects CPF numbers (Brazilian social number) in input</option>
+                                    <option value="verifySSN">Detects US social security numbers (SSN) in input</option>
+                                    <option value="within">Returns true if the input value is found anywhere within</option>
+                                </select>
+                            </div>
+                        </div><br/><br/><br/>
+                        <div class="form-group">
+                            <div class="col-sm-5">Parameter String:</div>
+                            <div class="col-sm-6"><input type='text' class='form-control' id='parameter' name='parameter'/></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <h4>What to do if check is satisfied:</h4>
+                        <div class="form-group">
+                            <div class="col-sm-5"><select class='col-sm-12' id="what_a1"><option>Disruptive actions:</option></select></div>
+                            <div class="col-sm-7"><input type='text' class='form-control' id='action_1' name='action_1'/></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-5"><select class='col-sm-12' id="what_a2"><option>Non disruptive actions:</option></select></div>
+                            <div class="col-sm-7"><input type='text' class='form-control' id='action_2' name='action_2'/></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-5"><select class='col-sm-12' id="what_a3"><option>Flow actions:</option></select></div>
+                            <div class="col-sm-7"><input type='text' class='form-control' id='action_3' name='action_3'/></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-5"><select class='col-sm-12' id="what_a4"><option>Meta-data actions:</option></select></div>
+                            <div class="col-sm-7"><input type='text' class='form-control' id='action_4' name='action_4'/></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-5"><select class='col-sm-12' id="what_a5"><option>Data actions:</option></select></div>
+                            <div class="col-sm-7"><input type='text' class='form-control' id='action_5' name='action_5'/></div>
+                            <div class="col-sm-12"><br/></div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-4">
+                                <input type="button" class="btn btn-danger btn-label-left" id="createPreview" value="Build Rule">
+                                <input type="button" class="btn btn-label-left btn-danger" id="add_rule" data-dismiss="modal" value="Add to Rules set">
+                            </div>
+                            <div class="col-sm-8"><kbd><span id='preview' name='preview'></span></kbd></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block jquery_code  %}
+
+    var id = 0;
+
+
+    var variable_list = [
+        "ARGS","ARGS_COMBINED_SIZE","ARGS_GET","ARGS_GET_NAMES","ARGS_NAMES","ARGS_POST","ARGS_POST_NAMES","AUTH_TYPE",
+        "DURATION","ENV","FILES","FILES_COMBINED_SIZE","FILES_NAMES","FULL_REQUEST","FULL_REQUEST_LENGTH","FILES_SIZES",
+        "FILES_TMPNAMES","FILES_TMP_CONTENT","GEO","HIGHEST_SEVERITY","INBOUND_DATA_ERROR","MATCHED_VAR","MATCHED_VARS",
+        "MATCHED_VAR_NAME","MATCHED_VARS_NAMES","MODSEC_BUILD","MULTIPART_CRLF_LF_LINES","MULTIPART_FILENAME","MULTIPART_NAME",
+        "MULTIPART_STRICT_ERROR","MULTIPART_UNMATCHED_BOUNDARY","OUTBOUND_DATA_ERROR","PATH_INFO","PERF_COMBINED","PERF_GC",
+        "PERF_LOGGING","PERF_PHASE1","PERF_PHASE2","PERF_PHASE3","PERF_PHASE4","PERF_PHASE5","PERF_RULES","PERF_SREAD",
+        "PERF_SWRITE","QUERY_STRING","REMOTE_ADDR","REMOTE_HOST","REMOTE_PORT","REMOTE_USER","REQBODY_ERROR","REQBODY_ERROR_MSG",
+        "REQBODY_PROCESSOR","REQUEST_BASENAME","REQUEST_BODY","REQUEST_BODY_LENGTH","REQUEST_COOKIES","REQUEST_COOKIES_NAMES",
+        "REQUEST_FILENAME","REQUEST_HEADERS","REQUEST_HEADERS_NAMES","REQUEST_LINE","REQUEST_METHOD","REQUEST_PROTOCOL","REQUEST_URI",
+        "REQUEST_URI_RAW","RESPONSE_BODY","RESPONSE_CONTENT_LENGTH","RESPONSE_CONTENT_TYPE","RESPONSE_HEADERS","RESPONSE_HEADERS_NAMES",
+        "RESPONSE_PROTOCOL","RESPONSE_STATUS","RULE","SCRIPT_BASENAME","SCRIPT_FILENAME","SCRIPT_GID","SCRIPT_GROUPNAME","SCRIPT_MODE",
+        "SCRIPT_UID","SCRIPT_USERNAME","SDBM_DELETE_ERROR","SERVER_ADDR","SERVER_NAME","SERVER_PORT","SESSION","SESSIONID","STREAM_INPUT_BODY",
+        "STREAM_OUTPUT_BODY","TIME","TIME_DAY","TIME_EPOCH","TIME_HOUR","TIME_MIN","TIME_MON","TIME_SEC","TIME_WDAY","TIME_YEAR","TX","UNIQUE_ID",
+        "URLENCODED_ERROR","USERID","USERAGENT_IP","WEBAPPID","WEBSERVER_ERROR_LOG","XML"
+    ];
+
+    var disruptive_action_list = [
+        "allow","block","deny","drop","pass","pause:5000","proxy:http://honeypot/","redirect:http://www.test.com/failed.html"
+    ];
+
+    var non_disruptive_action_list = [
+        "append:'<hr>Footer'","auditlog","capture","ctl:auditEngine=","ctl:auditLogParts=","ctl:debugLogLevel=","ctl:forceRequestBodyVariable=","ctl:requestBodyAccess=",
+        "ctl:requestBodyLimit=","ctl:requestBodyProcessor=","ctl:responseBodyAccess=","ctl:responseBodyLimit=","ctl:ruleEngine=","ctl:ruleRemoveById=","ctl:ruleRemoveByMsg=",
+        "ctl:ruleRemoveByTag=","ctl:ruleRemoveTargetById=","ctl:ruleRemoveTargetByMsg=","ctl:ruleRemoveTargetByTag=","ctl:hashEngine=","ctl:hashEnforcement=","deprecatevar:SESSION.score=60/300",
+        "exec:/usr/local/script/test.sh","expirevar:","initcol:","log","logdata","multiMatch","noauditlog","nolog","prepend:'Header<br>'","sanitiseArg:Password","sanitiseMatched",
+        "sanitiseMatchedBytes","sanitiseMatchedBytes:1/4","sanitiseRequestHeader:Authorization","sanitiseResponseHeader:Set-Cookie","setuid:%{TX.0}","setrsc:'abcd1234'",
+        "setsid:%{REQUEST_COOKIES.PHPSESSID}","setenv:httponly_cookie=%{matched_var}","setvar:TX.score=+5", "t:base64Decode","t:sqlHexDecode","t:base64DecodeExt","t:base64Encode",
+        "t:cmdLine","t:compressWhitespace","t:cssDecode","t:escapeSeqDecode","t:hexDecode","t:hexEncode","t:htmlEntityDecode","t:jsDecode","t:length","t:lowercase","t:md5",
+        "t:none","t:normalisePath","t:normalisePathWin","t:parityEven7bit","t:parityOdd7bit","t:parityZero7bit","t:removeNulls","t:removeWhitespace","t:replaceComments",
+        "t:removeCommentsChar","t:removeComments","t:replaceNulls","t:urlDecode","t:urlDecodeUni","t:urlEncode","t:utf8toUnicode","t:sha1","t:trimLeft","t:trimRight","t:trim"
+    ];
+
+    var flow_action_list = [
+        "chain","skip:1","skipAfter:IGNORE_LOCALHOST"
+    ];
+
+    var meta_data_action_list = [
+        "accuracy:'9'","id:1234","maturity:'9'","msg:'Request Missing a Host Header'","phase:1","rev:'2.1.3'","severity:EMERGENCY","severity:ALERT",
+        "severity:CRITICAL","severity:ERROR","severity:WARNING","severity:NOTICE","severity:INFO","severity:DEBUG","tag:'WEB_ATTACK/SQL_INJECTION'","tag:'WEB_ATTACK/XSS'","ver:'CRS/2.2.4'"
+    ];
+
+    var data_action_list = [
+        "status:403","xmlns:xsd='http://www.w3.org/2001/XMLSchema'"
+    ];
+
+
+    $.each(variable_list, function(key, value) {
+        $('#what_variables')
+          .append($('<option>', { value : value })
+          .text(value));
+    });
+
+    $.each(disruptive_action_list, function(key, value) {
+        $('#what_a1')
+          .append($('<option>', { value : value })
+          .text(value));
+    });
+
+    $.each(non_disruptive_action_list, function(key, value) {
+        $('#what_a2')
+          .append($('<option>', { value : value })
+          .text(value));
+    });
+
+    $.each(flow_action_list, function(key, value) {
+        $('#what_a3')
+          .append($('<option>', { value : value })
+          .text(value));
+    });
+
+     $.each(meta_data_action_list, function(key, value) {
+        $('#what_a4')
+          .append($('<option>', { value : value })
+          .text(value));
+    });
+
+     $.each(data_action_list, function(key, value) {
+        $('#what_a5')
+          .append($('<option>', { value : value })
+          .text(value));
+    });
+
+
+    $('#what_variables').bind("change", add_var);
+    function add_var() {
+        tag = $('#what_variables').val();
+        $( "#variables" ).tagEditor('addTag',tag);
+    }
+    $('#what_a1').bind("change", add_a1);
+    function add_a1() {
+        tag = $('#what_a1').val();
+        $( "#action_1" ).tagEditor('addTag',tag);
+    }
+    $('#what_a2').bind("change", add_a2);
+    function add_a2() {
+        tag = $('#what_a2').val();
+        $( "#action_2" ).tagEditor('addTag',tag);
+    }
+    $('#what_a3').bind("change", add_a3);
+    function add_a3() {
+        tag = $('#what_a3').val();
+        $( "#action_3" ).tagEditor('addTag',tag);
+    }
+    $('#what_a4').bind("change", add_a4);
+    function add_a4() {
+        tag = $('#what_a4').val();
+        $( "#action_4" ).tagEditor('addTag',tag);
+    }
+    $('#what_a5').bind("change", add_a5);
+    function add_a5() {
+        tag = $('#what_a5').val();
+        $( "#action_5" ).tagEditor('addTag',tag);
+    }
+    $('#add_rule').bind("click",updateRule);
+    function updateRule() {
+        preview = document.getElementById ('preview');
+        child=preview.firstChild
+        rule=child.data;
+        rules = $("#custom_rules").val() + '\n' + rule;
+        $("#custom_rules").val(rules);
+
+
+    }
+
+    $("#variables").tagEditor({
+        delimiter: '|',
+        forceLowercase: false,
+    });
+    $("#action_1").tagEditor({
+        delimiter: ',',
+        forceLowercase: false,
+     });
+    $("#action_2").tagEditor({
+        delimiter: ',',
+        forceLowercase: false,
+     });
+    $("#action_3").tagEditor({
+        delimiter: ',',
+        forceLowercase: false,
+     });
+    $("#action_4").tagEditor({
+        delimiter: ',',
+        forceLowercase: false,
+     });
+    $("#action_5").tagEditor({
+        delimiter: ',',
+        forceLowercase: false,
+     });
+
+    function createPreview () {
+        negate = $("#negate").val()
+        variables = $("#variables").val()
+        operator  = $("#operator").val()
+        parameter = $("#parameter").val()
+        action_1  = $("#action_1").val()
+        action_2  = $("#action_2").val()
+        action_3  = $("#action_3").val()
+        action_4  = $("#action_4").val()
+        action_5  = $("#action_5").val()
+
+
+    //SecRule REQUEST_BODY "\@detectXSS" "id:12345,log,deny"
+
+        txt = "SecRule ";
+        if (operator) {
+            txt = txt + " " + variables + " \"";
+            txt = txt + negate + "@"+operator;
+        }
+        else {
+            txt = txt + variables + " \"";
+        }
+
+        txt = txt + " " + parameter + "\"" + " ";
+        if (action_1) {
+            txt = txt + "\"" + action_1 + ",";
+        }
+        if (action_2) {
+            txt = txt + action_2 + ",";
+        }
+        if (action_3) {
+            txt = txt + action_3 + ",";
+        }
+        if (action_4) {
+            txt = txt + action_4 + ",";
+        }
+        if (action_5) {
+            txt = txt + action_5 + "\"";
+        }
+
+        preview = document.getElementById ('preview');
+        preview.innerHTML = txt;
+
+    }
+
+    $("#createPreview").bind("click", createPreview);
+
+
+{% endblock %}
+

@@ -1,0 +1,318 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load tags_utils %}
+{% load staticfiles %}
+{% load template_tags %}
+
+{% block sidebar %}
+  {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<form class="form-horizontal bootstrap-validator-form" action="/agents/zabbix/{% if object_id %}{{object_id}}{% endif %}" id="zabbix_form" method="post" novalidate="novalidate">
+			{% csrf_token %}
+			<div class="x_panel">
+        <div class="x_title">
+          <h2><i class="fa fa-desktop"></i>&nbsp;{% trans "Vulture Agents Settings" %}</h2>
+	        <ul class="nav navbar-right panel_toolbox">
+            <li><a href="/agents/zabbix/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+	          <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+	        </ul>
+	        <div class="clearfix"></div>
+        </div>
+	      <div class="x_content">
+	        <div class="" role="tabpanel" data-example-id="togglable-tabs">
+            <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+	            <li role="presentation" class=""><a href="/agents/zabbix/">{% trans "Zabbix" %}</a></li>
+            </ul>
+          </div>
+
+          <fieldset class="col-sm-5">
+            <legend>{% trans "ZABBIX-AGENT Configuration" %}</legend>
+            <div class="form-group">
+              <label class="col-sm-4 control-label"> {% trans "Configure Zabbix-Agent of " %}</label>
+              <div class="col-sm-5">
+                <select id="cluster_select" class="has-popover form-control" style="margin-top:5px;">
+                  <option value="">Vulture cluster</option>
+                  {% for node in cluster.members %}
+                    <option value="{{ node.id }}">{{ node.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="form-group noobjectid">
+              <label class="col-sm-4 control-label"> {% verbose_name form 'enabled' %}</label>
+              <div class="col-sm-5">
+                <label>
+                  {{form.enabled}}
+                  {{form.enabled.errors}}
+                </label>
+              </div>
+            </div>
+          </fieldset>
+
+          <div class="col-sm-7">
+            <legend>{% trans "ZABBIX-AGENT Status" %}</legend>
+            <div  class="col-sm-12"><p><b>
+              {% for nodename, status in zabbix_status.items %}
+                {% if status.0 == 'UP' %}
+                  <img src="{% static "img/status_green.png" %}" class="img_responsive" />
+                {% elif status.0 == 'WARNING' %}
+                  <img src="{% static "img/status_orange.png" %}" class="img_responsive" />
+                {% elif status.0 == 'DOWN' %}
+                  <img src="{% static "img/status_grey.png" %}" class="img_responsive" />
+                {% else %}
+                  <img src="{% static "img/status_red.png" %}" class="img_responsive" />
+                {% endif %}
+                {% trans "Zabbix-Agent service state is " %}{{ status|join:': ' }}{% trans " on " %}{{ nodename }}
+                <br />
+              {% endfor %}
+            </b></p>
+            </div>
+          </div>
+
+          <div class="form-group noobjectid">
+            <fieldset class="col-sm-12" >
+              <legend>{% trans "ZABBIX-AGENT Settings" %}</legend>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% verbose_name form 'servers' %} *</label>
+                <div class="col-sm-5">
+                  {{form.servers}}
+                  {{form.servers.errors}}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% verbose_name form 'listeners' %} *</label>
+                <div class="col-sm-5">
+                  {{form.listeners}}
+                  {{form.listeners.errors}}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% verbose_name form 'port' %} *</label>
+                <div class="col-sm-5">
+                  {{form.port}}
+                  {{form.port.errors}}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% verbose_name form 'active_servers' %} *</label>
+                <div class="col-sm-5">
+                  {{form.active_servers}}
+                  {{form.active_servers.errors}}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% verbose_name form 'hostname' %} *</label>
+                <div class="col-sm-5">
+                  {{form.hostname}}
+                  {{form.hostname.errors}}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% verbose_name form 'allow_root' %} *</label>
+                <div class="col-sm-5">
+                  {{form.allow_root}}
+                  {{form.allow_root.errors}}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% verbose_name form 'tls_accept' %} *</label>
+                <div class="col-sm-5">
+                  {{form.tls_accept}}
+                  {{form.tls_accept.errors}}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% verbose_name form 'tls_connect' %} *</label>
+                <div class="col-sm-5">
+                  {{form.tls_connect}}
+                  {{form.tls_connect.errors}}
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="col-sm-12 tlsconnect" >
+              <legend>{% trans "TLS Settings" %}</legend>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% verbose_name form 'tls_cert' %} *</label>
+                <div class="col-sm-5">
+                  {{form.tls_cert}}
+                  {{form.tls_cert.errors}}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% verbose_name form 'tls_server_subject' %}</label>
+                <div class="col-sm-5">
+                  {{form.tls_server_subject}}
+                  {{form.tls_server_subject.errors}}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% verbose_name form 'tls_server_issuer' %}</label>
+                <div class="col-sm-5">
+                  {{form.tls_server_issuer}}
+                  {{form.tls_server_issuer.errors}}
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="col-sm-12 pskconnect" >
+              <legend>{% trans "PSK Settings" %}</legend>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% verbose_name form 'psk_identity' %} *</label>
+                <div class="col-sm-5">
+                  {{form.psk_identity}}
+                  {{form.psk_identity.errors}}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% verbose_name form 'psk_key' %} *</label>
+                <div class="col-sm-5">
+                  {{form.psk_key}}
+                  {{form.psk_key.errors}}
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="col-sm-12" >
+              <legend>{% trans "Advanced Settings" %}</legend>
+              <div class="form-group">
+                <label class="col-md-4 control-label">{% trans "Advanced mode" %}:</label>
+                <div class="col-md-5 col-sm-5">
+                  <input type="checkbox" id="advanced" class="js-switch"/>
+                </div>
+              </div>
+              <div class="form-group advanced">
+                <label class="col-sm-4 control-label">{% verbose_name form 'enable_remote_commands' %} *</label>
+                <div class="col-sm-5">
+                  {{form.enable_remote_commands}}
+                  {{form.enable_remote_commands.errors}}
+                </div>
+              </div>
+              <div class="form-group advanced">
+                <label class="col-sm-4 control-label">{% verbose_name form 'log_remote_commands' %} *</label>
+                <div class="col-sm-5">
+                  {{form.log_remote_commands}}
+                  {{form.log_remote_commands.errors}}
+                </div>
+              </div>
+              <div class="form-group advanced">
+                <label class="col-sm-4 control-label">{% verbose_name form 'start_agents' %} *</label>
+                <div class="col-sm-5">
+                  {{form.start_agents}}
+                  {{form.start_agents.errors}}
+                </div>
+              </div>
+              <div class="form-group advanced">
+                <label class="col-sm-4 control-label">{% verbose_name form 'refresh_active_checks' %} *</label>
+                <div class="col-sm-5">
+                  {{form.refresh_active_checks}}
+                  {{form.refresh_active_checks.errors}}
+                </div>
+              </div>
+              <div class="form-group advanced">
+                <label class="col-sm-4 control-label">{% verbose_name form 'timeout_process' %} *</label>
+                <div class="col-sm-5">
+                  {{form.timeout_process}}
+                  {{form.timeout_process.errors}}
+                </div>
+              </div>
+              <div class="form-group advanced">
+                <label class="col-sm-4 control-label">{% verbose_name form 'buffer_send' %} *</label>
+                <div class="col-sm-5">
+                  {{form.buffer_send}}
+                  {{form.buffer_send.errors}}
+                </div>
+              </div>
+              <div class="form-group advanced">
+                <label class="col-sm-4 control-label">{% verbose_name form 'buffer_size' %} *</label>
+                <div class="col-sm-5">
+                  {{form.buffer_size}}
+                  {{form.buffer_size.errors}}
+                </div>
+              </div>
+            </fieldset>
+
+          </div>
+        </div>
+        <b>*</b>: Required attributes
+      </div>
+    </form>
+  </div>
+
+	
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+
+{% endblock %}
+
+{% block jquery_code %}
+
+  function updateFieldsTLS() {
+    var v1 = $('#id_tls_accept').val();
+    var v2 = $('#id_tls_connect').val();
+    if( v1 !== "cert" && v2 !== "cert" )
+        $('.tlsconnect').hide();
+    if( v1 !== "psk" && v2 !== "psk" )
+        $('.pskconnect').hide();
+    if( v1 === "cert" || v2 === "cert" )
+        $('.tlsconnect').show();
+    if( v1 === "psk" || v2 === "psk" )
+        $('.pskconnect').show();
+  }
+  $('#id_tls_accept').on("change", updateFieldsTLS);
+  $('#id_tls_connect').on("change", updateFieldsTLS);
+  $('#id_tls_accept').trigger('change');
+  $('#id_tls_connect').trigger('change');
+
+  function advanced_mode(e){
+    if ($("#advanced").is(':checked'))
+        $('.advanced').show();
+    else
+        $('.advanced').hide();
+  }
+  $('#advanced').on('change', advanced_mode);
+  $('#advanced').trigger('change');
+
+  $('.link-tab').click(function(){
+    window.location.href = ($(this).attr('href'));
+  });
+
+  $('#cluster_select').bind("change", selectNode);
+  function selectNode () {
+      var id=$(this).val();
+      document.location.href= '/agents/zabbix/' + id;
+  }
+
+  /* Select current edited Node */
+  {% if object_id %}
+      $('#cluster_select option[value={{ object_id }}]').prop('selected', true);
+      $('.noobjectid').show();
+
+  {% else %}
+      $('.noobjectid').hide();
+  {%  endif %}
+
+
+  if( "{{ popup }}" != "" ) {
+    new PNotify({
+        title: '{{ popup.0 }}',
+        text: '<a style="color:white; text-decoration: underline; font-weight: bold;">{{ popup.1 | linebreaks }}</a>',
+        {% if popup.0 == "UP" or popup.0 == "DOWN" %}type: 'success',{% else %}type: 'error',{% endif %}
+        styling: 'bootstrap3',
+        width: '500px',
+        buttons: {
+            closer: true,
+            sticker: false
+        }
+    });
+  }
+
+{% endblock %}

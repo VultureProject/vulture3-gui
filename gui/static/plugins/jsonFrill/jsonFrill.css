@@ -1,0 +1,141 @@
+/*!
+ * CSS for jQuery jsonFrill plugin v0.1
+ * https://github.com/sparuvu/jsonFrill
+ *
+ * Released under the MIT license
+ * https://raw.github.com/sparuvu/jsonFrill/master/LICENSE
+ *
+ * Date: 2014-1-9
+ */
+
+
+#jf-formattedJSON {
+  cursor: default;
+  font-family: monospace;
+  white-space: pre;
+  font-size: 12px;
+}
+
+#jf-formattedJSON .jf-open-brace, #jf-formattedJSON .jf-close-brace {
+  font-weight: normal;
+  font-family: "helvetica neue", sans-serif;
+}
+
+.jf-close-brace {
+  padding-left: 2px;
+}
+
+.jf-string {
+  max-width: 230px;
+}
+
+.jf-string code{
+  white-space: pre-wrap;
+  max-width: 230px;
+}
+
+
+.jf-number {
+  color: #5C8A49;
+}
+
+.jf-date {
+  color: #CD5665;
+}
+
+.jf-boolean {
+  color: #CC6218;
+}
+
+#jf-formattedJSON .jf-collapsible-title .jf-key, #jf-formattedJSON .jf-parent-brace{
+  cursor: pointer;
+}
+
+.jf-collapsible-title .jf-key:hover, .jf-parent-brace:hover {
+  /*font-weight: bold;
+  background-color: #ECECEC;
+  padding: 2px;
+  border-radius: 4px;
+  border-color: transparent;*/
+}
+
+.jf-indents {
+  color: #444943;
+}
+
+.jf-collapsible {
+  margin-top: 2px;
+}
+
+.jf-hide {
+  display: none;
+}
+
+.jf-ellipses {
+  color: #AC382D;
+}
+
+.jf-highlight {
+  background-color:#EBF0FB;
+  border-radius: 5px;
+}
+
+
+.jf-prop span {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.jf-value{
+  color:#FFC312;
+  max-width: 230px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+
+
+.jf-collapsible-title .jf-key:before {
+ content: "+";
+}
+
+.jf-collapsible-title .jf-collapse:before {
+ content: "-";
+}
+
+.jf-collapsible-title .jf-collapse:before, .jf-collapsible-title .jf-key:before {
+    color: #8A008B;
+    font-weight: bold;
+    font-size: 8px;
+    padding: 1px;
+    display: inline-block;
+    line-height: 5px;
+}
+
+#jf-expand-all, #jf-collapse-all{
+  cursor: pointer;
+  display: inline-block;
+  font-size: 13px;
+  margin-right: 5px;
+  border:none;
+  background-color:#FFC312;
+  color:#000;
+}
+
+#jf-expand-all {
+  padding-left: 10px;
+}
+
+.jf-key code{
+  color: #FFC312;
+  background-color: #000;
+}
+
+.jf-key-value{
+  padding:0 2px;
+  font-size: 12px;
+}
+
+.jf-prop{
+  /*height:20px;*/
+}

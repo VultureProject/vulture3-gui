@@ -1,0 +1,47 @@
+
+{% load i18n %}
+{% load tags_utils %}
+
+
+
+<div class="row">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>{% trans "Applications below require passphrases to read private key. <br/>Please provide them. " %}</h2>
+            <ul class="nav navbar-right panel_toolbox">
+                <li><button id="cancel_askpass" class="btn-cancel" type="button">{% trans "ABORT"  %}</button></li>
+                <li><button id="save_askpass" class="btn-save" type="submit">{% trans "APPLY" %}</button></li>
+            </ul>
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <br/><br/>
+            <form id="form_askpass" action="/management/start/{{ listener.id }}" method="POST">{% csrf_token %}
+                <table class="table table-bordered table-striped table-hover table-heading table-datatable">
+                    <thead>
+                        <tr>
+                            <th class="col-md-2">{% trans "Application" %}</th>
+                            <th class="col-md-2">{% trans "Public URL" %}</th>
+                            <th class="col-md-2">{% trans "Private URL" %}</th>
+                            <th class="col-md-1">{% trans "Please fill in passphrase" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for application in listener.get_apps %}
+                            {% if application.need_passphrase %}
+                                <tr>
+                                    <td>{{ application.name }}</td>
+                                    <td>{% if application.has_tls%}https://{% else %}http://{% endif %}{{ application.public_name }}{{ application.public_dir }}</td>
+                                    <td>{{ application.private_uri }}</td>
+                                    <td>{% for l in application.get_protected_ssl_profiles %}
+                                        <input type="password" name="keypass_{{ l.id }}"></td>
+                                        {% endfor %}
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
+</div>

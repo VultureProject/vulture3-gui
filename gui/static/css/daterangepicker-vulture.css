@@ -1,0 +1,53 @@
+.daterangepicker .ranges li {
+  font-size: 13px;
+  background: #f5f5f5;
+  border: 0 none;
+  color: black;
+  padding: 3px 12px;
+  margin-bottom: 8px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.daterangepicker {
+    background: #39454C;
+    padding: 5px !important;
+    border: none;
+}
+
+.daterangepicker .daterangepicker_start_input label, .daterangepicker .daterangepicker_end_input label{
+  color:#fff !important;
+  text-shadow: none !important;
+}
+
+.daterangepicker td.active, .daterangepicker td.active:hover {
+background-color: #357ebd;
+border-color: #3071a9;
+color: #5D6B74;
+}
+
+.daterangepicker .ranges li.active, .daterangepicker .ranges li:hover {
+  background: #FFC312;
+  border: 0 none;
+}
+
+.daterangepicker .applyBtn {
+    color:#000;
+    background-color: #ffc929;
+    border: none;
+}
+
+.daterangepicker .cancelBtn {
+    color:#fff;
+    background-color: #76777c;
+    border: none;
+}
+
+.data_alert{
+    color:red;
+}
+
+.daterangepicker select.hourselect, .daterangepicker select.minuteselect, .daterangepicker select.secondselect, .daterangepicker select.ampmselect{
+  color:#000;
+}

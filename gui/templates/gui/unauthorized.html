@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-ban"></i>&nbsp;{% trans "Unauthorized" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <p class="text-center">
+            {% blocktrans %}
+            <b>You are not authorized to view this page.</b> <br />
+            You do not have permission to view this page using your current user account. <br />
+            Resolution:<br />
+            If it is your first log in, you have to contact your administrator in order to assign permission on your account<br />
+            If you believe you should be able to view this page, contact your administrator.<br />
+            {% endblocktrans %}
+        </p>
+    </div>
+é
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+
+{% endblock %}
+
+{% block jquery_code  %}
+  
+{% endblock %}

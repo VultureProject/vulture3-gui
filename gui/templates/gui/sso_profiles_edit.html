@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form id="sql_form" class="form-horizontal bootstrap-validator-form" action="" method="post" novalidate="novalidate">
+            {% csrf_token %}
+            <div class="x_panel">
+              <div class="x_title">
+                <h2><i class="fa fa-folder-open"></i>&nbsp;{% trans "SSO Profiles -> Edit" %}</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a href="/repository/sso_profiles/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                    <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+
+              <div class="x_content">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Application</label>
+                    <div class="col-sm-5">
+                        <input class="form-control" type="text" readonly value="{{ app_name }}" data-toggle="tooltip" title="Name of the SSO Profile application">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Repository</label>
+                    <div class="col-sm-5">
+                        <input class="form-control" type="text" readonly value="{{ repository }}" data-toggle="tooltip" title="Name of the SSO Profile repository">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">Main login</label>
+                    <div class="col-sm-5">
+                        <input class="form-control" type="text" readonly value="{{ login }}" data-toggle="tooltip" title="Login used in main portal authentication">
+                    </div>
+                </div>
+                {% for profile in profiles %}
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">{% if profile.1 != "Not field" %}{{ profile.1 }}{%  else %}{{ profile.0 }}{% endif %}</label>
+                    <div class="col-sm-5">
+                        <input class="form-control" id="{{ profile.0 }}" name="{{ profile.0 }}" type="{% if profile.3 == "learn_secret" %}password{% else %}text{% endif %}" value="{{ profile.2 }}" {% if profile.1 != "Not field" %}data-toggle="tooltip" title="Form input name = {{ profile.0 }}{% endif %}">
+                        {% if profile.1 == "Not field" %}
+                        <small class="form-text text-muted fa fa-alert text-danger">
+                          <i class="fa fa-warning"></i>This field has no friendly name, please re-do wizard in Application settings.
+                        </small>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+
+
+{% endblock %}
+
+{% block css_include %}
+    
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static "plugins/TableDnD/jquery.tablednd.js" %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+    $('#id_groups').select2()
+{% endblock %}

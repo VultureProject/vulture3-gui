@@ -1,0 +1,180 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load tags_utils %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<form class="form-horizontal bootstrap-validator-form" action="/services/ntp/{% if object_id %}{{object_id}}{% endif %}" method="post" novalidate="novalidate">
+			{% csrf_token %}
+			<div class="x_panel">
+        <div class="x_title">
+          <h2><i class="fa fa-desktop"></i>&nbsp;{% trans "Vulture Service Settings" %}</h2>
+          <ul class="nav navbar-right panel_toolbox">
+            <li><a href="/services/ntp/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+            <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+          </ul>
+          <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+          <div class="" role="tabpanel" data-example-id="togglable-tabs">
+            <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+              <li role="presentation" class=""><a href="/services/global/">{% trans "Settings panel" %}</a>
+              </li>
+              <li role="presentation" class=""><a href="/services/dns/">{% trans "DNS" %}</a>
+              </li>
+              <li role="presentation" class="active"><a href="#">{% trans "NTP" %}</a>
+              </li>
+              <li role="presentation" class=""><a href="/services/smtp/">{% trans "SMTP" %}</a>
+              </li>
+              <li role="presentation" class=""><a href="/services/ssh/">{% trans "SSH" %}</a>
+              </li>
+              <li role="presentation" class=""><a href="/services/ipsec/">{% trans "IPSEC" %}</a>
+              </li>
+            </ul>
+          </div>
+
+          <fieldset class="col-sm-8">
+            <legend>{% trans "NTP Settings" %}</legend>
+            <div class="form-group">
+              <label class="col-sm-4 control-label"> {% trans "Configure NTP Settings of" %}</label>
+              <div class="col-sm-5">
+                <select id="cluster_select" class="has-popover form-control" style="margin-top:5px;">
+                  <option value="" >{% trans "Vulture Cluster" %}</option>
+                  {% for node in cluster.members %}
+                    <option value="{{ node.id }}">Node {{ node.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            {% if object_id %}
+              <div class="form-group">
+                <label class="col-sm-4 control-label">{% trans "Get NTP config from cluster" %}</label>
+                <div class="col-sm-5">
+                  <div class="toggle-switch toggle-switch-primary">
+                    <label>
+                      {{ form.cluster_based_conf }}
+                      <div class="toggle-switch-inner"></div>
+                      <div class="toggle-switch-switch"><i class="fa fa-check"></i></div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+            <div class="form-group">
+              <label class="col-sm-4 control-label"> {% trans "NTP Server Address" %} #1</label>
+              <div class="col-sm-8">
+                {{form.server_address_1}}
+                {{form.server_address_1.errors}}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-4 control-label"> {% trans "NTP Server Address" %} #2</label>
+              <div class="col-sm-8">
+                {{form.server_address_2}}
+                {{form.server_address_2.errors}}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-4 control-label"> {% trans "NTP Server Address" %} #3</label>
+              <div class="col-sm-8">
+                {{form.server_address_3}}
+                {{form.server_address_3.errors}}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="col-sm-4 control-label"> {% trans "NTP Server Address" %} #4</label>
+              <div class="col-sm-8">
+                {{form.server_address_4}}
+                {{form.server_address_4.errors}}
+              </div>
+            </div>
+          </fieldset>
+          <div class="col-sm-4">
+            <legend>{% trans "NTP Status" %}</legend>
+            <div  class="col-sm-12">
+              <p><b>
+                {% for nodename, status in ntp_status.items %}
+                  {% if status.0 == 'UP' %}
+                    <img src="{% static "img/status_green.png" %}" class="img_responsive" />
+                  {% elif status.0 == 'NEED_UPDATE' or status.0 == "WARNING" %}
+                    <img src="{% static "img/status_orange.png" %}" class="img_responsive" />
+                  {% else %}
+                    <img src="{% static "img/status_red.png" %}" class="img_responsive" />
+                  {% endif %}
+                  {% trans "NTPD service state is " %}{{ status|join:': ' }}{% trans " on " %}{{ nodename }}
+                  <br />
+                {% endfor %}
+              </b></p>
+            </div>
+            <div class="col-sm-12 text-center">
+              <a href="/services/ntp/{% if object_id %}{{object_id}}/{% endif %}restart/" class="btn btn-test btn-label-left" id="restart_ntp">
+                <span><i class="fa fa-cog"></i></span> {% trans "Restart Service" %}
+              </a>
+              <p>{% trans "Do not forget to restart service after any configuration change" %}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+	</div>
+	
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+
+{% endblock %}
+
+{% block jquery_code  %}
+
+    $('#cluster_select').bind("change", updateFields);
+    function updateFields () {
+        var id=$(this).val();
+        document.location.href= '/services/ntp/' + id;
+    }
+    
+    /* Select current edited Node */
+    {% if object_id %}
+        $('#cluster_select option[value={{ object_id }}]').prop('selected', true);
+
+        /* Disable form fields and fill them with cluster values
+        if configuration is cluster based */
+        $("#id_cluster_based_conf").bind("change load", function(event){
+            if ($("#id_cluster_based_conf").is(":checked")){
+                $("input[name*='server_address_']" ).prop('disabled', true);
+                {% for field in cluster.system_settings.ntp_settings %}
+                    {% if cluster.system_settings.ntp_settings|key:field %}
+                        $("input[name='{{field}}']").val('{{cluster.system_settings.ntp_settings|key:field }}');
+                    {% endif %}
+                {% endfor %}
+            } else {
+                $("input[name*='server_address_']" ).prop('disabled', false);
+            }
+        });
+        $('#id_cluster_based_conf').trigger('load');
+    {% endif %}
+
+    /* Restart Button */
+    $("#restart_ntp").click(function(e) {
+        var url = $(this).attr("href");
+        e.preventDefault();
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function(data){
+                location.reload();
+            },
+            error: function(data) {
+            }
+        });
+    });
+
+{% endblock %}

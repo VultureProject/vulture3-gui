@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-folder-open"></i>&nbsp;{{menu_name}}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        {% csrf_token %}
+        <input type="hidden" name="confirm" value="yes" />
+        <fieldset class="col-sm-12">
+            <legend>{% trans "Confirm delete" %}</legend>
+            <div class="form-group">
+                <label class="col-sm-12 text-center">
+                    {% trans "Impossible to delete " %}{{ obj_inst }}<br />
+                    {% trans "You must disable use of this object in appropriate menu" %}
+                </label>
+            </div>
+        </fieldset>
+        <div class="form-group">
+            <div class="col-sm-12 text-center">
+                <a class="btn btn-primary btn-label-left" href="{{ redirect_url }}">
+                <span><i class="fa fa-arrow-left txt-danger"></i></span>
+                {% trans "Back" %}
+                </a>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+
+{% endblock %}
+
+{% block jquery_code  %}
+  
+{% endblock %}

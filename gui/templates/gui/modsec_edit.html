@@ -1,0 +1,696 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-cube"></i>&nbsp;{% trans "WAF Policy -> Edit" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form class="form-horizontal bootstrap-validator-form" action="/firewall/modsec/edit/{% if object_id %}{{object_id}}{% endif %}" method="post" novalidate="novalidate">
+            {% csrf_token %}
+            <input type="hidden" name="type_rule" value="custom"/>
+            <input type="hidden" name="is_enabled" value="1"/>
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2><i class="fa fa-cog"></i>&nbsp;&nbsp;
+                        {% if modsec.name %} {% trans "Change settings for Policy " %} "{{modsec.name}}" {% else %} {% trans "New Policy" %} {% endif %}
+                    </h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                        <li><a href="/firewall/modsec/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                        <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                    </ul>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                        <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                            <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Main settings" %}</a>
+                            </li>
+                            <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Scoring" %}</a>
+                            </li>
+                            <li role="presentation" class=""><a href="#tab_content4" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "HTTP Policy" %}</a>
+                            </li>
+                            <li role="presentation" class=""><a href="#tab_content5" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "DOS & BF Protection" %}</a>
+                            </li>
+                            <li role="presentation" class=""><a href="#tab_content6" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Advanced" %}</a>
+                            </li>
+                            <li role="presentation" class=""><a href="#tab_content7" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Custom directives" %}</a>
+                            </li>
+                        </ul>
+                        <div id="myTabContent" class="tab-content">
+                            <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                                <fieldset class="col-lg-12 sol-sm-12">
+                                    <legend>{% trans "Global settings" %}</legend>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Friendly name" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.name}}
+                                            {{form.name.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Enable body inspection" %}</label>
+                                        <div class="col-sm-6">
+                                            <div class="">
+                                                <label>
+                                                    {{form.secbodyinspection}}
+                                                    {{form.secbodyinspection.errors}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Enable content injection" %}</label>
+                                        <div class="col-sm-6">
+                                            <div class="">
+                                                <label>
+                                                    {{form.seccontentinjection}}
+                                                    {{form.seccontentinjection.errors}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Disable backend compression" %}</label>
+                                        <div class="col-sm-6">
+                                            <div class="">
+                                                <label>
+                                                    {{form.secdisablebackendcompression}}
+                                                    {{form.secdisablebackendcompression.errors}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Validate UTF8 Encoding" %}</label>
+                                        <div class="col-sm-6">
+                                            <div class="">
+                                                <label>
+                                                    {{form.crs_validate_utf8_encoding}}
+                                                    {{form.crs_validate_utf8_encoding.errors}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "XML Inspection" %}</label>
+                                        <div class="col-sm-6">
+                                            <div class="">
+                                                <label>
+                                                    {{form.xml_enable}}
+                                                    {{form.xml_enable.errors}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Block invalid BODY" %}</label>
+                                        <div class="col-sm-6">
+                                            <div class="">
+                                                <label>
+                                                    {{form.reqbody_error_enable}}
+                                                    {{form.reqbody_error_enable.errors}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                <fieldset class="col-lg-12 sol-sm-12">
+                                    <legend>{% trans "Mod Security" %}</legend>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Connections engine" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.secconnengine}}
+                                            {{form.secconnengine.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Audit Engine" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.secauditengine}}
+                                            {{form.secauditengine.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group secauditlogrelevantstatus">
+                                        <label class="col-sm-4 control-label">{% trans "Relevant status code" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.secauditlogrelevantstatus}}
+                                            {{form.secauditlogrelevantstatus.errors}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                            <label class="col-sm-4 control-label">{% trans "Logging Mode" %}</label>
+                                            <div class="col-sm-5">
+                                                {{form.logging_control}}
+                                                {{form.logging_control.errors}}
+                                            </div>
+                                    </div>
+                                </fieldset>
+                                <fieldset class="col-lg-12 sol-sm-12">
+                                    <legend>{% trans "Mod Defender" %}</legend>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Enable Mod Defender" %}</label>
+                                        <div class="col-sm-6">
+                                            <div class="">
+                                                <label id="id_enable_defender">
+                                                    {{form.defender_enable}}
+                                                    {{form.defender_enable.errors}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="id_enable_generic_sql_detection">
+                                        <label class="col-sm-4 control-label">{% trans "Enable Generic SQL detection" %}</label>
+                                        <div class="col-sm-6">
+                                            <div class="">
+                                                <label>
+                                                    {{form.defender_libinjection_sql_enable}}
+                                                    {{form.defender_libinjection_sql_enable.errors}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group" id="id_enable_generic_xss_detection">
+                                        <label class="col-sm-4 control-label">{% trans "Enable Generic XSS detection" %}</label>
+                                        <div class="col-sm-6">
+                                            <div class="">
+                                                <label>
+                                                    {{form.defender_libinjection_xss_enable}}
+                                                    {{form.defender_libinjection_xss_enable.errors}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="tab_content2" aria-labelledby="home-tab">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{%  trans "Security level" %}</label>
+                                    <div class="col-md-5 col-sm-5">
+                                      {{ form.security_level }}
+                                      {{ form.security_level.errors }}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "Block desktop users User-Agent" %}:</label>
+                                    <div class="col-md-5 col-sm-5">
+                                        <div class="">
+                                            <label>
+                                                {{form.block_desktops_ua}}
+                                                {{form.block_desktops_ua.errors}}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "Block crawlers User-Agent" %}:</label>
+                                    <div class="col-md-5 col-sm-5">
+                                        <div class="">
+                                            <label>
+                                                {{form.block_crawlers_ua}}
+                                                {{form.block_crawlers_ua.errors}}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "Block suspicious User-Agent" %}:</label>
+                                    <div class="col-md-5 col-sm-5">
+                                        <div class="">
+                                            <label>
+                                                {{form.block_suspicious_ua}}
+                                                {{form.block_suspicious_ua.errors}}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "Advanced mode" %}:</label>
+                                    <div class="col-md-5 col-sm-5">
+                                        <input type="checkbox" id="advanced" class="js-switch"/>
+                                    </div>
+                                </div>
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "Critical anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.critical_anomaly_score}}
+                                            {{form.critical_anomaly_score.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "Error anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.error_anomaly_score}}
+                                            {{form.error_anomaly_score.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "Warning anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.warning_anomaly_score}}
+                                            {{form.warning_anomaly_score.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "Notice anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.notice_anomaly_score}}
+                                            {{form.notice_anomaly_score.errors}}
+                                        </div>
+                                </div>
+                                <!--
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "Injection anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.vlt_injection}}
+                                            {{form.vlt_injection.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "XSS anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.vlt_xss}}
+                                            {{form.vlt_xss.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "RFI anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.vlt_rfi}}
+                                            {{form.vlt_rfi.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "LFI anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.vlt_lfi}}
+                                            {{form.vlt_lfi.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "RCE anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.vlt_rce}}
+                                            {{form.vlt_rce.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "Leak anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.vlt_leak}}
+                                            {{form.vlt_leak.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "Protocol anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.vlt_protocol}}
+                                            {{form.vlt_protocol.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "Session anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.vlt_session}}
+                                            {{form.vlt_session.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "CSRF anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.vlt_csrf}}
+                                            {{form.vlt_csrf.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "Evade anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.vlt_evade}}
+                                            {{form.vlt_evade.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "Suspicious anomaly score" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.vlt_suspicious}}
+                                            {{form.vlt_suspicious.errors}}
+                                        </div>
+                                </div>-->
+                                <div class="form-group advanced">
+                                        <label class="col-sm-4 control-label">{% trans "Block if global score exceeds" %}</label>
+                                        <div class="col-sm-5">
+                                            {{form.inbound_anomaly_score_threshold}}
+                                            {{form.inbound_anomaly_score_threshold.errors}}
+                                        </div>
+                                </div>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="tab_content4" aria-labelledby="home-tab">
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Maximum number of arguments in request" %}</label>
+                                    <div class="col-sm-8">
+                                        {{form.max_num_args}}
+                                        {{form.max_num_args.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Maximum argument name length" %}</label>
+                                        <div class="col-sm-8">
+                                            {{form.arg_name_length}}
+                                            {{form.arg_name_length.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Maximum arguments value length" %}</label>
+                                        <div class="col-sm-8">
+                                            {{form.arg_length}}
+                                            {{form.arg_length.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Maximum arguments value total length" %}</label>
+                                        <div class="col-sm-8">
+                                            {{form.total_arg_length}}
+                                            {{form.total_arg_length.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label">{% trans "Request body limit" %}</label>
+                                    <div class="col-sm-8">
+                                        {{form.defender_request_body_limit}}
+                                        {{form.defender_request_body_limit.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Maximum file size, in bytes" %}</label>
+                                        <div class="col-sm-8">
+                                            {{form.max_file_size}}
+                                            {{form.max_file_size.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Maximum combined file size, in bytes" %}</label>
+                                        <div class="col-sm-8">
+                                            {{form.combined_file_sizes}}
+                                            {{form.combined_file_sizes.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Allowed HTTP versions" %}</label>
+                                        <div class="col-sm-8">
+                                            {{form.allowed_http_versions}}
+                                            {{form.allowed_http_versions.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Allowed request content type" %}</label>
+                                        <div class="col-sm-8">
+                                            {{form.allowed_request_content_type}}
+                                            {{form.allowed_request_content_type.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Restricted extensions" %}</label>
+                                        <div class="col-sm-8">
+                                            {{form.restricted_extensions}}
+                                            {{form.restricted_extensions.errors}}
+                                        </div>
+                                </div>
+                                <div class="form-group">
+                                        <label class="col-sm-3 control-label">{% trans "Restricted headers" %}</label>
+                                        <div class="col-sm-8">
+                                            {{form.restricted_headers}}
+                                            {{form.restricted_headers.errors}}
+                                        </div>
+                                </div>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="tab_content5" aria-labelledby="home-tab">
+                               <table id="tblData" class="table table-striped table-bordered table-hover dt-responsive nowrap table-datatable">
+                                   <thead>
+                                       <tr>
+                                           <th>{% trans "Enable" %}</th>
+                                           <th>{% trans "Url" %}</th>
+                                           <th>{% trans "DOS Burst Time Slice" %}</th>
+                                           <th>{% trans "DOS Counter Thresold" %}</th>
+                                           <th>{% trans "DOS Block Timeout" %}</th>
+                                           <th>{% trans "Actions" %}</th>
+                                       </tr>
+                                   </thead>
+                                   <tbody>
+                                       <tr>
+                                           <td>{{form.dos_enable_rule}}</td>
+                                           <td>{% trans "all" %}</td>
+                                           <td>{{form.dos_burst_time_slice}}<br>{{form.dos_burst_time_slice.errors}}</td>
+                                           <td>{{form.dos_counter_threshold}}<br>{{form.dos_counter_threshold.errors}}</td>
+                                           <td>{{form.dos_block_timeout}}<br>{{form.dos_block_timeout.errors}}</td>
+                                           <td></td>
+                                       </tr>
+                                   </tbody>
+                               </table>
+                               <p style="text-align:right;margin-top:10px;">
+                                   <div class="add-group">
+                                       <button class="addlink addplus" id="btnAddDOSRule" type="button">{% trans "Add an Entry" %}</button>
+                                   </div>
+                               </p>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="tab_content6" aria-labelledby="home-tab">
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">{% trans "Arguments separator in forms" %}</label>
+                                    <div class="col-sm-2">
+                                        {{form.secargumentseparator}}
+                                        {{form.secargumentseparator.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">{% trans "Collections Timeout" %}</label>
+                                    <div class="col-sm-2">
+                                        {{form.seccollectiontimeout}}
+                                        {{form.seccollectiontimeout.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">{% trans "Cookie Format" %}</label>
+                                    <div class="col-sm-5">
+                                        {{form.seccookieformat}}
+                                        {{form.seccookieformat.errors}}
+                                    </div>
+                                </div>
+                                <div class="form-group seccookiev0separator">
+                                    <label class="col-sm-4 control-label">{% trans "Cookie Separator" %}</label>
+                                    <div class="col-sm-5">
+                                        {{form.seccookiev0separator}}
+                                        {{form.seccookiev0separator.errors}}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="tab_content7" aria-labelledby="home-tab">
+                                <div class="form-group">
+                                    <div class="col-sm-12">
+                                        {{form.customconf}}
+                                        {{form.customconf.errors}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static "vendors/ion.rangeSlider/css/ion.rangeSlider.css" %}" rel="stylesheet">
+    <link href="{% static "vendors/ion.rangeSlider/css/ion.rangeSlider.skinFlat.css" %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static "vendors/ion.rangeSlider/js/ion.rangeSlider.min.js" %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+
+    let enableModDefenderInput = $('#id_enable_defender').children('input');
+
+    function checkEnableDefender () {
+        if (!enableModDefenderInput.is(':checked')) {
+            $('#id_enable_generic_sql_detection').hide();
+            $('#id_enable_generic_xss_detection').hide();
+        } else {
+            $('#id_enable_generic_sql_detection').show();
+            $('#id_enable_generic_xss_detection').show();
+        }
+    }
+
+    checkEnableDefender();
+
+    enableModDefenderInput.change(() => {
+        checkEnableDefender();
+    });
+
+    var id=0;
+
+    $("#id_allowed_http_versions").tagEditor({
+            autocomplete: {
+                delay: 0, // show suggestions immediately
+                position: { collision: 'flip' }, // automatic menu position up/down
+
+            },
+            delimiter: ',',
+            forceLowercase: false,
+        });
+
+    $("#id_allowed_request_content_type").tagEditor({
+            autocomplete: {
+                delay: 0, // show suggestions immediately
+                position: { collision: 'flip' }, // automatic menu position up/down
+
+            },
+            delimiter: ',',
+            forceLowercase: false,
+        });
+
+    $("#id_restricted_extensions").tagEditor({
+            autocomplete: {
+                delay: 0, // show suggestions immediately
+                position: { collision: 'flip' }, // automatic menu position up/down
+
+            },
+            delimiter: ',',
+            forceLowercase: false,
+        });
+
+    $("#id_restricted_headers").tagEditor({
+            autocomplete: {
+                delay: 0, // show suggestions immediately
+                position: { collision: 'flip' }, // automatic menu position up/down
+
+            },
+            delimiter: ',',
+            forceLowercase: false,
+        });
+
+
+    //Relevant status code selection, if AuditEngine is set to Relevant Only
+    $("#id_secauditengine").bind("change", toggleRelevantStatus);
+    $("#id_secauditengine").trigger("change");
+
+    function toggleRelevantStatus () {
+        var audit_type = $(this);
+        if (audit_type.val() == "RelevantOnly") {
+            $(".secauditlogrelevantstatus").show();
+        }
+        else {
+            $(".secauditlogrelevantstatus").hide();
+        }
+    }
+
+    //Cookie Separator selection, if CookieFormat is Netscape
+    $("#id_seccookieformat").bind("change", toggleCookieSeparator);
+    $("#id_seccookieformat").trigger("change");
+    function toggleCookieSeparator () {
+        var cookie_type = $(this);
+        if (cookie_type.val() == "0") {
+            $(".seccookiev0separator").css("visibility", "visible");
+        }
+        else {
+            $(".seccookiev0separator").css("visibility", "hidden");
+        }
+    }
+
+    $("#id_customconf").css('font-size', '10px');
+    $("#id_customconf").css('width', '100%');
+
+    function Delete(){
+        var par = $(this).parent().parent(); //tr
+        par.remove();
+    };
+
+
+    {% for dos_rule in dos_rules %}
+        AddDOSRule("{{dos_rule.enable}}", "{{dos_rule.url}}","{{dos_rule.burst_time_slice}}","{{dos_rule.counter_threshold}}","{{dos_rule.block_timeout}}");
+    {% endfor %}
+
+
+    function AddDOSRule(enable, url, burst, thresold, timeout){
+        var checked = enable === 'True' ? "checked='checked'" : "";
+        url = typeof url !== 'undefined' ? url : '/login.php';
+        burst = typeof burst !== 'undefined' ? burst : '10';
+        thresold = typeof thresold !== 'undefined' ? thresold : '10';
+        timeout = typeof timeout !== 'undefined' ? timeout : '60';
+
+        $("#tblData").append(
+        "<tr>"+
+        "<td><input type='checkbox' class='form-control' " + checked + " id='DOSRule_enable_"+id+"' name='DOSRule_enable_"+id+"'/></td>"+
+        "<td><input id='DOSRule_url_" + id + "' type='text' class='form-control' name='DOSRule_url_" + id + "' value='"+url+"'/></td>"+
+        "<td><input id='DOSRule_burst_" + id + "' type='text' class='form-control' name='DOSRule_burst_" + id + "' value='"+burst+"'/></td>"+
+        "<td><input id='DOSRule_thresold_" + id + "' type='text' class='form-control' name='DOSRule_thresold_" + id + "' value='"+thresold+"'/></td>"+
+        "<td><input id='DOSRule_timeout_" + id + "' type='text' class='form-control' name='DOSRule_timeout_" + id + "' value='"+timeout+"'/></td>"+
+        "<td><a class='btnDelete'><i class='fa fa-trash-o'></i></a></td>"+
+        "</tr>");
+
+        $(".form-control").css('font-size', '10px');
+
+        $(".btnDelete").css('cursor', 'pointer');
+        $(".btnDelete").bind("click", Delete);
+
+        id++;
+    };
+
+    $("#btnAddDOSRule").bind("click", AddDOSRule);
+
+    function setSliderLabels() {
+        $('.irs-min').text("");
+        $('.irs-max').text("Paranoid");
+    }
+    setSliderLabels();
+
+    $(window).resize(function() {
+        setTimeout(setSliderLabels, 500);
+    });
+
+    var min_security = 5;
+    var max_security = 30;
+    var slider = $("#id_security_level").ionRangeSlider({
+        min: min_security,
+        max: max_security,
+        hide_from_to: true,
+        from: $('#id_security_level').val(),
+        onStart: function (data) {
+            setSliderLabels();
+        },
+        onChange: function (data) {
+            $('#id_inbound_anomaly_score_threshold').val((max_security + min_security) - data.from);
+            setSliderLabels();
+        },
+        onFinish: function (data) {
+            setSliderLabels();
+        },
+        onUpdate: function (data) {
+            setSliderLabels();
+        }
+    });
+
+    function advanced_mode(e){
+        if ($("#advanced").is(':checked'))
+            $('.advanced').show();
+        else
+            $('.advanced').hide();
+    }
+
+    $('#advanced').on('change', advanced_mode);
+    $('#advanced').trigger('change');
+
+{% endblock %}
+

@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form class="form-horizontal bootstrap-validator-form" action="/firewall/modsec_rules/import_scan/" method="post" enctype="multipart/form-data" novalidate="novalidate">
+            {% csrf_token %}
+            <div class="x_panel">
+              <div class="x_title">
+                <h2><i class="fa fa-wifi"></i>&nbsp;{% trans "Virtual Patching Policies" %}</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    {% if log_info %}
+                        <li><a href="/firewall/virtualpatching/"><button class="btn-save" type="button">{% trans "RETURN"  %}</button></a></li>
+                    {% else %}
+                        <li><a href="/firewall/virtualpatching/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                        <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                    {% endif %}
+
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                {% if log_info %}
+                    {{ log_info|safe }}
+                {% else %}
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Scan type" %}</label>
+                            <div class="col-sm-5">
+                            {{form.type}}
+                            {{form.type.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Scan report" %}</label>
+                            <div class="col-sm-5">
+                            {{form.file}}
+                            {{form.file.errors}}
+                            </div>
+                    </div>
+                {% endif %}
+              </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block jquery_code  %}
+
+{% endblock %}
+

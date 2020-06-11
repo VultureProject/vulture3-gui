@@ -1,0 +1,15 @@
+#!/home/vlt-gui/env/bin/python
+
+import os
+import sys
+
+sys.path.append('/home/vlt-gui/vulture')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vulture.settings')
+
+import django
+django.setup()
+
+from vulture_toolkit.log.log_utils import LogRotate
+
+log = LogRotate()
+log.delete_logs()

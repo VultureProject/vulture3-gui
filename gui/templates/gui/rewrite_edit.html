@@ -1,0 +1,274 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form class="form-horizontal bootstrap-validator-form" action="/network/rewrite/edit/{% if object_id %}{{object_id}}{% endif %}" method="post" novalidate="novalidate">
+            {% csrf_token %}
+            <div class="x_panel">
+                  <div class="x_title">
+                    <h2><i class="fa fa-globe"></i>&nbsp;{% trans "URL Rewriting policy" %}</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                        <li><a href="/network/rewrite/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                        <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <div class="x_content">
+                        <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                          <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                            <li role="presentation" class="active"><a href="#tab_content1" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Global" %}</a>
+                            </li>
+                            <li role="presentation" class=""><a href="#tab_content2" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">{% trans "Policy" %}</a>
+                            </li>
+                          </ul>
+                            <div id="myTabContent" class="tab-content">
+                                <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "Friendly name" %}</label>
+                                            <div class="col-sm-5">
+                                            {{form.name}}
+                                            {{form.name.errors}}
+                                            </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{% trans "This is a template" %}</label>
+                                            <div class="col-sm-5">
+                                                <div class="">
+                                                    <label>
+                                                        {{form.is_template}}
+                                                        {{form.is_template.errors}}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                    </div>
+                                    <div class="form-group tpl-group">
+                                        <label class="col-sm-4 control-label">{% trans "Apply this rule on " %}</label>
+                                            <div class="col-sm-5">
+                                            {{form.application}}
+                                            {{form.application.errors}}
+                                            </div>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane" id="tab_content2" aria-labelledby="home-tab">
+                                    <div class="form-group">
+                                        <div class="col-sm-12 ui-widget">
+                                            {% trans "Note: You can drag and drop a row to change rules / conditions order" %}<br/>
+                                            {% trans "Note: You can use %{VARIABLE} in condition test strings" %}<br/><br/>
+                                            <table id="tblData" class="table">
+                                                <tbody>
+                                                </tbody>
+                                            </table>
+                                            <div class="add-group">
+                                                <button class="addlink addplus" id="btnAddCond" type="button">{% trans "Add condition" %}</button>
+                                                <button class="addlink addplus" id="btnAddRule" type="button">{% trans "Add action" %}</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static "plugins/TableDnD/jquery.tablednd.js" %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+    
+    //Fixme: Set to the number of item in the header list
+    var id = 0;
+
+
+    {% for rule in ruleset %}
+        AddRule("{{rule.pattern}}","{{rule.replacement}}","{{rule.flags}}");
+    {% endfor %}
+
+
+    function updateFields() {
+        var par             = $(this).parent().parent(); //tr
+        var tdPattern       = par.children("td:nth-child(1)");
+        var tdReplacement   = par.children("td:nth-child(2)");
+        var tdFlags         = par.children("td:nth-child(3)");
+
+        var pattern     = tdPattern.children("select:nth-child(1)");
+        var replacement = tdReplacement.children("input:nth-child(1)");
+        var flags       = tdFlags.children("input:nth-child(1)");
+
+    }
+
+    var variable_list = [
+        "%{HTTP_ACCEPT}","%{HTTP_COOKIE}","%{HTTP_FORWARDED}","%{HTTP_HOST}","%{HTTP_PROXY_CONNECTION}",
+        "%{HTTP_REFERER}","%{HTTP_USER_AGENT}","%{AUTH_TYPE}","%{CONN_REMOTE_ADDR}","%{CONTEXT_PREFIX}",
+        "%{CONTEXT_DOCUMENT_ROOT}","%{IPV6}","%{PATH_INFO}","%{QUERY_STRING}","%{REMOTE_ADDR}","%{REMOTE_HOST}",
+        "%{REMOTE_IDENT}","%{REMOTE_PORT}","%{LA-U:REMOTE_USER}","%{REQUEST_METHOD}","%{SCRIPT_FILENAME}","%{DOCUMENT_ROOT}",
+        "%{SCRIPT_GROUP}","%{SCRIPT_USER}","%{SERVER_ADDR}","%{SERVER_ADMIN}","%{SERVER_NAME}","%{SERVER_PORT}",
+        "%{SERVER_PROTOCOL}","%{SERVER_SOFTWARE}","%{TIME_YEAR}","%{TIME_MON}","%{TIME_DAY}","%{TIME_HOUR}",
+        "%{TIME_MIN}","%{TIME_SEC}","%{TIME_WDAY}","%{TIME}","%{API_VERSION}","%{CONN_REMOTE_ADDR}","%{HTTPS}",
+        "%{IS_SUBREQ}","%{REMOTE_ADDR}","%{REQUEST_FILENAME}","%{REQUEST_SCHEME}","%{REQUEST_URI}","%{THE_REQUEST}"
+    ];
+
+    var flag_list = [
+        {"code": "B","description": "{% trans "Escape non alphanumeric char before transformation" %}"},
+        {"code": "C","description": "{% trans " Chain with the following rule" %}"},
+        {"code": "CO=NAME:VAL","description": "{% trans " Define a cookie" %}"},
+        {"code": "DPI","description": "{% trans "Discard Path" %}"},
+        {"code": "END","description": "{% trans "Stop the rewriting process and ignores further .htacess rules" %}"},
+        {"code": "E=[!]VAR[:VAL]","description": "{% trans "Set or unset (!) the environment variable VAR" %}"},
+        {"code": "F","description": "{% trans "Send a 403 Forbidden" %}"},
+        {"code": "G","description": "{% trans "Send a 410 Gone" %}"},
+        {"code": "H","description": "{% trans "Send URI to the content Handler" %}"},
+        {"code": "L","description": "{% trans "Stop the rewriting process but still allow .htaccess rules" %}"},
+        {"code": "N","description": "{% trans "Re-execute the rewriting process using the rules results" %}"},
+        {"code": "NC","description": "{% trans "Rule is case insensitive" %}"},
+        {"code": "NE","description": "{% trans "Do not hexadecimal escape special chars in the rewriting result" %}"},
+        {"code": "NS","description": "{% trans "Ignore this rule if the request is an internal subrequest" %}"},
+        {"code": "P","description": "{% trans "Send the resulting URI to mod_proxy" %}"},
+        {"code": "PT","description": "{% trans "Send the resulting URI to the URI to File translator (alias,redirect...)" %}"},
+        {"code": "QSA","description": "{% trans "Add query string in the resulting URI" %}"},
+        {"code": "QSD","description": "{% trans "Remove query string from the resulting URI" %}"},
+        {"code": "R[=code]","description": "{% trans "Send a HTTP 'code' redirect " %}"},
+        {"code": "S=number","description": "{% trans "Ignore the folowing number of rules" %}"},
+        {"code": "T=MIME-type","description": "{% trans "Set the mime-type of the response" %}"}
+    ];
+
+    function imAutocompleteJSONParse(data) {
+        var rows = [];
+        var rowData = null;
+        var dataLength = data.length;
+        for (var i = 0; i < dataLength; i++) {
+            rowData = data[i];
+            rows[i] = {
+                label: rowData.description,
+                value: rowData.code
+            };
+        }
+        return rows;
+    }
+
+    function AddRule(p, r, f){
+
+        p = typeof p !== 'object' ? p : '^/(.*)$';
+        r = typeof r !== 'undefined' ? r : '/demo/$1';
+        f = typeof f !== 'undefined' ? f : 'R';
+
+
+        if (f != "COND") {
+            $("#tblData").append(
+                "<tr>"+
+                "<td></td>"+
+                "<td>{% trans "Replace pattern" %}</td>"+
+                "<td class='col-sm-2'><input type='text' class='form-control rule_pattern' name='pattern_" + id + "' value='"+p+"'/></td>"+
+                "<td>{% trans "by" %}</td>"+
+                "<td class='col-sm-2'><input type='text' class='form-control replacement' name='replacement_" + id + "' value='"+r+"'/></td>"+
+                "<td>{% trans "using flags" %}</td>"+
+                "<td class='col-sm-2'><input type='text' class='form-control flags_" + id + "' name='flags_" + id + "' value='"+f+"'/></td>"+
+                "<td><a class='btnDelete'><i class='fa fa-trash-o'></i></a></td>"+
+                "</tr>"
+            );
+        }
+        else {
+
+            p = typeof p !== 'object' ? p : 'test';
+            r = typeof r !== 'undefined' ? r : 'expression';
+
+            $("#tblData").append(
+                "<tr>"+
+                "<td>{% trans "If the string" %}</td>"+
+                "<td class='col-sm-2'><input type='text' class='form-control rule_pattern' name='pattern_" + id + "' value='"+p+"'/></td>"+
+                "<td>{% trans "satisfies " %}</td>"+
+                "<td class='col-sm-2' colspan='2'><input type='text' class='form-control replacement' name='replacement_" + id + "' value='"+r+"'/></td>"+
+                "<td><a class='btnDelete'><i class='fa fa-trash-o'></i></a></td>"+
+                "<td><input type='hidden' class='form-control' name='flags_" + id + "' value='"+f+"'/></td>"+
+                "<td></td>"+
+                "</tr>"
+            );
+        }
+
+        $(".btnDelete").css('cursor', 'pointer');
+        $(".btnDelete").bind("click", Delete);
+        $(".form-control").css('font-size', '10px');
+
+        $(".flags_"+id).tagEditor({
+            autocomplete: {
+                delay: 0, // show suggestions immediately
+                position: { collision: 'flip' }, // automatic menu position up/down
+                source: function(request, response) {
+                    var rows = imAutocompleteJSONParse(flag_list);
+                    return response(rows);
+                },
+            },
+            delimiter: ',',
+            forceLowercase: false,
+        });
+
+        id++;
+        $("#tblData").tableDnD();
+    };
+
+    function AddCond(){
+
+        $("#tblData").append(
+        "<tr>"+
+        "<td>{% trans "If the string" %}</td>"+
+        "<td class='col-sm-2'><input type='text' class='form-control rule_pattern' name='pattern_" + id + "'/></td>"+
+        "<td>{% trans "satisfies " %}</td>"+
+        "<td class='col-sm-2' colspan='2'><input type='text' class='form-control replacement' name='replacement_" + id + "'/></td>"+
+        "<td><a class='btnDelete'><i class='fa fa-trash-o'></i></a></td>"+
+        "<td><input type='hidden' class='form-control flags_" + id + "' name='flags_" + id + "' value='COND'/></td>"+
+        "<td></td>"+
+        "</tr>"
+        );
+
+        $(".btnDelete").css('cursor', 'pointer');
+        $(".btnDelete").bind("click", Delete);
+        $(".form-control").css('font-size', '10px');
+        $(".rule_pattern").autocomplete({
+            source: variable_list
+        });
+
+        id++;
+        $("#tblData").tableDnD();
+    };
+
+
+    function Delete(){
+        var par = $(this).parent().parent(); //tr
+        par.remove();
+    };
+
+    //Add, Save, Edit and Delete functions code
+    $(".btnDelete").bind("click", Delete);
+    $("#btnAddRule").bind("click", AddRule);
+    $("#btnAddCond").bind("click", AddCond);
+    $(".form-control").css('font-size', '10px');
+
+    $('#id_application').select2();
+
+    function advanced_mode(e){
+        if ($("input[name=is_template]").is(':checked'))
+            $('.tpl-group').hide();
+        else
+            $('.tpl-group').show();
+    }
+
+    $('input[name=is_template]').on('change', advanced_mode);
+    $('input[name=is_template]').trigger('change');
+
+{% endblock %}

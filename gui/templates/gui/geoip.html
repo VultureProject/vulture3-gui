@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-task"></i>&nbsp;{% trans "SVM View" %} - {{dataset.name}}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+
+        <div class="x_panel">
+            <div class="x_title">
+                <label>{% trans "Real time :" %}</label>
+                <img id="wait_ajax" src="{% static 'img/ajax_wait.svg' %}"/>
+                <div class="">
+                    <label>
+                        <input type="checkbox" class="js-switch" id="real_time"/>
+                    </label>
+                </div>
+            </div>
+            <div class="x_content">
+                <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                  <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                    <li role="presentation" class=""><a href="/svm/{{dataset.id}}/charts">{% trans "Graph" %}</a>
+                    </li>
+                    <li role="presentation" class=""><a href="#">{% trans "Map" %}</a>
+                    </li>
+                  </ul>
+                </div>
+                <input type="hidden" id="svm" value="geoip"/>
+                <input type="hidden" name="dataset_id" id="dataset_id" value="{{dataset.id}}"/>
+                <div id="chart3" class="handle-resize" align="center" style="height:600px"></div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+    
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static "js/echarts-all.js" %}"></script>
+    <script src="{% static "js/svm.js" %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+    
+{% endblock %}

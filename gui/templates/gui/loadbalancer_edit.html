@@ -1,0 +1,437 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form id="loadbalancer_edit_form" class="form-horizontal bootstrap-validator-form" action="/network/loadbalancer/edit/{{form.initial.id}}" method="post" novalidate="novalidate">
+            {% csrf_token %}
+            <div class="x_panel">
+                  <div class="x_title">
+                    <h2><i class="fa fa-exchange"></i>&nbsp;&nbsp;{% trans "Loadbalancer Edit" %}&nbsp;&nbsp;<label class="label label-warning"><i class="fa fa-warning">&nbsp;&nbsp;</i>{% trans "Don't forget to adapt the Packet Filter configuration on each Node" %}</label> -> <a target="_blank" href="/services/pf/">Packet filter</a></h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                        <li><a href="/network/loadbalancer/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                        <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                    <input type="hidden" name="backends" id="backends"/>
+                    <div class="" role="tabpanel" data-example-id="togglable-tabs">
+                        <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+                            <li role="presentation" class="active"><a href="#tab_content1" id="global-tab" role="tab" data-toggle="tab" aria-expanded="true">{% trans "Global" %}</a></li>
+                            <li role="presentation" class=""><a href="#tab_content2" role="tab" id="perf-tab" data-toggle="tab" aria-expanded="false">{% trans "Performances" %}</a></li>
+                            <li role="presentation" class=""><a href="#tab_content3" role="tab" id="backends-tab" data-toggle="tab" aria-expanded="false">{% trans "Backends" %}</a></li>
+                            <li role="presentation" class=""><a href="#tab_content4" role="tab" id="advanced-tab" data-toggle="tab" aria-expanded="false">{% trans "Advanced configuration" %}</a></li>
+                        </ul>
+                        <div id="myTabContent" class="tab-content">
+                            <div role="tabpanel" class="tab-pane fade active in" id="tab_content1" aria-labelledby="home-tab">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "Name" %}</label>
+                                    <div class="col-md-5">
+                                        {{form.name}}
+                                        {{form.name.errors}}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "HTTP Mode" %}</label>
+                                    <div class="col-md-5">
+                                        {{form.http_mode}}
+                                        {{form.http_mode.errors}}
+                                    </div>
+                                </div>
+
+                                <div class="form-group http-group">
+                                    <label class="col-md-4 control-label">{% trans "Enable TLS" %}</label>
+                                    <div class="col-md-5">
+                                        {{form.enable_tls}}
+                                        {{form.enable_tls.errors}}
+                                    </div>
+                                </div>
+
+                                <div class="form-group http-group">
+                                    <label class="col-md-4 control-label">{% trans "Keep Alive" %}</label>
+                                    <div class="col-md-5">
+                                        {{form.http_keepalive}}
+                                        {{form.http_keepalive.errors}}
+                                    </div>
+                                </div>
+
+                                <div class="form-group http-group">
+                                    <label class="col-md-4 control-label">{% trans "Sticky session" %}</label>
+                                    <div class="col-md-5">
+                                        {{form.http_sticky_session}}
+                                        {{form.http_sticky_session.errors}}
+                                    </div>
+                                </div>
+
+                                <div class="form-group  tls-group">
+                                    <label class="col-md-4 control-label">{% trans "SSL Profile to use" %}</label>
+                                    <div class="col-md-5">
+                                        {{ form.ssl_profile }}
+                                        {{ form.ssl_profile.errors }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "Incoming listener" %}</label>
+                                    <div class="col-md-5">
+                                        <select id='id_incoming_listener' class="form-control select2" name="incoming_listener">
+                                            {% for listener in listeners %}
+                                                {% if listener.inet.is_carp %}
+                                                    <option {% if loadbalancer.incoming_listener == listener.inet %} selected="selected" {% endif %} value="{{listener.inet.id}}">
+                                                        {{ listener.inet.alias }} {% for intf in listener.intf %}{{intf.get_related_node.name}}/{{ listener.inet.ip }}&nbsp;&nbsp;{% endfor %}
+                                                    </option>
+                                                {% else %}
+                                                    <option {% if loadbalancer.incoming_listener == listener.inet %} selected="selected" {% endif %} value="{{listener.inet.id}}">
+                                                        {{listener.node.name}}/{{listener.inet.ip}}
+                                                    </option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "Incoming Port" %}</label>
+                                    <div class="col-md-5">
+                                        {{ form.incoming_port }}
+                                        {{ form.incoming_port.error }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "Balancing mode" %}</label>
+                                    <div class="col-md-5">
+                                        {{ form.balance }}
+                                        {{ form.balance.error }}
+                                    </div>
+                                </div>
+                                <div id="balancing_param" class="form-group">
+                                    <label id="balancing_param_label" class="col-md-4 control-label">{% trans "Balancing parameter" %}</label>
+                                    <div class="col-md-5">
+                                        {{ form.balancing_param }}
+                                        {{ form.balancing_param.error }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="tab_content2" aria-labelledby="home-tab">
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "Timeout connect" %}</label>
+                                    <div class="col-md-5">
+                                        {{ form.timeout_connect }}
+                                        {{ form.timeout_connect.error }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "Timeout server" %}</label>
+                                    <div class="col-md-5">
+                                        {{ form.timeout_server }}
+                                        {{ form.timeout_server.error }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "Timeout client" %}</label>
+                                    <div class="col-md-5">
+                                        {{ form.timeout_client }}
+                                        {{ form.timeout_client.error }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "Timeout tunnel (in seconds)" %}</label>
+                                    <div class="col-md-5">
+                                        {{ form.timeout_tunnel }}
+                                        {{ form.timeout_tunnel.error }}
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "Timeout client-fin (in seconds)" %}</label>
+                                    <div class="col-md-5">
+                                        {{ form.timeout_client_fin }}
+                                        {{ form.timeout_client_fin.error }}
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label class="col-md-4 control-label">{% trans "Max connections" %}</label>
+                                    <div class="col-md-5">
+                                        {{ form.maxconn }}
+                                        {{ form.maxconn.error }}
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div role="tabpanel" class="tab-pane" id="tab_content3" aria-labelledby="home-tab">
+                                <div class="col-sm-12">
+                                    <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="table_target_haproxy">
+                                        <thead>
+                                            <tr>
+                                                <th>{% trans "Host" %}</th>
+                                                <th>{% trans "IP" %}</th>
+                                                <th>{% trans "Port" %}</th>
+                                                <th>{% trans "Weight" %}</th>
+                                                <th>{% trans "TLS" %}</th>
+                                                <th class="tcp-group">{% trans "Send client ip" %}</th>
+                                                <th>{% trans "Action" %}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                      
+                                        </tbody>
+                                    </table>
+                                    <div class="add-group">
+                                        <a class="addlink addplus" id="btnAddHaproxyTarget" href="#">{% trans "Add an Entry" %} </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div role="tabpanel" class="tab-pane" id="tab_content4" aria-labelledby="home-tab">
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label class="col-md-4 control-label">{% trans "Listen configuration" %}</label>
+                                        <div class="col-md-5">
+                                            {{ form.listen_conf }}
+                                            {{ form.listen_conf.error }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal fade " id="myModal" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" >
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Configuration error</h4>
+                </div>
+                <div class="modal-body">
+                    {% if form.errors %}
+                        <ul>
+                            {% for field, errors in form.errors.items %}
+                                <li><b>{{ field|title }}</b>: {{ errors }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+    {% if form.errors %}
+        $('#myModal').modal('show');
+    {% endif %}
+    
+    if(typeof(String.prototype.trim) === "undefined"){
+        String.prototype.trim = function(){
+            return String(this).replace(/^\s+|\s+$/g, '');
+        };
+    }
+
+    String.format = function() {
+        var theString = arguments[0];
+        for (var i = 1; i < arguments.length; i++) {
+            var regEx = new RegExp("\\{" + (i - 1) + "\\}", "gm");
+            theString = theString.replace(regEx, arguments[i]);
+        }
+        
+        return theString;
+    }
+
+    $('#id_incoming_listener').select2({
+        placeholder: "{% trans "Select Incoming Listener" %}",
+    });
+
+    /* Show balancing_params depending on balancing_mode chosen */
+    var is_last_mode_cookie=false;
+    function toggle_balancing_mode() {
+      var balancing_mode = $('#id_balance').val();
+      if( balancing_mode === "url_param" )
+        $('#balancing_param_label').html("Balancing parameter (URL parameter)");
+      if( balancing_mode === "hdr" )
+        $('#balancing_param_label').html("Balancing parameter (Header)");
+      if( balancing_mode === "rdp-cookie" ) {
+        $('#balancing_param_label').html("Balancing parameter (Cookie)");
+        $('#id_balancing_param').val("mstshash");
+        is_last_mode_cookie = true;
+      } else if( is_last_mode_cookie ) {
+        is_last_mode_cookie = false;
+        $('#id_balancing_param').val("");
+      }
+      if( ["url_param", "hdr", "rdp-cookie"].indexOf(balancing_mode) != -1 ) {
+        $('#balancing_param').show();
+      } else {
+        $('#balancing_param').hide();
+      }
+    }
+    $('#id_balance').on('change', toggle_balancing_mode);
+    toggle_balancing_mode();
+
+
+    $('#loadbalancer_edit_form').on('submit', function(e){
+        var backends = [];
+        var ports    = [];
+
+        $('#table_target_haproxy tbody tr').each(function(){
+            var inputs = $(this).find('input');
+
+            if (ports.length === 0){
+                ports.push($(inputs[2]).val())
+            } else {
+                if (ports.indexOf($(inputs[2]).val()) === -1){
+                    PNotify.removeAll();
+                    new PNotify({
+                        title  : 'Error',
+                        text   : "Ports of each backends must be the same",
+                        type   : 'error',
+                        styling: 'bootstrap3',
+                    });
+
+                    $('#backends-tab').click();
+                    e.preventDefault();
+                    return false;
+                }
+            }
+
+
+            if ($(inputs[4]).is(':checked'))
+                var tls = "on";
+            else
+                var tls = "off";
+            if ($(inputs[5]).is(':checked'))
+                var send_proxy = "on";
+            else
+                var send_proxy = "off";
+
+            backends.push({
+                host  : $(inputs[0]).val(),
+                ip    : $(inputs[1]).val(),
+                port  : $(inputs[2]).val(),
+                weight: $(inputs[3]).val(),
+                tls   : tls,
+                send_proxy   : send_proxy
+            });
+        });
+        $('#backends').val(JSON.stringify(backends));
+        return true;
+    })
+
+    var i = 0;
+    var input_host_target   = "<input type='text' class='host_target_haproxy form-control' value='{0}'/>"
+    var input_ip_target     = "<input type='text' class='ip_target_haproxy form-control' value='{0}'/>"
+    var input_port_target   = "<input type='number' class='port_target_haproxy form-control' value='{0}'/>"
+    var input_weight_target = "<input type='number' class='weight_target_haproxy form-control' value='{0}'/>"
+    var input_tls_target    = "<input type='checkbox' class='tls_target_haproxy form-control' {0} />"
+    var input_send_proxy_target    = "<input type='checkbox' class='send_proxy_target_haproxy form-control' {0} />"
+    var input_delete        = "<a href='#' class='action_button delete_row'><i class='fa fa-trash-o'></i></a>"
+
+    $('#btnAddHaproxyTarget').on('click', addHAProxyTarget);
+    function addHAProxyTarget(e, host, ip, port, weight, tls, send_proxy){
+
+        if (host === undefined)
+            host = ""
+        if (ip === undefined)
+            ip = ""
+        if (port === undefined)
+            port = ""
+        if (weight === undefined)
+            weight = ""
+        if (tls === undefined)
+            tls = ""
+        else if (tls == "on")
+            tls='checked="checked"'
+        if (send_proxy === undefined)
+            send_proxy = ""
+        else if (send_proxy === true)
+            send_proxy='checked="checked"'
+
+        var td = String.format("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td class=\"tcp-group\">{5}</td><td>{6}</td></tr>",
+                               String.format(input_host_target, host),
+                               String.format(input_ip_target, ip),
+                               String.format(input_port_target, port),
+                               String.format(input_weight_target, weight),
+                               String.format(input_tls_target, tls),
+                               String.format(input_send_proxy_target, send_proxy),
+                               input_delete);
+        $('#table_target_haproxy tbody').append(td);
+        i++;
+
+        $('.delete_row').unbind('click');
+        $('.delete_row').on('click', function(){
+            var tr = $(this).parents('tr');
+            $(tr).remove()
+        })
+    }
+    var haproxy_backends = JSON.parse('{{ backends|safe }}');
+    for (var i in haproxy_backends)
+        addHAProxyTarget(null, haproxy_backends[i].host, haproxy_backends[i].ip, haproxy_backends[i].port, haproxy_backends[i].weight, haproxy_backends[i].tls, haproxy_backends[i].send_proxy);
+
+    // Handle HTTP MODE
+    $("#id_http_mode").bind("change", toggleMode);
+    $("#id_http_mode").trigger("change");
+    function toggleMode() {
+        var auth=$(this);
+        if (auth.prop('checked')) {
+            $(".http-group").show();
+            $(".tcp-group").hide();
+            $('.tls_target_haproxy').prop('disabled', false);
+        }
+        else {
+            if ($('#id_enable_tls').prop('checked'))
+                $('#id_enable_tls').click();
+
+            if ($('#id_http_keepalive').prop('checked'))
+                $('#id_http_keepalive').click();
+
+            $('.tls_target_haproxy').prop('checked', false);
+            $('.tls_target_haproxy').prop('disabled', true);
+            $(".http-group").hide();
+            $(".tcp-group").show();
+        }
+    }
+
+    //Handle TLS MODE
+    $("#id_enable_tls").bind("change", toggleMode2);
+    $("#id_enable_tls").trigger("change");
+    function toggleMode2() {
+        var auth=$(this);
+        if (auth.prop('checked')) {
+            $(".tls-group").show();
+        }
+        else {
+            $(".tls-group").hide();
+        }
+    }
+
+{% endblock %}

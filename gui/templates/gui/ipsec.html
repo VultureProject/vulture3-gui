@@ -1,0 +1,309 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load tags_utils %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<form class="form-horizontal bootstrap-validator-form" action="/services/ipsec/{% if object_id %}{{object_id}}{% endif %}" id="ipsec_form" method="post" novalidate="novalidate">
+			{% csrf_token %}
+			<div class="x_panel">
+	          <div class="x_title">
+	            <h2><i class="fa fa-desktop"></i>&nbsp;{% trans "Vulture Service Settings" %}</h2>
+	            <ul class="nav navbar-right panel_toolbox">
+	            	<li><a href="/services/ipsec/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+	                <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+	            </ul>
+	            <div class="clearfix"></div>
+	          </div>
+	          <div class="x_content">
+	            <div class="" role="tabpanel" data-example-id="togglable-tabs">
+	              <ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+	                <li role="presentation" class=""><a href="/services/global/">{% trans "Settings panel" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="/services/dns/">{% trans "DNS" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="/services/ntp/">{% trans "NTP" %}</a>
+	                </li>
+	                <li role="presentation" class=""><a href="/services/smtp/">{% trans "SMTP" %}</a>
+	                </li>
+                    <li role="presentation" class=""><a href="/services/ssh/">{% trans "SSH" %}</a>
+                    </li>
+                    <li role="presentation" class="active"><a href="/services/ipsec/">{% trans "IPSEC" %}</a>
+                    </li>
+	              </ul>
+	            </div>
+
+                    <fieldset class="col-sm-5">
+                    <legend>{% trans "IPSEC Configuration" %}</legend>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label"> {% trans "Configure IPSEC Settings of" %}</label>
+                        <div class="col-sm-5">
+                            <select id="cluster_select" class="has-popover form-control" style="margin-top:5px;">
+                                <option value="">Vulture cluster</option>
+                                {% for node in cluster.members %}
+                                    <option value="{{ node.id }}">{{ node.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group hidenotselected">
+                        <label class="col-sm-4 control-label"> {% trans "Enable IPSEC on this node" %}</label>
+                        <div class="col-sm-5">
+                        <label>
+                            {{form.enabled}}
+                            {{form.enabled.errors}}
+                        </label>
+                        </div>
+                    </div>
+                    </fieldset>
+
+                    <div class="col-sm-7">
+                    <legend>{% trans "IPSEC Status" %}</legend>
+                    <div  class="col-sm-12"><p><b>
+                    {% for nodename, status in ipsec_status.items %}
+
+                        {% if status == 'UP' %}
+                        <img src="{% static "img/status_green.png" %}" class="img_responsive" />
+                        {% trans "IPSEC service is running and all tunnels are 'up' on node " %} {{ nodename }}
+                        {% elif status == 'WARNING' %}
+                        <img src="{% static "img/status_orange.png" %}" class="img_responsive" />
+                        {% trans "IPSEC service is running but some tunnels are 'down' on node " %} {{ nodename }}
+                        {% elif status == 'ERROR' %}
+                        <img src="{% static "img/status_red.png" %}" class="img_responsive" />
+                        {% trans "Non-existing or invalid Strongswan configuration on node " %} {{ nodename }}
+                        {% else %}
+                        <img src="{% static "img/status_grey.png" %}" class="img_responsive" />
+                        {% trans "IPSEC service is not running on node " %} {{ nodename }}
+                        {% endif %}
+                        <br />
+                    {% endfor %}
+                    </b></p>
+                    </div>
+
+                </div>
+               <div class="form-group hidenotselected col-sm-12">
+                   <legend>{% trans "Security Associations" %}</legend>
+                    <p class="col-sm-3">&nbsp;</p>
+                    <p class="col-sm-9">{{ ipsec_sa | safe }}</p>
+               </div>
+                <fieldset class="col-sm-12 hidenotselected" >
+                    <legend>{% trans "IPSEC Settings" %}</legend>
+                    <div class="form-group hidenotselected">
+                        <label class="col-sm-4 control-label">{% trans "IPSEC type" %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_type}}
+                            {{form.ipsec_type.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group hidenotselected">
+                        <label class="col-sm-4 control-label">{% trans "Key Exchange" %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_keyexchange}}
+                            {{form.ipsec_keyexchange.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group hidenotselected hideikelifetime">
+                            <label class="col-sm-4 control-label">{% trans "Allow IKE fragmentation" %}</label>
+                            <div class="col-sm-5">
+                                {{form.ipsec_fragmentation}}
+                                {{form.ipsec_fragmentation.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group hidenotselected hideikelifetime">
+                            <label class="col-sm-4 control-label">{% trans "Force UDP encapsulation for ESP packets even if no NAT situation is detected" %}</label>
+                            <div class="col-sm-5">
+                                {{form.ipsec_forceencaps}}
+                                {{form.ipsec_forceencaps.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group hidenotselected">
+                        <label class="col-sm-4 control-label">{% trans "IKE Algorithm" %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_ike}}
+                            {{form.ipsec_ike.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group hidenotselected">
+                        <label class="col-sm-4 control-label">{% trans "ESP Algorithms" %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_esp}}
+                            {{form.ipsec_esp.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group hidenotselected">
+                        <label class="col-sm-4 control-label">{% trans "IP address of the remote IPSEC Gateway (right)" %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_right}}
+                            {{form.ipsec_right.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group hidenotselected">
+                        <label class="col-sm-4 control-label">{% trans "IP address of the vulture Endpoint (leftsubnet)" %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_leftsubnet}}
+                            {{form.ipsec_leftsubnet.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group hidenotselected">
+                        <label class="col-sm-4 control-label">{% trans "ID of the vulture Endpoint (leftid)" %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_leftid}}
+                            {{form.ipsec_leftid.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group hidenotselected">
+                        <label class="col-sm-4 control-label">{% trans "List of comma-separated subnets behind the remote gateway" %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_rightsubnet}}
+                            {{form.ipsec_rightsubnet.errors}}
+                        </div>
+                    </div>
+                </fieldset>
+
+
+                <fieldset class="col-sm-12 hidenotselected" >
+                    <legend>{% trans "Authentication Settings" %}</legend>
+                    <div class="form-group hidenotselected">
+                        <label class="col-sm-4 control-label">{% trans "Authentication mode" %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_authby}}
+                            {{form.ipsec_authby.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group hidenotselected hidesecret">
+                        <label class="col-sm-4 control-label">{% trans "Private Secret Key (PSK)" %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_psk}}
+                            {{form.ipsec_psk.errors}}
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset class="col-sm-12 hidenotselected" >
+                    <legend>{% trans "Advanced settings" %}</legend>
+
+                    <div class="form-group hidenotselected hideikelifetime">
+                        <label class="col-sm-4 control-label">{% trans "How long the keying channel of a connection (ISAKMP or IKE SA) should last before being renegotiated." %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_ikelifetime}}
+                            {{form.ipsec_ikelifetime.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group hidenotselected hideikelifetime">
+                        <label class="col-sm-4 control-label">{% trans "Lifetime of a connection from successful negotiation to expiry" %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_keylife}}
+                            {{form.ipsec_keylife.errors}}
+                        </div>
+                    </div>
+                     <div class="form-group hidenotselected">
+                        <label class="col-sm-4 control-label">{% trans "Renegotiate connection when it is about to expire" %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_rekey}}
+                            {{form.ipsec_rekey.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group hidenotselected">
+                        <label class="col-sm-4 control-label">{% trans "Dead Peer Detection Action" %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_dpdaction}}
+                            {{form.ipsec_dpdaction.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group hidenotselected hidedpd">
+                        <label class="col-sm-4 control-label">{% trans "Dead Peer Detection Delay" %}</label>
+                        <div class="col-sm-5">
+                            {{form.ipsec_dpddelay}}
+                            {{form.ipsec_dpddelay.errors}}
+                        </div>
+                    </div>
+
+
+                </fieldset>
+	          </div>
+	        </div>
+	    </form>
+	</div>
+
+	
+{% endblock %}
+
+{% block css_include %}
+
+{% endblock %}
+
+{% block js_include %}
+
+{% endblock %}
+
+{% block jquery_code %}
+
+
+    $('#id_ipsec_authby').bind("change", updateFieldsAuthBy);
+    $('#id_ipsec_dpdaction').bind("change", updateFieldsDPD);
+    $('#ipsec_keyexchange').bind("change", updateFieldsKeyExchange);
+
+    function updateFieldsAuthBy () {
+        var v=$(this).val();
+        if (v=="secret") {
+            $('.hidesecret').show();
+        }
+        else {
+            $('.hidesecret').hide();
+        }
+    }
+    function updateFieldsDPD () {
+        var v=$(this).val();
+        if (v && v!="none") {
+            $('.hidedpd').show();
+        }
+        else {
+            $('.hidedpd').hide();
+        }
+    }
+    function updateFieldsKeyExchange () {
+        var v=$(this).val();
+        if (v && v=="ikev2") {
+            $('.hideikelifetime').show();
+        }
+        else {
+            $('.hideikelifetime').hide();
+            $('.hidedpd').hide();
+            $('.hideikelifetime').hide();
+        }
+    }
+
+
+    $('.link-tab').click(function(){
+      window.location.href = ($(this).attr('href'));
+    });
+
+    $('#cluster_select').bind("change", selectNode);
+    function selectNode () {
+        var id=$(this).val();
+        document.location.href= '/services/ipsec/' + id;
+    }
+
+    $('#id_ipsec_dpdaction').trigger('change');
+    $('#ipsec_keyexchange').trigger('change');
+    $('#id_ipsec_authby').trigger('change');
+
+
+    /* Select current edited Node */
+    {% if object_id %}
+        $('#cluster_select option[value={{ object_id }}]').prop('selected', true);
+        $('.hidenotselected').show();
+
+    {% else %}
+        $('.hidenotselected').hide();
+        $('.hideikelifetime').hide();
+        $('.hidedpd').hide();
+        $('.hideikelifetime').hide();
+    {%  endif %}
+
+
+{% endblock %}

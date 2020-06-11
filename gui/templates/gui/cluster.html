@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-desktop"></i>&nbsp;{% trans "Nodes" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="node_list">
+            <thead>
+                <tr>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Engine Version" %}</th>
+                    <th>{% trans "GUI Version" %}</th>
+                    <th>{% trans "Member of MongoDB ReplicatSet" %}</th>
+                    <th>{% trans "Member of Redis Cluster" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for node in node_list %}
+                    <tr id="{{ node.id }}">
+                        <td> {{node.name}} {% if node.is_dead %}{% trans "(Warning: Node is dead)" %}{% endif %}</td>
+                        {% if node.temporary_key %}
+                            <td>
+                                <span><i class="fa fa-warning"></i></span>
+                                {% trans "Pending... Temporary Key is: " %} <b>{{ node.temporary_key }}</b>
+                            </td>
+                            <td>
+                                <span><i class="fa fa-warning"></i></span>
+                                {% trans "Pending... Temporary Key is: " %} <b>{{ node.temporary_key }}</b>
+                            </td>
+                        {% else %}
+                            <td>{{ node.engine_version }}</td><td>{{ node.gui_version }}</td>
+                        {% endif %}
+
+                        <td>
+                            {% if node.member_of_replicaset %}{% trans "Yes" %} ({{ node.status }}){% else %}{% trans "No" %}{% endif %}&nbsp;&nbsp;
+                            {% if node.status == "SECONDARY" %}
+                                <a class="action_button"  href="/cluster/manage/promote/{{node.id}}"><span><i class="fa fa-asterisk" title="{% trans "Promote to PRIMARY" %}"></i></span></a></a>
+                            {% endif %}
+                            {% if node.member_of_replicaset and node.status != "PRIMARY"%}
+                                <a class="action_button"  href="/cluster/manage/remove/{{node.id}}"><span><i class="fa fa-ban" title="{% trans "Remove from replicaSet" %}"></i></span></a></a>
+                            {% endif %}
+                            {% if not node.member_of_replicaset and not node.status and not node.temporary_key %}
+                                <a class="action_button"  href="/cluster/manage/join/{{node.id}}"><span><i class="fa fa-plus-circle" title="{% trans "Add to replicaSet" %}"></i></span></a></a>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if node.member_of_redis_cluster %}{% trans "Yes" %} ({{ node.redis_status }}){% else %}{% trans "No" %}{% endif %}&nbsp;&nbsp;
+                            {% if "SLAVE" in node.redis_status %}
+                                <a class="action_button"  href="/cluster/manage/redis-promote/{{node.id}}"><span><i class="fa fa-asterisk" title="{% trans "Force Redis failover" %}"></i></span></a></a>
+                            {% endif %}
+                        </td>
+                        <td class="action">
+                            {% if node.status != "PRIMARY" and node.redis_status != "MASTER"%}
+                            <a class="action_button"  href="/cluster/manage/delete/{{node.id}}"><span><i class="fa fa-trash-o"></i></span></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor  %}
+            </tbody>
+        </table>
+        <div class="add-group">
+            <a class="addlink addplus" href="/cluster/manage/edit/">{% trans "Add an Entry" %} </a>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+    $('#node_list').DataTable({
+        "dom": "<p<'searchbox'f><t>>",
+        "autoWidth": false,
+        "language": {
+            "search": "",
+            "lengthMenu": '_MENU_',
+            "pagingType": "bootstrap",
+            "paginate": {
+                "next": '<img src="{% static 'img/right.png' %}"/>',
+                "previous": '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+        fnCreatedRow: function(nRow, aData){
+            $(nRow).on('click', function(){
+                var id = $(nRow).attr('id');
+                if (id)
+                    location.href = "/cluster/manage/edit/"+id;
+            })
+        }
+    });
+    
+{% endblock %}

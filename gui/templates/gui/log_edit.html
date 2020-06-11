@@ -1,0 +1,269 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form class="form-horizontal bootstrap-validator-form" action="/system/log/edit/{% if object_id %}{{object_id}}{% endif %}" method="post" novalidate="novalidate">
+            {% csrf_token %}
+            <div class="x_panel">
+              <div class="x_title">
+                <h2><i class="fa fa-cog"></i>&nbsp;{% trans "Log -> Edit" %}</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li><a href="/system/log/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                    <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">{% trans "Friendly name" %}</label>
+                        <div class="col-sm-5">
+                        {{form.name}}
+                        {{form.name.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                    <label class="col-sm-4 control-label">{% trans "Repository type " %}</label>
+                        <div class="col-sm-5">
+                        {{form.repository_type}}
+                        {{form.repository_type.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group file-repo">
+                        <label class="col-sm-4 control-label">{% trans "Bufferize before writing on disk" %}</label>
+                            <div class="col-sm-5">
+                                <div class="">
+                                    <label>
+                                        {{form.buffered}}
+                                        {{form.buffered.errors}}
+                                    </label>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Optional syslog repository" %}</label>
+                            <div class="col-sm-5">
+                            {{form.repository_syslog}}
+                            {{form.repository_syslog.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group file-repo">
+                        <label class="col-sm-4 control-label">{% trans "Log separator" %}</label>
+                            <div class="col-sm-5">
+                            {{form.separator}}
+                            {{form.separator.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group file-repo">
+                        <label class="col-sm-4 control-label">{% trans "Log Format" %}</label>
+                            <div class="col-sm-5">
+                            {{form.format}}
+                            {{form.format.errors}}
+                            </div>
+                    </div>
+                    <div class="form-group file-repo">
+                        <label class="col-sm-4 control-label">{% trans "Log Preview (with whitespace separator)" %}</label>
+                            <div class="col-sm-5">
+                            <div type="text" readonly id="response" ></div>
+                            </div>
+                    </div>
+                    <div class="form-group data-repo">
+                        <label class="col-sm-4 control-label">{% trans "Data repository" %}</label>
+                            <div class="col-sm-5">
+                            {{form.repository_choices}}
+                            {{form.repository_choices.errors}}
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block jquery_code  %}
+
+   /* Data Repo Authentication repo switch*/
+    repo_type = $("#id_repository_type").val();
+    if(repo_type == 'file'){
+        $('.file-repo').show();
+        $('.data-repo').hide();
+    }
+    else if(repo_type == 'data'){
+        $('.file-repo').hide();
+        $('.data-repo').show();
+    }
+
+
+    $("#id_repository_type").on("change", function(e){
+        repo_type = $("#id_repository_type").val();
+        if(repo_type == 'file'){
+            $('.file-repo').show();
+            $('.data-repo').hide();
+        }
+        else if(repo_type == 'data'){
+            $('.file-repo').hide();
+            $('.data-repo').show();
+        }
+    })
+
+    {% if form.instance.data_repository and form.instance.repository_type == "data" %}
+        $('#id_repository_choices option[value={{ form.instance.data_repository }}]').prop('selected', true);
+    {% endif %}
+    {% if form.instance.syslog_repository %}
+        $('#id_repository_syslog option[value={{ form.instance.syslog_repository }}]').prop('selected', true);
+    {% endif %}
+
+    $(document).ready(function() {
+    var myStuff = [
+        {"code": "%{COUNTRY_CODE}e",
+        "description": "{% trans "GEOIP - Country Code of source IP" %}"},
+        {"code": "%{CITY}e",
+        "description": "{% trans "GEOIP - City name of source IP" %}"},
+        {"code": "%{LATITUDE}e",
+        "description": "{% trans "GEOIP - Latitude of source IP" %}"},
+        {"code": "%{LONGITUDE}e",
+        "description": "{% trans "GEOIP - Longitude of source IP" %}"},
+        {"code": "%{REPUTATION}e",
+        "description": "{% trans "REPUTATION of source IP" %}"},
+        {"code": "%A",
+        "description": "{% trans "NETWORK - Local IP Address (%A)" %}"},
+        {"code": "%a",
+        "description": "{% trans "NETWORK - Remote IP Address (%a)" %}"},
+        {"code": "%h",
+        "description": "{% trans "NETWORK - Remote ServerName (%h)" %} "},
+         {"code": "%I",
+        "description": "{% trans "NETWORK - Request size, in bytes, including headers (%I)" %}"},
+        {"code": "%O",
+        "description": "{% trans "NETWORK - Response size, in bytes, including headers (%O)" %}"},
+        {"code": "%B",
+        "description": "{% trans "NETWORK - Response size, excluding headers, in bytes (%B)" %} "},
+        {"code": "%S",
+        "description": "{% trans "NETWORK - Response & Request sizes, in bytes, including headers (%S)" %}"},
+        {"code": "%p",
+        "description": "{% trans "NETWORK - Server TCP Port number (%p)" %} "},
+        {"code": "%m",
+        "description": "{% trans "HTTP REQUEST - Request method (%m)" %}"},
+        {"code": "%U",
+        "description": "{% trans "HTTP REQUEST - Request URI (%U)" %} "},
+        {"code": "%H",
+        "description": "{% trans "HTTP REQUEST - Request protocol (%H)" %}"},
+        {"code": "%r",
+        "description": "{% trans "HTTP REQUEST - First line of request (%r)" %} "},
+        {"code": "%{VAR}i",
+        "description": "{% trans "HTTP REQUEST - Value of the header 'VAR' (%{VAR}i)" %} "},
+        {"code": "%q",
+        "description": "{% trans "HTTP REQUEST - Value of the query String (%q)" %}"},
+        {"code": "%s",
+        "description": "{% trans "HTTP RESPONSE - Original status code (%s)" %}"},
+        {"code": "%>s",
+        "description": "{% trans "HTTP RESPONSE - Final status code (%>s)" %}"},
+        {"code": "%{VAR}C",
+        "description": "{% trans "HTTP RESPONSE - Value of the cookie 'VAR' (%{VAR}C)" %} "},
+        {"code": "%{VAR}o",
+        "description": "{% trans "HTTP RESPONSE - Value of the header 'VAR' (%{VAR}o)" %} "},
+        {"code": "%{VAR}e",
+        "description": "{% trans "PROCESS - Value of the environment variable 'VAR' (%{VAR}e)" %} "},
+        {"code": "%D",
+        "description": "{% trans "PROCESS - Time spent to serve the request, in microseconds (%D)" %}"},
+        {"code": "%T",
+        "description": "{% trans "PROCESS - Time spent to serve the request, in seconds (%T)" %}"},
+        {"code": "%f",
+        "description": "{% trans "PROCESS - File Name (%f)" %}"},
+        {"code": "%k",
+        "description": "{% trans "PROCESS - Number of active persistent requets for this connexion (%k)" %} "},
+        {"code": "%P",
+        "description": "{% trans "PROCESS - Apache process number (%P)" %}"},
+        {"code": "%{tid}P",
+        "description": "{% trans "PROCESS - Apache thread number (%{tid}P)" %}"},
+        {"code": "%{hextid}P",
+        "description": "{% trans "PROCESS - Apache hexadecimal thread number (%{hextid}P)" %}"},
+        {"code": "%t",
+        "description": "{% trans "PROCESS - Date of the event (%t)" %}"},
+        {"code": "%{format}t",
+        "description": "{% trans "PROCESS - strftime() formatted date of the event (%{format}t)" %} "},
+        {"code": "%u",
+        "description": "{% trans "PROCESS - Username (%u)" %} "},
+        {"code": "%l",
+        "description": "{% trans "PROCESS - Remote Ident (%l)" %} "},
+        {"code": "%v",
+        "description": "{% trans "PROCESS - Apache Servername (%v)" %}"},
+
+    ];
+
+
+    function imAutocompleteJSONParse(data) {
+        var rows = [];
+        var rowData = null;
+        var dataLength = data.length;
+        for (var i = 0; i < dataLength; i++) {
+            rowData = data[i];
+            rows[i] = {
+                label: rowData.description,
+                value: rowData.code
+            };
+        }
+        return rows;
+    }
+
+    function buildSample (txt) {
+        txt = txt.replace (/%h/, 'remote.user.lan');
+        txt = txt.replace (/%a/, '127.0.0.1');
+        txt = txt.replace (/%v/, 'MyServer');
+        txt = txt.replace (/%p/, '80');
+        txt = txt.replace (/%l/, 'ident');
+        txt = txt.replace (/%u/, 'Anonymous');
+        txt = txt.replace (/%t/, '[18/Nov/2014:17:01:09 +0100]');
+        txt = txt.replace (/%r/, '"GET /index.html HTTP/1.1"');
+        txt = txt.replace (/%>s/, '200');
+        txt = txt.replace (/%s/, '403');
+        txt = txt.replace (/%O/, '10169');
+        txt = txt.replace (/%I/, '110');
+        txt = txt.replace (/%S/, '10279');
+        txt = txt.replace (/%{Referer}i/, '"http://www.example.com/"');
+        txt = txt.replace (/%{User-Agent}i/, '"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.10; rv:34.0) Gecko/20100101 Firefox/34.0"');
+        txt = txt.replace (/%q/, 'foo=bar&bar=foo');
+        txt = txt.replace (/%f/, '/var/www/index.html');
+        return txt;
+
+    }
+
+
+    $("#id_format").tagEditor({
+        autocomplete: {
+            delay: 0, // show suggestions immediately
+            position: { collision: 'flip' }, // automatic menu position up/down
+            source: function(request, response) {
+                var rows = imAutocompleteJSONParse(myStuff);
+                return response(rows);
+            },
+        },
+        initialTags: [{{ modlog.get_tags|safe }}],
+        delimiter: ',',
+        forceLowercase: false,
+        placeholder: 'Enter the log format here ...',
+        onChange: function(field, editor, tags) {
+            txt = tags.join(' ')
+            txt = buildSample (txt);
+            $('#response').html(txt);
+        }
+    });
+
+    $( "#id_format" ).on( "change", function() {
+        txt = $( this ).val();
+        txt = txt.replace(/,/g,' ') ;
+        txt = buildSample (txt);
+        $('#response').html(txt);
+    });
+    $( "#id_format" ).trigger( "change" );
+
+});//]]>
+
+{% endblock %}
+

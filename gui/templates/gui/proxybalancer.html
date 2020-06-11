@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-globe"></i>&nbsp;{% trans "Proxy Balancers" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="proxybalancer_list">
+            <thead>
+                <tr>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Load-balancing algorithm" %}</th>
+                    <th>{% trans "Sticky Session" %}</th>
+                    <th>{% trans "Members" %}</th>
+                    <th>{% trans "Action" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for balancer in balancers %}
+                <tr id="{{ balancer.id }}">
+                    <td>{{ balancer.name }}</td>
+                    <td>{{ balancer.lbmethod }}</td>
+                    <td>{{ balancer.stickysession }}</td>
+                    <td>{{ balancer.memberList|safe }}</td>
+                    <td class="action">
+                        <a class="action_button" href="/network/proxybalancer/clone/{{balancer.id}}"><span><i class="fa fa-copy"></i></span></a>
+                        <a class="action_button"  href="/network/proxybalancer/delete/{{balancer.id}}"><span><i class="fa fa-trash-o"></i></span></a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="add-group">
+            <a class="addlink addplus" href="/network/proxybalancer/edit/">{% trans "Add an Entry" %} </a>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+
+    var intf_table = $('#proxybalancer_list').dataTable({
+        "dom": "<p<'searchbox'f><t>>",
+        "autoWidth": false,
+        "language": {
+            "search": "",
+            "lengthMenu": '_MENU_',
+            "pagingType": "bootstrap",
+            "paginate": {
+                "next": '<img src="{% static 'img/right.png' %}"/>',
+                "previous": '<img src="{% static 'img/left.png' %}"/>'
+            }
+        },
+        fnCreatedRow: function(nRow, aData){
+            $(nRow).on('click', function(){
+                var id = $(nRow).attr('id');
+                if (id)
+                    location.href = "/network/proxybalancer/edit/"+id;
+            })
+        }
+    });
+
+    if( window.location.hash === "#reload" ) {
+        new PNotify({
+            title: 'Success',
+            text: '<a style="color:white; text-decoration: underline;" href="/application/">Please reload the applications</a>',
+            type: 'success',
+            styling: 'bootstrap3',
+            buttons: {
+                closer: true,
+                sticker: false
+            }
+        });
+    }
+   
+{% endblock %}

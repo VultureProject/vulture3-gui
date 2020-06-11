@@ -1,0 +1,1 @@
+from gui.models.user_document import VultureUser

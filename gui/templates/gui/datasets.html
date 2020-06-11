@@ -1,0 +1,151 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-flask"></i>&nbsp;{% trans " Learning Dataset" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <p>{{ import_msg|safe }}</p>
+        <table class="table table-bordered table-striped table-hover table-heading table-datatable" id="rule_list">
+            <thead>
+                <tr>
+                    <th>{% trans "Name" %}</th>
+                    <th>{% trans "Number of lines" %}</th>
+                    <th>{% trans "Built" %}</th>
+                    <th>{% trans "SVM" %}</th>
+                    <th>{% trans "Actions" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dataset in datasets %}
+                    <tr id="{{ dataset.id }}">
+                        <td><b>{{dataset.name}}</b></td>
+                        {% if not dataset.built and dataset.error == "" %}
+                            <td>{% trans "Processing" %}</td>
+                        {% else %}
+                            <td>{{dataset.nb_logs}} {% trans "lines of logs" %}</td>
+                        {% endif %}
+                        {% if dataset.error != "" %}
+                            <td>{{dataset.error}}</td>
+                        {% else %}
+                            <td class="dataset_built" data-status="{{dataset.built}}" data-id='{{dataset.id}}' id="dataset_{{dataset.id}}">
+                                <span class="state">{% if dataset.built %} {{dataset.built}} {% elif dataset.error != "" %} {{dataset.error}} {% endif %}</span>
+                                <img class="wait_ajax_dataset" src="{% static 'img/ajax_wait.svg' %}" style='{% if dataset.built or dataset.error != "" %} display: none; {% endif %} width:20px; border: none;'/>
+                            </td>
+                        {% endif %}
+                        <td class='svm_built' data-status='{{dataset.svm_built}}' data-id="{{dataset.id}}" id='svm_{{ dataset.id }}'>
+                            <span class='state'>{% if dataset.svm_built %} {{dataset.svm_built}} {% else %} False {% endif %}</span>
+                            <img class='wait_ajax_dataset' src='{% static "img/ajax_wait.svg" %}' style='{% if dataset.svm_built != False %} display: none; {% endif %} width:20px; border:none;'/>
+                        </td>
+                        <td class="control">
+                            <a {% if not dataset.svm_built %} style="display:none" {% endif %} class="action_button" id="charts_{{dataset.id}}" title="Show Dataset" href="/svm/{{dataset.id}}/charts"><span><i class="fa fa-line-chart"></i></span></a>
+                            <a {% if not dataset.built or dataset.error != "" %} style="display:none" {% endif %} data-value="{{dataset.id}}/{{dataset.nb_logs}}" id="config_{{dataset.id}}" class="config_svm" id ="config_svm"><i class="fa fa-flash fa-flash-o"></i></a>
+                            <a class="action_button" id="pencil" title="Refine Dataset" href="/dataset/edit/{{dataset.id}}"><span><i class="fa fa-list fa-list-o"></i></span></a>
+                        <a class="action_button" id="trash" title="Delete Dataset" href="/dataset/delete/{{dataset.id}}"><span><i class="fa fa-trash-o"></i></span></a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% for set in datasets_learning %}
+                    <tr>
+                        <td><b>{{ set.phony }}</b></td>
+                        <td>{{ set.size }} {% trans "lines of logs" %}</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td class="control">
+                            <a class="action_button" id="flash" title="Generate WhiteList" onclick="generate_wl_req(this, '{{ set.name }}')"><i class="fa fa-flash fa-flash-o"></i></a>
+                            <a class="action_button" id="list" title="Browse Dataset" href="/dataset/edit_learning/{{ set.name }}"><i class="fa fa-list fa-list-o"></i></a>
+                            <a class="action_button" id="trash" title="Delete Dataset" onclick="del_set_req(this, '{{ set.name }}')"><span><i class="fa fa-trash-o"></i></span></a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal fade" id="modal_config_svm" role="dialog" aria-labelledby="myModalLabel" aria-hidden="false">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"><i class="fa fa-gear">&nbsp;&nbsp;</i>{% trans "SVM Configuration" %}</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id = "dataset_id" />
+                    Trafic evolution over day per user
+                    <input class="form-control" type="number" id="Req_per_min_per_user">
+                    Trafic evolution over day per IP
+                    <input class="form-control" type="number" id="Req_per_min_per_IP" >
+                    Data sent by user
+                    <input class="form-control" type="number" id="HTTP_code_bytes_sent" >
+                    Data received by server
+                    <input class="form-control" type="number" id="HTTP_code_bytes_received" >
+                    Request content analysis
+                    <input class="form-control" type="number" id="Levenstein">
+                    Ratio
+                    <input class="form-control" type="number" id="Ratio">
+                </div>
+                <div class="modal-footer">
+                    <div class="col-md-6">
+                        <div id="config_success" class="alert alert-success" role="alert">
+                            <p><i class="fa fa-check"></i>&nbsp;{% trans "Configuration saved." %}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn-cancel" data-dismiss="modal" type="button">{% trans "CANCEL"  %}</button>
+                        <button id="btn-save-config" class="btn-save" data-dismiss="modal" type="submit">{% trans "Build SVM" %}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+    <script src="{% static 'js/dataset.js' %}"></script>
+{% endblock %}
+
+{% block jquery_code  %}
+
+    generate_wl_req = function(el, dataset_collection_name) {
+        var i = $(el).find("i").first();
+        i.removeClass("fa-flash fa-flash-o").addClass("fa-spinner fa-spin");
+        $.get("/dataset/generate_wl/" + dataset_collection_name, function(data) {
+            i.addClass("fa-flash fa-flash-o").removeClass("fa-spinner fa-spin");
+            new PNotify({
+                title: 'Success',
+                text: '<a style="color: white; text-decoration: underline;" href="/firewall/modsec_rules/">Dataset successfully generated</a>',
+                type: 'success',
+                styling: 'bootstrap3',
+                buttons: {closer: true, sticker: false}
+            });
+        });
+    }
+
+    del_set_req = function(el, dataset_collection_name) {
+        var i = $(el).find("i").first();
+        i.removeClass("fa-trash-o").addClass("fa-spinner fa-spin");
+        $.get("/dataset/delete_learning/" + dataset_collection_name, function(data) {
+            i.addClass("fa-trash-o").removeClass("fa-spinner fa-spin");
+            location.reload();
+        });
+    }
+  
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <form id="cluster_edit_form" class="form-horizontal bootstrap-validator-form" action="/cluster/manage/edit/{% if object_id %}{{object_id}}{% endif %}" method="post" novalidate="novalidate">
+        {% csrf_token %}
+            <div class="x_panel">
+                  <div class="x_title">
+                    <h2><i class="fa fa-folder-open"></i>&nbsp;{% trans "Node configuration" %}</h2>
+                    <ul class="nav navbar-right panel_toolbox">
+                        <li><a href="/cluster/"><button class="btn-cancel" type="button">{% trans "CANCEL"  %}</button></a></li>
+                        <li><button id="save" class="btn-save" type="submit">{% trans "SAVE" %}</button></li>
+                    </ul>
+                    <div class="clearfix"></div>
+                  </div>
+                  <div class="x_content">
+                   <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Node name" %}</label>
+                        <div class="col-sm-5">
+                            {{node_form.name}}
+                            {{node_form.name.errors}}
+                        </div>
+                    </div>{% if object_id %}
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Default IPV4 Gateway" %}</label>
+                        <div class="col-sm-5">
+                            {{node_form.default_ipv4_gw}}
+                            {{node_form.default_ipv4_gw.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Default IPV6 Gateway" %}</label>
+                        <div class="col-sm-5">
+                            {{node_form.default_ipv6_gw}}
+                            {{node_form.default_ipv6_gw.errors}}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">{% trans "Static route" %}</label>
+                        <div class="col-sm-5">
+                            {{node_form.static_route}}
+                            {{node_form.static_route.errors}}
+                        </div>
+                    </div>
+                      {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+{% endblock %}
+
+{% block js_include %}
+{% endblock %}
+
+{% block jquery_code  %}
+
+{% endblock %}

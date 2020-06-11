@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block sidebar %}
+    {% include "sidebar.html" %}
+{% endblock %}
+
+{% block navleft %}
+    <li><h3><i class="fa fa-dashboard"></i>&nbsp;{% trans "Status / Network" %}</h3></li>
+{% endblock %}
+
+{% block content %}
+    
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12 network_chart" id="bytes_recv_chart"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12 network_chart" id="bytes_sent_chart"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12 network_chart" id="pf_state_entries"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12 network_chart" id="dropin_chart"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 col-sm-12 col-xs-12 network_chart" id="errin_chart"></div>
+        <div class="col-md-6 col-sm-12 col-xs-12 network_chart" id="errout_chart"></div>
+    </div>
+
+{% endblock %}
+
+{% block css_include %}
+    <link href="{% static 'css/daterangepicker-bs3.css' %}" rel="stylesheet">
+    <link href="{% static 'css/daterangepicker-vulture.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-bs/css/dataTables.bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'vendors/datatables.net-responsive-bs/css/responsive.bootstrap.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block js_include %}
+    <script src="{% static 'vendors/datatables.net/js/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-bs/js/dataTables.bootstrap.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'vendors/datatables.net-responsive-bs/js/responsive.bootstrap.js' %}"></script>
+    <script src="{% static 'js/daterangepicker.js' %}" ></script>
+    <script src="{% static 'js/dateformat.min.js' %}"></script>
+    <script src="{% static 'js/echarts3-all.min.js' %}"></script>
+    <script src="{% static 'js/moment.min.js' %}" ></script>
+	<script src="{% static 'js/charts_network.js' %}" ></script>
+{% endblock %}
+
+{% block jquery_code  %}
+
+{% endblock %}
