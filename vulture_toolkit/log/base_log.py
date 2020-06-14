@@ -281,8 +281,11 @@ class BaseLog(object):
             elif function == "blocked_requests":
                 data = results[function]
                 series = {}
-                if len(data) > 0:
-                    series = {"SQLI": 0, "XSS": 0, "CSRF": 0, "Evade": 0, "Traversal": 0, "RFI" : 0, "LFI": 0, "RCE": 0, "PHPI": 0, "HTTP": 0, "SESS": 0}
+                # BUG: EMPTY REPORTS (Bug probably due to the  Python2 to 3 migration)
+                # In mongo db, len is not valid?!?  as the line is not really needed, we can just skip it!
+                # Autor: Bonomani
+                #if len(data) > 0:
+                series = {"SQLI": 0, "XSS": 0, "CSRF": 0, "Evade": 0, "Traversal": 0, "RFI" : 0, "LFI": 0, "RCE": 0, "PHPI": 0, "HTTP": 0, "SESS": 0}
                     for row in data:
                         result = re.findall(r'\b(\w+)\b\=(?:\b(\w+)\b)?', row["name"])
                         for tuple_key in result:
@@ -342,5 +345,13 @@ class BaseLog(object):
                         data[tag]["ips"] = data[tag]["ips"][:20]
                         data[tag]["ips"].sort(key=lambda x:x["value"], reverse=True)
                 filled_results[function] = data
-
+            # BUG: EMPTY REPORTS (Bug probably due to the  Python2 to 3 migration)
+            # TESTED WITH MONGODB ONLY, POSSIBLE IMPACT ON ELK
+            # The result (CommandCursor) is lazy object that need to be iterated to have its content fill up
+            # Autor: Bonomani
+            else:                    
+                data = [] 
+                for d in results[function]:
+                    data.append(d)
+                filled_results[function]=data
         return filled_results
