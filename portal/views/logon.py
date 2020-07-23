@@ -36,7 +36,7 @@ from django.http                     import HttpResponseRedirect, HttpResponseSe
 # Django project imports
 from gui.models.application_settings import Application
 from gui.models.system_settings      import Cluster
-from portal.views.responses          import response_redirect_with_portal_cookie, set_portal_cookie
+from portal.views.responses          import response_redirect_with_portal_cookie, set_portal_cookie, response_success, response_failure
 from portal.system.authentications   import Authentication, POSTAuthentication, BASICAuthentication, KERBEROSAuthentication, DOUBLEAuthentication
 from portal.system.sso_forwards      import SSOForwardPOST, SSOForwardBASIC, SSOForwardKERBEROS
 
@@ -63,13 +63,13 @@ logging.config.dictConfig(settings.LOG_SETTINGS)
 logger = logging.getLogger('portal_authentication')
 
 
-
-
 def log_in(request, token_name=None, token=None, proxy_app_id=None):
     """ Handle authentication in Vulture Portal
     :param request: Django request object
     :returns: Home page if user auth succeed. Logon page if auth failed
     """
+
+    default_authentication_type = None
 
     cluster = Cluster.objects.get()
     """ Check if URI arguments are valid """
@@ -99,7 +99,7 @@ def log_in(request, token_name=None, token=None, proxy_app_id=None):
     # Redis connection error
     except RedisConnectionError as e:
         logger.error("PORTAL::log_in: Unable to connect to Redis server : {}".format(str(e)))
-        return HttpResponseServerError()
+        return response_failure(HttpResponseServerError(), "authentication")
 
     # Token not found while instantiating RedisSession or RedisAppSession
     except TokenNotFoundError as e:
@@ -112,12 +112,12 @@ def log_in(request, token_name=None, token=None, proxy_app_id=None):
         # If "proxy_app_id" not found : FORBIDDEN
         except (Application.DoesNotExist, InvalidId, ValidationError) as e:
             logger.error("PORTAL::log_in: Application with id '{}' not found : {}".format(proxy_app_id, str(e)))
-            return HttpResponseForbidden()
+            return response_failure(HttpResponseForbidden(), "authentication")
 
     # If redis_session.keys['application_id'] does not exists : FORBIDDEN
     except (Application.DoesNotExist, ValidationError, InvalidId) as e:
         logger.error("PORTAL::log_in: Application with id '{}' not found".format(authentication.redis_session.keys['application_id']))
-        return HttpResponseForbidden()
+        return response_failure(HttpResponseForbidden(), "authentication")
 
     # If assertionError : Ask credentials by portal
     except AssertionError as e:
@@ -128,6 +128,7 @@ def log_in(request, token_name=None, token=None, proxy_app_id=None):
     """ If user is not authenticated : try to retrieve credentials and authenticate him on backend/fallback-backends """
     # If the user is not authenticated and application need authentication
     if not authentication.is_authenticated():
+        default_authentication_type = "authentication"
         try:
             backend_id = authentication.authenticate_on_backend()
             if not backend_id:
@@ -146,7 +147,7 @@ def log_in(request, token_name=None, token=None, proxy_app_id=None):
                 if authentication_results['data'].get('password_expired', None):
                     logger.info("PORTAL::log_in: User '{}' must change its password, redirect to self-service portal".format(authentication.credentials[0]))
                     app_url = authentication.get_url_portal()
-                    return response_redirect_with_portal_cookie(app_url+str(token_name)+'/self/change', portal_cookie_name, portal_cookie, app_url.startswith('https'), None)
+                    return response_success(response_redirect_with_portal_cookie(app_url+str(token_name)+'/self/change', portal_cookie_name, portal_cookie, app_url.startswith('https'), None), "authentication")
             # If the user is already authenticated (retrieven with RedisPortalSession ) => SSO
             else:
                 app_cookie, portal_cookie, oauth2_token = authentication.register_sso(backend_id)
@@ -154,23 +155,23 @@ def log_in(request, token_name=None, token=None, proxy_app_id=None):
 
         except AssertionError as e:
             logger.error("PORTAL::log_in: Bad captcha taped for username '{}' : {}".format(authentication.credentials[0], e))
-            return authentication.ask_credentials_response(request=request, error="Bad captcha")
+            return response_failure(authentication.ask_credentials_response(request=request, error="Bad captcha"), "authentication")
 
         except AccountLocked as e:
             logger.error("PORTAL::log_in: Error while trying to authenticate user '{}' : {}".format(authentication.credentials[0], e))
-            return authentication.ask_credentials_response(request=request, error="Bad credentials")
+            return response_failure(authentication.ask_credentials_response(request=request, error="Bad credentials"), "authentication")
 
         except AuthenticationError as e:
             logger.error("PORTAL::log_in: AuthenticationError while trying to authenticate user '{}' : {}".format(authentication.credentials[0], e))
-            return authentication.ask_credentials_response(request=request, error="Bad credentials")
+            return response_failure(authentication.ask_credentials_response(request=request, error="Bad credentials"), "authentication")
 
         except ACLError as e:
             logger.error("PORTAL::log_in: ACLError while trying to authenticate user '{}' : {}".format(authentication.credentials[0], e))
-            return authentication.ask_credentials_response(request=request, error="Bad credentials")
+            return response_failure(authentication.ask_credentials_response(request=request, error="Bad credentials"), "authentication")
 
         except (DBAPIError, PyMongoError, LDAPError) as e:
             logger.error("PORTAL::log_in: Repository driver Error while trying to authentication user '{}' : {}".format(authentication.credentials[0], e))
-            return authentication.ask_credentials_response(request=request, error="Bad credentials")
+            return response_failure(authentication.ask_credentials_response(request=request, error="Bad credentials"), "authentication")
 
         except (MultiValueDictKeyError, AttributeError, KeyError) as e:
             #vltprtlsrnm is always empty during the initial redirection. Don't log that
@@ -179,16 +180,17 @@ def log_in(request, token_name=None, token=None, proxy_app_id=None):
 
         except REDISWriteError as e:
             logger.error("PORTAL::log_in: RedisWriteError while trying to register user '{}' informations : {}".format(authentication.credentials[0], e))
-            return HttpResponseServerError()
+            return response_failure(HttpResponseServerError(), "authentication")
 
         except Exception as e:
             logger.exception(e)
-            return HttpResponseServerError()
+            return response_failure(HttpResponseServerError(), "authentication")
 
 
     """ If user is not double-authenticated and double-authentication needed : try to retrieve credentials and authenticate him on otp-backend """
     # If the user is authenticated but not double-authenticated and double-authentication required
     if authentication.double_authentication_required():
+        default_authentication_type = "otp"
         logger.info("PORTAL::log_in: Double authentication required for user '{}'".format(authentication.credentials[0]))
         try:
             # Instantiate DOUBLEAuthentication object
@@ -204,17 +206,17 @@ def log_in(request, token_name=None, token=None, proxy_app_id=None):
         except AssertionError as e:
             """ If redis_portal_session does not exists or can't retrieve otp key in redis """
             logger.error("PORTAL::log_in: DoubleAuthentication failure for username '{}' : {}".format(authentication.credentials[0], str(e)))
-            return authentication.ask_credentials_response(request=request, portal_cookie_name=portal_cookie_name, error="Portal cookie expired")
+            return response_failure(authentication.ask_credentials_response(request=request, portal_cookie_name=portal_cookie_name, error="Portal cookie expired"), "otp")
 
         except (Application.DoesNotExist, ValidationError, InvalidId) as e:
             """ Invalid POST 'vulture_two_factors_authentication' value """
             logger.error("PORTAL::log_in: Double-authentication failure for username {} : {}".format(authentication.credentials[0], str(e)))
-            return HttpResponseForbidden("Intrusion attempt blocked")
+            return response_failure(HttpResponseForbidden("Intrusion attempt blocked"), "otp")
 
         except REDISWriteError as e:
             """ Cannot register double-authentication in Redis : internal server error """
             logger.error("PORTAL::log_in: Failed to write double-authentication results in Redis for username '{}' : {}".format(db_authentication.credentials[0], str(e)))
-            return HttpResponseServerError()
+            return response_failure(HttpResponseServerError(), "otp")
 
         # If authentication failed : create double-authentication key and ask-it
         except CredentialsError as e:
@@ -222,14 +224,15 @@ def log_in(request, token_name=None, token=None, proxy_app_id=None):
             logger.error("PORTAL::log_in: Double-authentication failure for username {} : {}".format(authentication.credentials[0], str(e)))
             try:
                 db_authentication.create_authentication()
-                return db_authentication.ask_credentials_response(request=request, portal_cookie_name=portal_cookie_name)
+                # If we get here, authentication has succeed
+                return response_success(db_authentication.ask_credentials_response(request=request, portal_cookie_name=portal_cookie_name), "authentication")
 
             except (OTPError, REDISWriteError, RedisConnectionError) as e:
                 """ Error while sending/registering in Redis the OTP informations : display portal"""
                 logger.error("PORTAL::log_in: Failed to create/send double-authentication key : {}".format(str(e)))
                 db_authentication.deauthenticate_user()
                 logger.info("PORTAL::log_in: User '{}' successfully deauthenticated due to db-authentication error".format(authentication.credentials[0]))
-                return authentication.ask_credentials_response(request=request, error="<b> Error sending OTP Key </b> </br> "+str(e))
+                return response_failure(authentication.ask_credentials_response(request=request, error="<b> Error sending OTP Key </b> </br> "+str(e)), "otp")
 
         except AuthenticationError as e:
             """ Bad OTP key """
@@ -238,29 +241,29 @@ def log_in(request, token_name=None, token=None, proxy_app_id=None):
                 db_authentication.create_authentication()
                 db_authentication.authentication_failure()
                 logger.debug("PORTAL:log_in: DoubleAuthentication failure successfully registered in Redis")
-                return db_authentication.ask_credentials_response(request=request, portal_cookie_name=portal_cookie_name, error="<b> Bad OTP key </b>")
+                return response_failure(db_authentication.ask_credentials_response(request=request, portal_cookie_name=portal_cookie_name, error="<b> Bad OTP key </b>"), "otp")
 
             except TwoManyOTPAuthFailure as e:
                 logger.error("PORTAL::log_in: Two many OTP authentication failures for username'{}', redirecting to portal".format(authentication.credentials[0]))
                 db_authentication.deauthenticate_user()
                 logger.info("PORTAL::log_in: User '{}' successfully deauthenticated due to db-authentication error".format(authentication.credentials[0]))
-                return authentication.ask_credentials_response(request=request, error=e.args[0])
+                return response_failure(authentication.ask_credentials_response(request=request, error=e.args[0]), "otp")
 
             except (OTPError, REDISWriteError, RedisConnectionError) as e:
                 logger.error("PORTAL::log_in: Error while preparing double-authentication : {}".format(str(e)))
-                return db_authentication.ask_credentials_response(request=request, portal_cookie_name=portal_cookie_name, error="<b> Error sending OTP Key </b> </br> "+str(e))
+                return response_failure(db_authentication.ask_credentials_response(request=request, portal_cookie_name=portal_cookie_name, error="<b> Error sending OTP Key </b> </br> "+str(e)), "otp")
 
         except OTPError as e:
             """ OTP Error while authenticating given token """
             logger.error("PORTAL::log_in: Double-authentication failure for username {} : {}".format(authentication.credentials[0], str(e)))
-            return db_authentication.ask_credentials_response(request=request, portal_cookie_name=portal_cookie_name, error="<b> OTP Error </b> {}".format(str(e)))
+            return response_failure(db_authentication.ask_credentials_response(request=request, portal_cookie_name=portal_cookie_name, error="<b> OTP Error </b> {}".format(str(e))), "otp")
 
         except TwoManyOTPAuthFailure as e:
             logger.error(
                 "PORTAL::log_in: Two many OTP authentication failures for username'{}', redirecting to portal".format(authentication.credentials[0]))
             db_authentication.deauthenticate_user()
             logger.info("PORTAL::log_in: User '{}' successfully deauthenticated due to db-authentication error".format(authentication.credentials[0]))
-            return authentication.ask_credentials_response(request=request, error=e.args[0])
+            return response_failure(authentication.ask_credentials_response(request=request, error=e.args[0]), "otp")
 
     # If we arrive here : the user is authenticated
     #  and double-authenticated if double-authentication needed
@@ -278,13 +281,14 @@ def log_in(request, token_name=None, token=None, proxy_app_id=None):
                 authentication.get_credentials(request)
             # If we cannot retrieve them, ask credentials
             if not authentication.credentials[0]:# or not authentication.credentials[1]:
-                return authentication.ask_credentials_response(request=request, portal_cookie_name=portal_cookie_name, error="Credentials not found")
+                # If we get here, otp or auth has succeed
+                return response_success(authentication.ask_credentials_response(request=request, portal_cookie_name=portal_cookie_name, error="Credentials not found"), default_authentication_type)
             logger.info("PORTAL::log_in: Credentials successfuly retrieven for SSO performing")
 
         except Exception as e:
             logger.error("PORTAL::log_in: Error while retrieving credentials for SSO : ")
             logger.exception(e)
-            return authentication.ask_credentials_response(request=request, portal_cookie_name=portal_cookie_name, error="Credentials not found")
+            return response_success(authentication.ask_credentials_response(request=request, portal_cookie_name=portal_cookie_name, error="Credentials not found"), default_authentication_type)
 
         try:
             # Instantiate SSOForward object with sso_forward type
@@ -307,12 +311,12 @@ def log_in(request, token_name=None, token=None, proxy_app_id=None):
             # If the user has not yet a portal cookie : give-it
             if not request.COOKIES.get(portal_cookie_name, None) or not authentication.redis_base.hgetall(request.COOKIES.get(portal_cookie_name, None)):
                 final_response = set_portal_cookie(final_response, portal_cookie_name, portal_cookie, authentication.get_redirect_url())
-            return final_response
+            return response_success(final_response, default_authentication_type)
 
         # If learning credentials cannot be retrieven : ask them
         except CredentialsMissingError as e:
             logger.error("PORTAL::log_in: Learning credentials missing : asking-them")
-            return authentication.ask_learning_credentials(request=request, portal_cookie_name=None if request.POST.get(portal_cookie_name, None) else portal_cookie_name, fields=e.fields_missing)
+            return response_success(authentication.ask_learning_credentials(request=request, portal_cookie_name=None if request.POST.get(portal_cookie_name, None) else portal_cookie_name, fields=e.fields_missing), default_authentication_type)
 
         # If KerberosBackend object cannot be retrieven from mongo with the backend_id that the user is authenticated on
         except InvalidId:
@@ -334,5 +338,5 @@ def log_in(request, token_name=None, token=None, proxy_app_id=None):
         kerberos_token_resp = authentication_results['data']['token_resp']
     except:
         kerberos_token_resp = None
-    return response_redirect_with_portal_cookie(redirection_url, portal_cookie_name, portal_cookie, redirection_url.startswith('https'), kerberos_token_resp)
+    return response_success(response_redirect_with_portal_cookie(redirection_url, portal_cookie_name, portal_cookie, redirection_url.startswith('https'), kerberos_token_resp), default_authentication_type)
 
