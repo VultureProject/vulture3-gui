@@ -34,6 +34,7 @@ from gui.models.application_settings import Application
 from gui.models.system_settings      import Cluster
 from portal.system.authentications   import OAUTH2Authentication
 from portal.system.redis_sessions    import REDISBase
+from portal.views.responses          import response_success, response_failure
 
 # Required exceptions imports
 from bson.errors                     import InvalidId
@@ -80,7 +81,7 @@ def log_in(request):
         logger.info("OAUTH2::log_in: Authentication succeed for user '{}'".format(authentication.credentials[0]))
         response               = authentication.generate_response(authentication_results)
         logger.info("OAUTH2::log_in: Response successfully generated for user '{}' : {}".format(authentication.credentials[0], response))
-        return response
+        return response_success(response, "oauth2")
 
     # Redis connection error
     except RedisConnectionError as e:
@@ -109,7 +110,7 @@ def log_in(request):
         logger.error("OAUTH2::log_in: Error while trying to authentication user '{}' : ".format(request.POST.get('username',None)))
         logger.exception(e)
 
-    return HttpResponseForbidden()
+    return response_failure(HttpResponseForbidden(), "oauth2")
 
 
 
@@ -162,6 +163,7 @@ def is_valid_token(request):
             body = {"active": "false"}
 
         logger.debug("OAuth2Portal::is_valid_token: Returning '{}'".format(body))
+        response_funcs = {"true"}
         return JsonResponse(body)
 
     else:

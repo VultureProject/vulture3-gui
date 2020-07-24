@@ -36,6 +36,7 @@ from django.http import HttpResponseRedirect, HttpResponseServerError, HttpRespo
 # Django project imports
 from portal.system.self_actions import SELFService, SELFServiceChange, SELFServiceLogout, SELFServiceLost
 from vulture_toolkit.auth.exceptions import AuthenticationError, ChangePasswordError
+from portal.views.responses import response_failure, response_success
 
 # Required exceptions imports
 from django.utils.datastructures     import MultiValueDictKeyError
@@ -81,17 +82,17 @@ def self(request, token_name=None, proxy_app_id=None, action=None):
     except RedisConnectionError as e:
         # Redis connection error
         logger.error("PORTAL::log_in: Unable to connect to Redis server : {}".format(str(e)))
-        return HttpResponseServerError()
+        return response_failure(HttpResponseServerError(),action)
 
     # If assertionError : Forbidden
     except AssertionError as e:
         logger.error("PORTAL::log_in: AssertionError while trying to create Authentication : ".format(e))
-        return HttpResponseForbidden()
+        return response_failure(HttpResponseForbidden(), action)
 
     except Exception as e:
         logger.error("Unknown error occured while retrieving user informations :")
         logger.exception(e)
-        return HttpResponseForbidden()
+        return response_failure(HttpResponseForbidden(), action)
 
 
     try:
@@ -99,33 +100,33 @@ def self(request, token_name=None, proxy_app_id=None, action=None):
         if not action:
             result = Action.perform_action()
             logger.info("SELF::main: List of apps successfully retrieven")
-            return Action.main_response(request, result)
+            return response_success(Action.main_response(request, result), "list_apps")
         else:
-            return Action.message_response(Action.perform_action(request, credential))
+            return response_success(Action.message_response(Action.perform_action(request, credential)), action)
 
     # Redis connection error
     except RedisConnectionError as e:
         logger.error("PORTAL::log_in: Unable to connect to Redis server : {}".format(str(e)))
-        return HttpResponseServerError()
+        return response_failure(HttpResponseServerError(), action)
 
     # If assertionError : Forbidden
     except AssertionError as e:
         logger.error("PORTAL::log_in: AssertionError while trying to create Authentication : '{}'".format(e))
-        return HttpResponseForbidden(e)
+        return response_failure(HttpResponseForbidden(e), action)
 
     except (DBAPIError, LDAPError, PyMongoError) as e:
         logger.error("SELF::self: Failed to update password :".format(e))
         logger.exception(e)
-        return Action.ask_credentials_response(request, action, "<b> Database error </b> <br> "
-                                                                "Please contact your administrator")
+        return response_failure(Action.ask_credentials_response(request, action, "<b> Database error </b> <br> "
+                                                                "Please contact your administrator"), action)
 
     except PasswordMatchError as e:
         logger.error("SELF::self: Validation form error: '{}'".format(e))
-        return Action.ask_credentials_response(request, action, e)
+        return response_failure(Action.ask_credentials_response(request, action, e), action)
 
     except (ChangePasswordError, AuthenticationError) as e:
         logger.error("SELF::self: Authentication or credentials error : '{}'".format(e))
-        return Action.ask_credentials_response(request, action, "Authentication failure.")
+        return response_failure(Action.ask_credentials_response(request, action, "Authentication failure."), action)
 
     except MultiValueDictKeyError as e:
         if request.method == "GET":
@@ -135,13 +136,13 @@ def self(request, token_name=None, proxy_app_id=None, action=None):
             return Action.ask_credentials_response(request, action, "Field missing : "+str(e))
 
     except SMTPException as e:
-        return Action.ask_credentials_response(request, action, str(e))
+        return response_failure(Action.ask_credentials_response(request, action, str(e)), action)
 
     except KeyError as e:
         logger.exception(e)
-        return HttpResponseForbidden()
+        return response_failure(HttpResponseForbidden(), action)
 
     except Exception as e:
         logger.error(type(e))
         logger.exception(e)
-        return Action.message_response("An unknown error occured <br><b> Please contact your admninistrator</b>")
+        return response_failure(Action.message_response("An unknown error occured <br><b> Please contact your admninistrator</b>"), action)

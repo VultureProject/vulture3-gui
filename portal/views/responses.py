@@ -41,6 +41,22 @@ from qrcode import make as qrcode_make
 # Global variables
 BASE_DIR = dirname(dirname(__file__))
 
+AUTH_TYPE_HEADER = "X-Authentication"
+AUTH_RESULT_HEADER = "X-Authentication-Result"
+
+
+def response_success(response, action_type):
+    if action_type:
+        response[AUTH_TYPE_HEADER] = action_type
+        response[AUTH_RESULT_HEADER] = "success"
+    return response
+
+def response_failure(response, action_type):
+    if action_type:
+        response[AUTH_TYPE_HEADER] = action_type
+        response[AUTH_RESULT_HEADER] = "failure"
+    return response
+
 
 def split_domain(url):
     """ Split an url and return the 2 last domains
