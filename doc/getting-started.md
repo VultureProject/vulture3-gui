@@ -5,11 +5,8 @@ currentMenu: getting-started
 
 ## Get Started
 
-Want to test Vulture in a minute ? Just download the pre-installed Vulture system
-    - VMWare image: https://www.vultureproject.org/download/
-
-Want to install Vulture on top of FreeBSD 11 ?
- - Download the installer script : https://www.vultureproject.org/download/
+To install Vulture on top of FreeBSD 12.1 
+ - Download the installer script : https://download.vultureproject.org/v3/download/
  - Then execute `/bin/sh ./vulture_installer.sh` on any FreeBSD 11 system (see prerequisites below)
  - At this stage, Vulture will be in the same state as with OVA or ESX Image
 <br/>
