@@ -273,8 +273,8 @@ def load(request):
         # if cert.cn is empty check if subjectAltName is set en use it
         if(not cert.cn):
             alt_name=x509Cert.get_ext('subjectAltName').get_value()
-        if(alt_name):
-            cert.cn=alt_name
+            if(alt_name):
+              cert.cn=alt_name
 
         cert.save()
 
