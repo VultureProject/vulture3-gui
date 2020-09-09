@@ -270,6 +270,12 @@ def load(request):
             elif str(tmp[0]) == "OU":
                 cert.ou = tmp[1]
 
+        # if cert.cn is empty check if subjectAltName is set en use it
+        if(not cert.cn):
+            alt_name=x509Cert.get_ext('subjectAltName').get_value()
+            if(alt_name):
+              cert.cn=alt_name
+
         cert.save()
 
         return HttpResponseRedirect('/system/cert/')
