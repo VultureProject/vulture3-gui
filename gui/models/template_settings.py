@@ -184,7 +184,7 @@ class TemplateImage(DynamicDocument):
         :return: A string with pre-formatted html for the image
         """
 
-        return "<img src='data:image/{};base64,{}'/>".format(self.content.format.lower(), base64.b64encode(self.content.read()))
+        return "<img src='data:image/{};base64,{}'/>".format(self.content.format.lower(), base64.b64encode(self.content.read()).decode('utf8'))
 
     def create_preview_html(self):
         """
@@ -192,4 +192,4 @@ class TemplateImage(DynamicDocument):
         :return: A string with pre-formatted html for the image
         """
 
-        return "data:image/{};base64,{}".format(self.content.format.lower(), base64.b64encode(self.content.read()))
+        return "data:image/{};base64,{}".format(self.content.format.lower(), base64.b64encode(self.content.read()).decode('utf8'))
