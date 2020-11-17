@@ -584,8 +584,7 @@ class ElasticSearchRepository(BaseAbstractRepository):
         session = Session()
 
         if self.es_user and self.es_password:
-            request = Request("GET", url, headers={'Authorization': 'Basic {}'.format(
-                b64encode('{}:{}'.format(self.es_user, self.es_password).encode('utf8')))}).prepare()
+            request = Request("GET", url, auth=(self.es_user, self.es_password)).prepare()
         else:
             request = Request("GET", url).prepare()
 
