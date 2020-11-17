@@ -18,7 +18,7 @@ cd /tmp
 /bin/rm -f /tmp/Vulture-LIBS.tar.gz
 
 bsd_version=$(/usr/bin/uname -r | /usr/bin/cut -d '-' -f 1)
-url="https://dl.vultureproject.org/$bsd_version$1/Vulture-LIBS.tar.gz"
+url="https://download.vultureproject.org/v3/$bsd_version$1/Vulture-LIBS.tar.gz"
 
 /bin/echo -n "[+] Downloading from '$url' ..."
 /usr/local/bin/wget --no-check-certificate $url >>/tmp/installation.log 2>&1
