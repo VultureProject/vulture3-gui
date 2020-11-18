@@ -37,7 +37,7 @@ if mongod_status; then
 
     DATE=`/bin/date +%Y-%m-%d_%H-%M`
 
-    /usr/local/bin/mongodump --gzip --db vulture --archive=/var/db/mongodb_dumps/vulture_dump_$DATE.archive --excludeCollection=monitor --ssl --sslPEMKeyFile /var/db/mongodb/mongod.pem --sslCAFile /var/db/mongodb/ca.pem --host $hostname --port 9091
+    /usr/local/bin/mongodump --gzip --db vulture --archive=/var/db/mongodb_dumps/vulture_dump_$DATE.archive --excludeCollection=monitor --ssl --sslPEMKeyFile /var/db/mongodb/mongod.pem --sslCAFile /var/db/mongodb/ca.pem --host $(hostname) --port 9091
 
     if [ "$?" -ne 0 ]; then
         echo "Something went wrong during mongodump."
