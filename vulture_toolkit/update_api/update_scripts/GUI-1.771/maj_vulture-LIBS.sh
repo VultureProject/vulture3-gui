@@ -33,8 +33,5 @@ cd /home/vlt-gui
 /bin/sh "/home/vlt-gui/lib-$bsd_version/install.sh"
 /bin/echo "OK"
 
-/bin/echo "[+] Installing required libraries for Images ..."
-/usr/sbin/pkg install -y libxcb && echo "OK" || (echo "KO" && echo "[!] Please install following packages manually : libxcb")
-
 /bin/echo "[*] Update of Vulture-LIBS ended"
 

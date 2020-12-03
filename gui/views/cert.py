@@ -441,8 +441,8 @@ def sign(request):
 
         # Find the internal CA's certificate and private key
         internal = cluster.ca_certificate
-        ca_key = RSA.load_key_string(str(internal.key))
-        ca_cert = X509.load_cert_string(str(internal.cert))
+        ca_key = RSA.load_key_string(internal.key.encode('utf8'))
+        ca_cert = X509.load_cert_string(internal.cert.encode('utf8'))
 
         # Get PKI next serial number
         serial = cluster.ca_serial
@@ -512,7 +512,7 @@ def sign(request):
         cluster.save()
 
         # Store the certificate
-        cert.cert = crt.as_pem()
+        cert.cert = crt.as_pem().decode('utf8')
         cert.name = str(crt.get_subject())
         cert.status = 'V'
         cert.issuer = str(internal.issuer)
