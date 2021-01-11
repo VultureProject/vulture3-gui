@@ -227,5 +227,5 @@ class LogRotate:
         self.client.delete_logs(lastDate)
 
         lastDate = (datetime.datetime.now() - datetime.timedelta(days=30))
-        [m.delete() for m in Monitor.objects.get(time__lt=lastDate)]
+        [m.delete() for m in Monitor.objects(time__lt=lastDate)]
         return True
