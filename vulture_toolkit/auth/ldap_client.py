@@ -671,10 +671,11 @@ class LDAPClient(BaseAuth):
             group_info = self.search_group(group_name)
             if group_info:
                 for group in group_info:
-                    response['groups'].append({
-                        'group_dn': group[0],
-                        'group_members': group[1].get(self.group_member_attr.lower(), [])
-                    })
+                    if group[0]:
+                        response['groups'].append({
+                            'group_dn': group[0],
+                            'group_members': group[1].get(self.group_member_attr.lower(), [])
+                        })
             response['status'] = True
         except Exception as e:
             logger.exception(e)
