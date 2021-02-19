@@ -664,6 +664,13 @@ def edit(request, object_id=None):
             if application.type == "balanced":
                 application.private_uri = "{}://{}".format(application.proxy_balancer.members[0].uri_type, application.proxy_balancer.members[0].uri)
 
+            if application.sso_enabled:
+                if application.sso_forward == "basic":
+                    application.sso_profile = json.dumps([{'type': "learn", 'name': "basic_username;vlt;", 'asked_name': "username"},
+                                {'type': "learn_secret", 'name': "basic_password;vlt;", 'asked_name': "password"}])
+                elif application.sso_forward == "kerberos":
+                    application.sso_profile = json.dumps([{'type': "learn", 'name': "kerberos_username;vlt;", 'asked_name': "username"},
+                                {'type': "learn_secret", 'name': "kerberos_password;vlt;", 'asked_name': "password"}])
 
             # Check if api_call to reload rsyslogd is needed
             if old_app:
