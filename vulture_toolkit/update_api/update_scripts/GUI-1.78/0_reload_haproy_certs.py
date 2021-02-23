@@ -46,6 +46,6 @@ if __name__ == '__main__':
 
     for cert in SSLCertificate.objects():
         cert.write_certificate()
-        print("Cert {} reloaded")
+        print("Cert {} reloaded".format(cert.name))
 
     print("Certificates reloaded")
