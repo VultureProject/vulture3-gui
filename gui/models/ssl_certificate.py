@@ -268,7 +268,7 @@ class SSLCertificate(DynamicDocument):
                     f.write(rsa_key)
 
                 with open("%shaproxy/Certificate-%s.pem" % (settings.CONF_DIR, self.id), 'w') as f:
-                    f.write(rsa_key)
+                    f.write(str(self.key))
                     f.write('\n')
                     f.write(self.cert)
                     # FIXME

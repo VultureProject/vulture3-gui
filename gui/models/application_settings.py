@@ -2172,7 +2172,14 @@ class Application(DynamicDocument):
         """ Delete SSOProfiles associated to a login and to the principal repository 
         Can raise an exception if failure
         """
-        sso_profiles_app = json.loads(self.sso_profile)
+        if self.sso_forward == "basic":
+            sso_profiles_app = [{'type': "learn", 'name': "basic_username;vlt;", 'asked_name': "username"},
+                                {'type': "learn_secret", 'name': "basic_password;vlt;", 'asked_name': "password"}]
+        elif self.sso_forward == "kerberos":
+            sso_profiles_app = [{'type': "learn", 'name': "kerberos_username;vlt;", 'asked_name': "username"},
+                                {'type': "learn_secret", 'name': "kerberos_password;vlt;", 'asked_name': "password"}]
+        else:
+            sso_profiles_app = json.loads(self.sso_profile)
         auth_backend = self.getAuthBackend()
         for sso_profile_app in sso_profiles_app:
             if sso_profile_app['type'] in ("learn", "learn_secret"):
