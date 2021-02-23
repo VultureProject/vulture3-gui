@@ -9,8 +9,8 @@
 cat - << EOF > /etc/rc.conf.d/mongod
 mongod_poststart()
 {
-    if [ -f ${pidfile} ]; then
-        (chgrp vlt-sys ${pidfile} && chmod g+r ${pidfile})  || return 1
+    if [ -f \${pidfile} ]; then
+        (chgrp vlt-sys \${pidfile} && chmod g+r \${pidfile})  || return 1
     fi
     return 0
 }
