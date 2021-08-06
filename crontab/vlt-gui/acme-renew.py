@@ -35,6 +35,7 @@ import logging
 logger = logging.getLogger('cluster')
 
 from gui.models.ssl_certificate import SSLCertificate
+from gui.models.mod_ssl import ModSSL
 from gui.models.system_settings import Cluster
 from M2Crypto import X509
 from redis import Redis
@@ -65,6 +66,7 @@ if error:
 else:
     logger.info("Let's encrypt certificates renewed : {}".format(success))
 
+updated_modssl = set()
 for cert in SSLCertificate.objects(issuer="LET'S ENCRYPT", status__ne="R"):
 
     if is_master:
@@ -120,6 +122,15 @@ for cert in SSLCertificate.objects(issuer="LET'S ENCRYPT", status__ne="R"):
 
     print("Updating certificate {}".format(cert.name))
     cert.write_certificate()
+
+    for ssl_profile in ModSSL.objects.filter(certificate=cert):
+        updated_modssl.update(ssl_profile)
+
+
+for modssl in updated_modssl:
+    print("Reloading ssl profile '{}' certificates".format(modssl))
+    modssl.writeConf()
+
 
 """ Let's reload Apache's processes """
 subprocess.Popen(['/usr/local/bin/sudo', '-u', 'vlt-sys', '/usr/local/bin/sudo', 'service', 'vulture', 'reload'])
